@@ -1,0 +1,65 @@
+{% extends "base.html" %}
+{% block title %}Roles y Permisos{% endblock %}
+{% block body %}
+<main class="home" style="--tick: #7A4E8C">
+  <a class="back" href="{{ url_for('inicio') }}">Volver al inicio</a>
+  <section class="greeting module-head">
+    <h1>Roles y Permisos</h1>
+    <p class="muted">Define qué puede hacer cada rol dentro del sistema.</p>
+  </section>
+  {% include "configuracion/_nav.html" %}
+  {% with mensajes = get_flashed_messages(with_categories=true) %}
+    {% for categoria, texto in mensajes %}
+      <p class="alert alert-{{ categoria }}" role="alert">{{ texto }}</p>
+    {% endfor %}
+  {% endwith %}
+
+  <form class="role-form" method="post"
+        action="{% if editar %}{{ url_for('roles.editar', id=editar['id']) }}{% else %}{{ url_for('roles.index') }}{% endif %}">
+    <input type="hidden" name="csrf" value="{{ csrf_token() }}">
+    <div>
+      <label for="nombre">Nombre del rol</label>
+      <input id="nombre" name="nombre" type="text" required value="{{ editar['nombre'] if editar else '' }}">
+    </div>
+    <div>
+      <label for="descripcion">Descripción</label>
+      <textarea id="descripcion" name="descripcion" rows="2">{{ editar['descripcion'] if editar else '' }}</textarea>
+    </div>
+    <fieldset class="permisos-fieldset">
+      <legend>Permisos asignados</legend>
+      {% for perm in todos_permisos %}
+      <label class="check">
+        <input type="checkbox" name="permisos" value="{{ perm['id'] }}"
+               {% if editar and perm['id'] in editar.get('permisos_ids', []) %}checked{% endif %}>
+        <span><strong>{{ perm['nombre'] }}</strong>{% if perm['descripcion'] %} — {{ perm['descripcion'] }}{% endif %}</span>
+      </label>
+      {% endfor %}
+    </fieldset>
+    <button class="btn btn-primary" type="submit">{% if editar %}Guardar cambios{% else %}Crear rol{% endif %}</button>
+    {% if editar %}<a class="back" href="{{ url_for('roles.index') }}">Cancelar</a>{% endif %}
+  </form>
+
+  <table class="req-table">
+    <thead><tr><th scope="col">Rol</th><th scope="col">Descripción</th><th scope="col">Permisos</th><th scope="col">Acciones</th></tr></thead>
+    <tbody>
+      {% for r in lista %}
+      <tr>
+        <td>{{ r['nombre'] }}</td>
+        <td>{{ r['descripcion'] or '—' }}</td>
+        <td>{{ r['permisos']|length }}</td>
+        <td class="acciones">
+          <a href="{{ url_for('roles.editar', id=r['id']) }}">Editar</a>
+          <form method="post" action="{{ url_for('roles.eliminar', id=r['id']) }}"
+                onsubmit="return confirm('¿Eliminar este rol?')">
+            <input type="hidden" name="csrf" value="{{ csrf_token() }}">
+            <button class="link-danger" type="submit">Eliminar</button>
+          </form>
+        </td>
+      </tr>
+      {% else %}
+      <tr><td colspan="4">Todavía no hay roles. Crea el primero con el formulario.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</main>
+{% endblock %}

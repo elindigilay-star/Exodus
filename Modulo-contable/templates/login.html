@@ -1,0 +1,95 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Iniciar sesión · Exodus Contable</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/exodus.css') }}">
+</head>
+<body>
+<main class="login">
+  <section class="login-brand">
+    <p class="wordmark">Exodus Contable</p>
+    <h1 class="type-target" role="text" aria-label="Inventario, nómina y contabilidad en un solo lugar."></h1>
+    <p class="lead type-target" role="text" aria-label="Hecho para las PYMES de Colombia. Funciona sin internet y tus datos se quedan en este equipo."></p>
+  </section>
+
+  <section class="login-panel">
+    <form class="login-form" method="post" action="{{ url_for('auth.login') }}" novalidate>
+      <h2>Iniciar sesión</h2>
+      <p class="muted">Entra con tu usuario y contraseña.</p>
+
+      {% with mensajes = get_flashed_messages(with_categories=true) %}
+        {% for categoria, texto in mensajes %}
+          <p class="alert alert-{{ categoria }}" role="alert">{{ texto }}</p>
+        {% endfor %}
+      {% endwith %}
+
+      <input type="hidden" name="csrf" value="{{ csrf_token() }}">
+
+      <label for="usuario">Usuario</label>
+      <input id="usuario" name="usuario" type="text" value="{{ usuario_valor }}"
+             autocomplete="username" autocapitalize="none" spellcheck="false"
+             {% if not usuario_valor %}autofocus{% endif %} required>
+
+      <label for="clave">Contraseña</label>
+      <input id="clave" name="clave" type="password"
+             autocomplete="current-password" {% if usuario_valor %}autofocus{% endif %} required>
+
+      <label class="check" for="recordar">
+        <input id="recordar" name="recordar" type="checkbox" {% if recordar %}checked{% endif %}>
+        <span>Recordar mi usuario
+          <small>Solo guardamos tu nombre de usuario, nunca la contraseña.</small>
+        </span>
+      </label>
+
+      <button class="btn btn-primary" type="submit">Iniciar sesión</button>
+    </form>
+  </section>
+</main>
+<script>
+(function () {
+  var brand = document.querySelector('.login-brand');
+  if (!brand) return;
+  brand.classList.add('typewriter');
+
+  var targets = Array.prototype.slice.call(brand.querySelectorAll('.type-target'));
+  var SPEED = 30;
+  var PAUSE = 650;
+
+  targets.forEach(function (el) {
+    el.setAttribute('aria-hidden', 'true');
+    var cursor = document.createElement('span');
+    cursor.className = 'type-cursor';
+    cursor.setAttribute('aria-hidden', 'true');
+    el.appendChild(cursor);
+  });
+
+  function typeNext(i) {
+    if (i >= targets.length) return;
+    var el = targets[i];
+    var text = el.getAttribute('aria-label');
+    var cursor = el.querySelector('.type-cursor');
+    var n = 0;
+
+    function step() {
+      n++;
+      el.textContent = text.slice(0, n);
+      if (n < text.length) {
+        setTimeout(step, SPEED);
+      } else {
+        el.classList.add('is-done');
+        setTimeout(function () {
+          cursor.remove();
+          typeNext(i + 1);
+        }, PAUSE);
+      }
+    }
+    step();
+  }
+
+  typeNext(0);
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,278 @@
+.inventario {
+  --font-display: 'Space Grotesk', 'Inter', sans-serif;
+  --font-body: 'Inter', sans-serif;
+  --font-mono: 'IBM Plex Mono', ui-monospace, monospace;
+  --radius: 10px;
+  --bg: #F4F6F9;
+  --surface: #ffffff;
+  --surface-alt: #EAEEF3;
+  --ink: #0F1B2D;
+  --ink-muted: #52627A;
+  --ink-faint: #6B7A90;
+  --line: #D9E0E8;
+  --accent: #1D4F91;
+  --accent-strong: #163E73;
+  --accent-tint: #E8F0FA;
+  --gold: #B8934A;
+  --warn: #B54708;
+  --warn-tint: #FEF0C7;
+  --danger: #B42318;
+  --danger-tint: #FDECEA;
+  --success: #1E7B4F;
+  --success-tint: #E6F4EC;
+}
+
+.inv-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 24px;
+  border-bottom: 1px solid var(--line);
+}
+
+.inv-tabs .tab {
+  appearance: none;
+  border: none;
+  background: transparent;
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 14px;
+  color: var(--ink-muted);
+  padding: 10px 16px;
+  cursor: pointer;
+  border-bottom: 3px solid transparent;
+  margin-bottom: -1px;
+}
+
+.inv-tabs .tab:hover { color: var(--ink); }
+
+.inv-tabs .tab.active {
+  color: var(--accent-strong);
+  border-bottom-color: var(--gold);
+}
+
+.inventario .view { display: none; }
+.inventario .view.active { display: block; }
+
+.inventario .view-header { margin-bottom: 24px; }
+
+.inventario .view-header h1 {
+  font-family: var(--font-display);
+  font-size: 22px;
+  font-weight: 600;
+  margin: 0 0 4px;
+}
+
+.inventario .view-header p {
+  margin: 0;
+  color: var(--ink-muted);
+  font-size: 14px;
+}
+
+.inventario .panel {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 20px 24px;
+  margin-bottom: 24px;
+}
+
+.inventario .panel h2 {
+  font-family: var(--font-display);
+  font-size: 15px;
+  font-weight: 600;
+  margin: 0 0 16px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--line);
+}
+
+.inventario .form-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 14px 16px;
+}
+
+.inventario .field { display: flex; flex-direction: column; gap: 5px; }
+.inventario .field.full { grid-column: 1 / -1; }
+
+.inventario .field label {
+  font-size: 12.5px;
+  font-weight: 500;
+  color: var(--ink-muted);
+}
+
+.inventario input,
+.inventario select,
+.inventario textarea {
+  font-family: var(--font-body);
+  font-size: 14px;
+  padding: 9px 11px;
+  border: 1px solid var(--line);
+  border-radius: 7px;
+  background: var(--bg);
+  color: var(--ink);
+}
+
+.inventario input:focus,
+.inventario select:focus,
+.inventario textarea:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-tint);
+}
+
+.inventario .form-actions {
+  grid-column: 1 / -1;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 4px;
+}
+
+.inventario button.primary {
+  font-family: var(--font-body);
+  font-weight: 600;
+  font-size: 14px;
+  background: var(--accent);
+  color: #ffffff;
+  border: none;
+  border-radius: 7px;
+  padding: 10px 18px;
+  cursor: pointer;
+}
+
+.inventario button.primary:hover { background: var(--accent-strong); }
+
+.inventario button.link-danger {
+  font-family: var(--font-body);
+  font-size: 12.5px;
+  font-weight: 500;
+  background: transparent;
+  border: none;
+  color: var(--danger);
+  cursor: pointer;
+  padding: 4px 6px;
+}
+
+.inventario button.link-approve {
+  font-family: var(--font-body);
+  font-size: 12.5px;
+  font-weight: 500;
+  background: transparent;
+  border: none;
+  color: var(--success);
+  cursor: pointer;
+  padding: 4px 6px;
+}
+
+.inventario .msg {
+  font-size: 13px;
+  padding: 9px 12px;
+  border-radius: 7px;
+  display: none;
+}
+
+.inventario .msg.show { display: block; }
+.inventario .msg.ok { background: var(--success-tint); color: var(--success); }
+.inventario .msg.error { background: var(--danger-tint); color: var(--danger); }
+
+.inventario table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13.5px;
+}
+
+.inventario thead th {
+  text-align: left;
+  font-size: 11.5px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--ink-faint);
+  font-weight: 600;
+  padding: 0 10px 8px;
+  border-bottom: 1px solid var(--line);
+}
+
+.inventario tbody td {
+  padding: 10px;
+  border-bottom: 1px solid var(--surface-alt);
+  vertical-align: middle;
+}
+
+.inventario tbody tr:last-child td { border-bottom: none; }
+
+.inventario td.num,
+.inventario th.num {
+  font-family: var(--font-mono);
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.inventario .badge {
+  display: inline-block;
+  font-size: 11px;
+  font-weight: 500;
+  padding: 3px 9px;
+  border-radius: 100px;
+}
+
+.inventario .badge.activo { background: var(--success-tint); color: var(--success); }
+.inventario .badge.inactivo { background: var(--danger-tint); color: var(--danger); }
+
+.inventario .empty-row td {
+  text-align: center;
+  color: var(--ink-faint);
+  padding: 22px 10px;
+}
+
+@media (max-width: 760px) {
+  .inventario .form-grid { grid-template-columns: 1fr; }
+}
+
+/* ---- Específico de inventario ---- */
+.inventario .kpis {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+  gap: 14px;
+  margin-bottom: 24px;
+}
+.inventario .kpi {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 14px 16px;
+}
+.inventario .kpi span { display: block; font-size: 12px; color: var(--ink-faint); }
+.inventario .kpi strong {
+  display: block; margin-top: 4px; font-size: 20px;
+  font-family: var(--font-display); font-variant-numeric: tabular-nums;
+}
+.inventario .kpi.alerta strong { color: var(--warn); }
+.inventario .toolbar { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 14px; }
+.inventario .toolbar input[type="search"] { flex: 1 1 220px; }
+.inventario .check { display: flex; align-items: center; gap: 6px; font-size: 13px; color: var(--ink-muted); }
+.inventario .check input { padding: 0; }
+.inventario button.secondary {
+  font-family: var(--font-body); font-weight: 500; font-size: 14px;
+  background: var(--surface-alt); color: var(--ink);
+  border: none; border-radius: 7px; padding: 10px 16px; cursor: pointer;
+}
+.inventario button.secondary:hover { background: var(--line); }
+.inventario button.link-edit {
+  font-family: var(--font-body); font-size: 12.5px; font-weight: 500;
+  background: transparent; border: none; color: var(--accent); cursor: pointer; padding: 4px 6px;
+}
+.inventario .badge.bajo { background: var(--warn-tint); color: var(--warn); }
+.inventario .badge.agotado { background: var(--danger-tint); color: var(--danger); }
+.inventario .badge.entrada, .inventario .badge.venta { background: var(--success-tint); color: var(--success); }
+.inventario .badge.salida { background: var(--danger-tint); color: var(--danger); }
+.inventario .badge.ajuste { background: var(--accent-tint); color: var(--accent-strong); }
+.inventario .pos { color: var(--success); }
+.inventario .neg { color: var(--danger); }
+.inventario .hint { font-size: 12px; color: var(--ink-faint); }
+.inventario .hidden { display: none !important; }
+.inventario .table-wrap { overflow-x: auto; }
+.inventario .readonly-note {
+  background: var(--accent-tint); color: var(--accent-strong);
+  border-radius: 7px; padding: 10px 14px; font-size: 13px; margin-bottom: 20px;
+}

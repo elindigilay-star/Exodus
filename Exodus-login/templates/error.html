@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+{% block title %}{{ titulo }}{% endblock %}
+{% block body %}
+<main class="home">
+  <section class="greeting">
+    <h1>{{ titulo }}</h1>
+    <p class="muted">{{ mensaje }}</p>
+  </section>
+  <a class="btn btn-primary btn-inline" href="{{ url_for('raiz') }}">Ir al inicio</a>
+</main>
+{% endblock %}

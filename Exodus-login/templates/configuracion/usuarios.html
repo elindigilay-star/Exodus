@@ -1,0 +1,87 @@
+{% extends "base.html" %}
+{% block title %}Usuarios{% endblock %}
+{% block body %}
+<main class="home" style="--tick: #7A4E8C">
+  <a class="back" href="{{ url_for('inicio') }}">Volver al inicio</a>
+  <section class="greeting module-head">
+    <h1>Usuarios</h1>
+    <p class="muted">Crea las cuentas del sistema y asigna el rol de cada persona.</p>
+  </section>
+
+  {% include "configuracion/_nav.html" %}
+
+  {% with mensajes = get_flashed_messages(with_categories=true) %}
+    {% for categoria, texto in mensajes %}
+      <p class="alert alert-{{ categoria }}" role="alert">{{ texto }}</p>
+    {% endfor %}
+  {% endwith %}
+
+  <form class="user-form" method="post"
+        action="{% if editar %}{{ url_for('usuarios.editar', id=editar['id']) }}{% else %}{{ url_for('usuarios.usuarios') }}{% endif %}">
+    <input type="hidden" name="csrf" value="{{ csrf_token() }}">
+
+    <div>
+      <label for="usuario">Usuario</label>
+      <input id="usuario" name="usuario" type="text" value="{{ v['usuario'] }}" autocomplete="off"
+             {% if editar %}disabled{% else %}required{% endif %}>
+      {% if editar %}<small>El nombre de usuario no se puede cambiar.</small>{% endif %}
+    </div>
+
+    <div>
+      <label for="nombre">Nombre completo</label>
+      <input id="nombre" name="nombre" type="text" value="{{ v['nombre'] }}" required>
+    </div>
+
+    <div>
+      <label for="rol">Rol</label>
+      <select id="rol" name="rol">
+        {% for clave_rol, nombre_rol in roles.items() %}
+        <option value="{{ clave_rol }}" {% if v['rol'] == clave_rol %}selected{% endif %}>{{ nombre_rol }}</option>
+        {% endfor %}
+      </select>
+    </div>
+
+    <div>
+      <label for="clave">{% if editar %}Nueva contraseña{% else %}Contraseña{% endif %}</label>
+      <input id="clave" name="clave" type="password" autocomplete="new-password" {% if not editar %}required{% endif %}>
+      <small>{% if editar %}Déjala vacía para conservar la actual.{% else %}Mínimo 8 caracteres.{% endif %}</small>
+    </div>
+
+    <label class="check full" for="activo">
+      <input id="activo" name="activo" type="checkbox" {% if v['activo'] %}checked{% endif %}>
+      <span>Usuario activo (puede iniciar sesión)</span>
+    </label>
+
+    <div class="full">
+      <button class="btn btn-primary" type="submit">{% if editar %}Guardar cambios{% else %}Crear usuario{% endif %}</button>
+      {% if editar %}<a class="back" href="{{ url_for('usuarios.usuarios') }}">Cancelar</a>{% endif %}
+    </div>
+  </form>
+
+  <table class="req-table">
+    <thead>
+      <tr><th scope="col">Usuario</th><th scope="col">Nombre</th><th scope="col">Rol</th><th scope="col">Estado</th><th scope="col">Acciones</th></tr>
+    </thead>
+    <tbody>
+      {% for u in lista %}
+      <tr>
+        <td>{{ u['usuario'] }}</td>
+        <td>{{ u['nombre'] }}</td>
+        <td>{{ roles[u['rol']] }}</td>
+        <td {% if not u['activo'] %}class="is-off"{% endif %}>{{ 'Activo' if u['activo'] else 'Inactivo' }}</td>
+        <td class="acciones">
+          <a href="{{ url_for('usuarios.editar', id=u['id']) }}">Editar</a>
+          {% if u['id'] != usuario['id'] %}
+          <form method="post" action="{{ url_for('usuarios.eliminar', id=u['id']) }}"
+                onsubmit="return confirm('¿Eliminar este usuario?')">
+            <input type="hidden" name="csrf" value="{{ csrf_token() }}">
+            <button class="link-danger" type="submit">Eliminar</button>
+          </form>
+          {% endif %}
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</main>
+{% endblock %}

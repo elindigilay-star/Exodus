@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% block title %}{{ modulo.nombre }}{% endblock %}
+{% block body %}
+<main class="home" style="--tick: {{ modulo.color }}">
+  <a class="back" href="{{ url_for('inicio') }}">Volver al inicio</a>
+  <section class="greeting module-head">
+    <h1>{{ modulo.nombre }}</h1>
+    <p class="muted">{{ modulo.descripcion }}</p>
+  </section>
+
+  <p class="alert alert-info">Este módulo está en construcción. Estas son las funciones que incluirá.</p>
+
+  <table class="req-table">
+    <thead>
+      <tr><th scope="col">Código</th><th scope="col">Función</th><th scope="col">Estado</th></tr>
+    </thead>
+    <tbody>
+      {% for codigo, nombre in modulo.requisitos %}
+      <tr><td class="code">{{ codigo }}</td><td>{{ nombre }}</td><td>Pendiente</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</main>
+{% endblock %}

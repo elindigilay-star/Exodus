@@ -1,0 +1,278 @@
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap');
+
+.nomina {
+    --bg: #F4F6F9;
+  --surface: #ffffff;
+  --surface-alt: #EAEEF3;
+  --ink: #0F1B2D;
+  --ink-muted: #52627A;
+  --ink-faint: #6B7A90;
+  --line: #D9E0E8;
+  --accent: #1D4F91;
+  --accent-strong: #163E73;
+  --accent-tint: #E8F0FA;
+  --gold: #B8934A;
+  --warn: #B54708;
+  --warn-tint: #FEF0C7;
+  --danger: #B42318;
+  --danger-tint: #FDECEA;
+  --success: #1E7B4F;
+  --success-tint: #E6F4EC;
+}
+
+.nomina-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 24px;
+  border-bottom: 1px solid var(--line);
+}
+
+.nomina-tabs .tab {
+  appearance: none;
+  border: none;
+  background: transparent;
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 14px;
+  color: var(--ink-muted);
+  padding: 10px 16px;
+  cursor: pointer;
+  border-bottom: 3px solid transparent;
+  margin-bottom: -1px;
+}
+
+.nomina-tabs .tab:hover { color: var(--ink); }
+
+.nomina-tabs .tab.active {
+  color: var(--accent-strong);
+  border-bottom-color: var(--gold);
+}
+
+.nomina-tabs .tab .tag {
+  display: block;
+  font-family: var(--font-body);
+  font-size: 11px;
+  font-weight: 400;
+  color: var(--ink-faint);
+  margin-top: 2px;
+}
+
+.nomina .view { display: none; }
+.nomina .view.active { display: block; }
+
+.nomina .view-header { margin-bottom: 24px; }
+
+.nomina .view-header h1 {
+  font-family: var(--font-display);
+  font-size: 22px;
+  font-weight: 600;
+  margin: 0 0 4px;
+}
+
+.nomina .view-header p {
+  margin: 0;
+  color: var(--ink-muted);
+  font-size: 14px;
+}
+
+.nomina .panel {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 20px 24px;
+  margin-bottom: 24px;
+}
+
+.nomina .panel h2 {
+  font-family: var(--font-display);
+  font-size: 15px;
+  font-weight: 600;
+  margin: 0 0 16px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--line);
+}
+
+.nomina .form-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 14px 16px;
+}
+
+.nomina .field { display: flex; flex-direction: column; gap: 5px; }
+.nomina .field.full { grid-column: 1 / -1; }
+
+.nomina .field label {
+  font-size: 12.5px;
+  font-weight: 500;
+  color: var(--ink-muted);
+}
+
+.nomina input,
+.nomina select,
+.nomina textarea {
+  font-family: var(--font-body);
+  font-size: 14px;
+  padding: 9px 11px;
+  border: 1px solid var(--line);
+  border-radius: 7px;
+  background: var(--bg);
+  color: var(--ink);
+}
+
+.nomina input:focus,
+.nomina select:focus,
+.nomina textarea:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-tint);
+}
+
+.nomina .form-actions {
+  grid-column: 1 / -1;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 4px;
+}
+
+.nomina button.primary {
+  font-family: var(--font-body);
+  font-weight: 600;
+  font-size: 14px;
+  background: var(--accent);
+  color: #ffffff;
+  border: none;
+  border-radius: 7px;
+  padding: 10px 18px;
+  cursor: pointer;
+}
+
+.nomina button.primary:hover { background: var(--accent-strong); }
+
+.nomina button.link-danger {
+  font-family: var(--font-body);
+  font-size: 12.5px;
+  font-weight: 500;
+  background: transparent;
+  border: none;
+  color: var(--danger);
+  cursor: pointer;
+  padding: 4px 6px;
+}
+
+.nomina button.link-approve {
+  font-family: var(--font-body);
+  font-size: 12.5px;
+  font-weight: 500;
+  background: transparent;
+  border: none;
+  color: var(--success);
+  cursor: pointer;
+  padding: 4px 6px;
+}
+
+.nomina .msg {
+  font-size: 13px;
+  padding: 9px 12px;
+  border-radius: 7px;
+  display: none;
+}
+
+.nomina .msg.show { display: block; }
+.nomina .msg.ok { background: var(--success-tint); color: var(--success); }
+.nomina .msg.error { background: var(--danger-tint); color: var(--danger); }
+
+.nomina table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13.5px;
+}
+
+.nomina thead th {
+  text-align: left;
+  font-size: 11.5px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--ink-faint);
+  font-weight: 600;
+  padding: 0 10px 8px;
+  border-bottom: 1px solid var(--line);
+}
+
+.nomina tbody td {
+  padding: 10px;
+  border-bottom: 1px solid var(--surface-alt);
+  vertical-align: middle;
+}
+
+.nomina tbody tr:last-child td { border-bottom: none; }
+
+.nomina td.num,
+.nomina th.num {
+  font-family: var(--font-mono);
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.nomina .badge {
+  display: inline-block;
+  font-size: 11px;
+  font-weight: 500;
+  padding: 3px 9px;
+  border-radius: 100px;
+}
+
+.nomina .badge.activo,
+.nomina .badge.aprobada { background: var(--success-tint); color: var(--success); }
+.nomina .badge.inactivo,
+.nomina .badge.rechazada { background: var(--danger-tint); color: var(--danger); }
+.nomina .badge.pendiente { background: var(--warn-tint); color: var(--warn); }
+
+.nomina .empty-row td {
+  text-align: center;
+  color: var(--ink-faint);
+  padding: 22px 10px;
+}
+
+.nomina .report-card {
+  display: none;
+  background: var(--accent-tint);
+  border: 1px solid var(--accent);
+  border-radius: var(--radius);
+  padding: 18px 20px;
+  margin-top: 16px;
+}
+
+.nomina .report-card.show { display: block; }
+
+.nomina .report-card h3 {
+  font-family: var(--font-display);
+  font-size: 14px;
+  margin: 0 0 12px;
+  color: var(--accent-strong);
+}
+
+.nomina .report-line {
+  display: flex;
+  justify-content: space-between;
+  padding: 5px 0;
+  font-size: 13.5px;
+  border-bottom: 1px dashed rgba(29, 79, 145, 0.25);
+}
+
+.nomina .report-line span:last-child {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+}
+
+.nomina .report-line.total {
+  font-weight: 600;
+  font-size: 15px;
+  border-bottom: none;
+  padding-top: 10px;
+}
+
+@media (max-width: 760px) {
+  .nomina .form-grid { grid-template-columns: 1fr; }
+}
