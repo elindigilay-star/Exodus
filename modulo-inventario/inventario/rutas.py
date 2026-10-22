@@ -15,10 +15,9 @@ from functools import wraps
 import pymysql
 from flask import Blueprint, jsonify, render_template, request, session
 
-# `stock` es el modelo del propio módulo.
+
 from . import stock as modelo
-# `login_requerido` y la conexión a la base de datos son de la app principal
-# (Modulo-contable), que es la que usa este módulo.
+
 from routes.auth import login_requerido
 
 inventario_modulo_bp = Blueprint(
@@ -27,7 +26,7 @@ inventario_modulo_bp = Blueprint(
     static_folder='static',
 )
 
-# Consultar: cualquier usuario con sesión. Modificar: estos roles.
+
 ROLES_ESCRITURA = ('Administrador', 'Contador', 'Auxiliar')
 
 
@@ -139,7 +138,7 @@ def _error_bd(_error):
     return jsonify({'error': 'No se pudo completar la operación en la base de datos.'}), 500
 
 
-# ---------------- Vista HTML ----------------
+
 
 @inventario_modulo_bp.route('/modulo', methods=['GET'])
 @login_requerido
@@ -150,7 +149,7 @@ def modulo():
     )
 
 
-# ---------------- Productos ----------------
+
 
 @inventario_modulo_bp.route('/resumen', methods=['GET'])
 @acceso_api()
@@ -209,7 +208,8 @@ def api_estado_producto():
     return jsonify({'mensaje': 'Producto activado.' if activo else 'Producto desactivado.'}), 200
 
 
-# ---------------- Movimientos ----------------
+
+
 
 @inventario_modulo_bp.route('/movimientos', methods=['GET'])
 @acceso_api()
@@ -240,7 +240,7 @@ def api_registrar_movimiento():
     return jsonify({'mensaje': 'Movimiento registrado correctamente.', **resultado}), 201
 
 
-# ---------------- Enlace con la aplicación ----------------
+
 
 def registrar_inventario(app):
     """Registra el blueprint y prepara las tablas. Se llama una vez desde app.py.

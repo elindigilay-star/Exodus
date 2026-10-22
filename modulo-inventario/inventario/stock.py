@@ -223,7 +223,7 @@ def registrar_movimiento(id_producto, tipo, cantidad, costo_unitario=None,
     conexion = obtener_conexion()
     try:
         with conexion.cursor() as cursor:
-            # Bloquea la fila para que dos movimientos simultáneos no pisen el stock.
+      
             cursor.execute("SELECT * FROM productos WHERE id_producto = %s FOR UPDATE", (id_producto,))
             producto = cursor.fetchone()
             if producto is None:
@@ -261,7 +261,7 @@ def registrar_movimiento(id_producto, tipo, cantidad, costo_unitario=None,
                     precio_registrado = _dinero(
                         precio_unitario if precio_unitario is not None else producto['precio_venta']
                     )
-                    # Alimenta contabilidad (Estado de Resultados) con la tabla existente.
+              
                     cursor.execute(
                         "INSERT INTO ventas_inventario (monto_total, costo_ventas) VALUES (%s, %s)",
                         (precio_registrado * cantidad, costo_actual * cantidad),

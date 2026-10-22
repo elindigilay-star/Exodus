@@ -31,7 +31,7 @@ async function llamarApi(endpoint, opciones = {}) {
   try {
     datos = await respuesta.json();
   } catch (_e) {
-    // La respuesta no era JSON (p. ej. la sesión expiró).
+
   }
   if (respuesta.status === 401) {
     window.location.href = '/login';
@@ -72,11 +72,10 @@ async function cargarResumen() {
     document.getElementById('kpi-bajo').textContent = r.bajo_stock;
     document.getElementById('kpi-agotados').textContent = r.agotados;
   } catch (_err) {
-    // Los indicadores son informativos.
+
   }
 }
 
-// ---------------- Productos ----------------
 function etiquetaStock(p) {
   if (p.stock_actual === 0) return '<span class="badge agotado">Agotado</span>';
   if (p.stock_actual <= p.stock_minimo) return '<span class="badge bajo">Stock bajo</span>';
@@ -110,7 +109,7 @@ async function cargarProductos() {
           <td>${puedeEditar ? `
             <button class="link-edit" data-editar="${p.id_producto}">Editar</button>
             ${p.activo
-              ? `<button class="link-danger" data-desactivar="${p.id_producto}">Desactivar</button>`
+              ? `<button class="link-danger" data-Eliminar="${p.id_producto}">Eliminar</button>`
               : `<button class="link-approve" data-activar="${p.id_producto}">Activar</button>`}
           ` : ''}</td>
         </tr>
@@ -142,7 +141,7 @@ async function cargarSelectsProductos() {
       + activos.map((p) => `<option value="${p.id_producto}">${escapar(p.codigo)} — ${escapar(p.nombre)}</option>`).join('');
     filtro.value = previo;
   } catch (_err) {
-    // El error se muestra en la tabla principal.
+
   }
 }
 
@@ -210,9 +209,9 @@ document.getElementById('tabla-productos').addEventListener('click', async (even
     return;
   }
 
-  const id = d.desactivar || d.activar;
+  const id = d.desactivar || d.activar || d.eliminar;
   if (!id) return;
-  if (d.desactivar && !confirm('¿Desactivar este producto? Conservará su historial pero no admitirá movimientos.')) return;
+  if (d.eliminar && !confirm('¿Eliminar este producto? Se eliminará permanentemente.')) return;
 
   try {
     await post('productos/estado', { id_producto: id, activo: Boolean(d.activar) });
@@ -222,7 +221,7 @@ document.getElementById('tabla-productos').addEventListener('click', async (even
   }
 });
 
-// ---------------- Movimientos ----------------
+
 const formMov = document.getElementById('form-movimiento');
 
 function actualizarFormMovimiento() {
@@ -293,7 +292,7 @@ if (formMov) {
   });
 }
 
-// ---------------- Arranque ----------------
+
 function refrescarTodo() {
   cargarResumen();
   cargarProductos();
