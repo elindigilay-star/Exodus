@@ -21,6 +21,7 @@
         <div class="kpi"><span>Valor a precio de venta</span><strong id="kpi-venta">—</strong></div>
         <div class="kpi alerta"><span>Con stock bajo</span><strong id="kpi-bajo">—</strong></div>
         <div class="kpi alerta"><span>Agotados</span><strong id="kpi-agotados">—</strong></div>
+        <div class="kpi alerta"><span>Sin clasificar</span><strong id="kpi-sinclas">—</strong></div>
     </div>
 
     <div class="inv-tabs">
@@ -31,12 +32,19 @@
     <section class="view active" id="view-productos">
         <div class="view-header">
             <h1>Productos</h1>
-            <p>Catálogo con existencias, costo promedio y precio de venta.</p>
+            <p>Catálogo con existencias, costo promedio, precio de venta y clasificación.</p>
         </div>
 
         {% if puede_editar %}
         <div class="panel">
             <h2 id="titulo-form-producto">Registrar producto</h2>
+
+            <div class="aviso hidden" id="aviso-etiquetas">
+                Aún no hay etiquetas de tipo <strong>Producto</strong>. Créalas primero en
+                <a href="/configuracion/etiquetas">Configuración → Etiquetas</a>
+                para poder clasificar los productos.
+            </div>
+
             <form id="form-producto" autocomplete="off">
                 <input type="hidden" name="id_producto" id="prod-id">
                 <div class="form-grid">
@@ -49,8 +57,11 @@
                         <input id="prod-nombre" name="nombre" type="text" maxlength="150" required>
                     </div>
                     <div class="field">
-                        <label for="prod-categoria">Categoría</label>
-                        <input id="prod-categoria" name="categoria" type="text" maxlength="80">
+                        <label for="prod-etiqueta">Clasificación (etiqueta)</label>
+                        <select id="prod-etiqueta" name="id_etiqueta" required>
+                            <option value="">Selecciona una clasificación…</option>
+                        </select>
+                        <span class="hint">Se administran en <a href="/configuracion/etiquetas">Configuración → Etiquetas</a>.</span>
                     </div>
                     <div class="field">
                         <label for="prod-unidad">Unidad de medida</label>
@@ -88,8 +99,13 @@
 
         <div class="panel">
             <h2>Productos registrados</h2>
+            <div class="msg" id="msg-lista"></div>
             <div class="toolbar">
-                <input type="search" id="filtro-buscar" placeholder="Buscar por código, nombre o categoría…">
+                <input type="search" id="filtro-buscar" placeholder="Buscar por código, nombre o clasificación…">
+                <select id="filtro-etiqueta">
+                    <option value="">Todas las clasificaciones</option>
+                    <option value="sin">Sin clasificar</option>
+                </select>
                 <select id="filtro-estado">
                     <option value="ACTIVO">Activos</option>
                     <option value="INACTIVO">Inactivos</option>
@@ -103,7 +119,7 @@
                         <tr>
                             <th>Código</th>
                             <th>Producto</th>
-                            <th>Categoría</th>
+                            <th>Clasificación</th>
                             <th class="num">Stock</th>
                             <th class="num">Costo prom.</th>
                             <th class="num">Precio venta</th>
@@ -195,6 +211,24 @@
             </div>
         </div>
     </section>
+
+    {% if puede_editar %}
+    <dialog id="dlg-clasificar">
+        <form id="form-clasificar" autocomplete="off">
+            <h2>Clasificar producto</h2>
+            <p class="hint" id="clasificar-producto"></p>
+            <div class="field">
+                <label for="clasificar-etiqueta">Clasificación (etiqueta)</label>
+                <select id="clasificar-etiqueta" required></select>
+            </div>
+            <div class="form-actions">
+                <button type="submit" class="primary">Confirmar</button>
+                <button type="button" class="secondary" id="clasificar-cancelar">Cancelar</button>
+                <div class="msg" id="msg-clasificar"></div>
+            </div>
+        </form>
+    </dialog>
+    {% endif %}
 
 </div>
 

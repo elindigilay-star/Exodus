@@ -20,6 +20,75 @@ def _dinero(valor):
     return Decimal(valor).quantize(DOS_DECIMALES, rounding=ROUND_HALF_UP)
 
 
+
+def _etiquetas_disponibles(cursor):
+    """True si la tabla `etiquetas` (de Configuración) ya existe en la base."""
+    cursor.execute(
+        """
+        SELECT COUNT(*) AS n
+          FROM information_schema.TABLES
+         WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'etiquetas'
+        """
+    )
+    return cursor.fetchone()['n'] > 0
+
+
+def _validar_etiqueta(cursor, id_etiqueta):
+    """Comprueba que la etiqueta exista y sea de tipo "producto". Devuelve su nombre."""
+    if id_etiqueta is None:
+        raise ErrorInventario('Selecciona la clasificación (etiqueta) del producto.')
+    if not _etiquetas_disponibles(cursor):
+        raise ErrorInventario(
+            'Primero crea etiquetas de tipo Producto en Configuración → Etiquetas.', 409)
+    cursor.execute(
+        "SELECT nombre FROM etiquetas WHERE id = %s AND tipo = 'producto'", (id_etiqueta,))
+    fila = cursor.fetchone()
+    if fila is None:
+        raise ErrorInventario('La clasificación elegida no existe o no es de tipo Producto.')
+    return fila['nombre']
+
+
+def listar_etiquetas_producto():
+    """Etiquetas de tipo "producto" definidas en Configuración."""
+    conexion = obtener_conexion()
+    try:
+        with conexion.cursor() as cursor:
+            if not _etiquetas_disponibles(cursor):
+                return []
+            cursor.execute(
+                """
+                SELECT id, nombre, porcentaje
+                  FROM etiquetas
+                 WHERE tipo = 'producto'
+                 ORDER BY nombre
+                """
+            )
+            return cursor.fetchall()
+    finally:
+        conexion.close()
+
+
+def _vincular_categorias_existentes(cursor):
+    """
+    Productos antiguos que tenían la categoría escrita a mano: si el texto
+    coincide con el nombre de una etiqueta de tipo producto, se vinculan solos.
+    Es seguro repetirlo (solo toca productos sin etiqueta).
+    """
+    try:
+        if not _etiquetas_disponibles(cursor):
+            return
+        cursor.execute(
+            """
+            UPDATE productos p
+              JOIN etiquetas e ON e.tipo = 'producto' AND LOWER(e.nombre) = LOWER(p.categoria)
+               SET p.id_etiqueta = e.id
+             WHERE p.id_etiqueta IS NULL AND p.categoria IS NOT NULL
+            """
+        )
+    except pymysql.MySQLError as error:
+        print(f"AVISO: no se pudieron vincular las categorías antiguas a etiquetas: {error}")
+
+
 def crear_tablas_inventario():
     """Crea las tablas del inventario si no existen (no toca las demás)."""
     conexion = obtener_conexion()
@@ -33,13 +102,15 @@ def crear_tablas_inventario():
                     nombre          VARCHAR(150) NOT NULL,
                     descripcion     VARCHAR(255) NULL,
                     categoria       VARCHAR(80)  NULL,
+                    id_etiqueta     INT NULL,
                     unidad          VARCHAR(20)  NOT NULL DEFAULT 'und',
                     costo_promedio  DECIMAL(12,2) NOT NULL DEFAULT 0,
                     precio_venta    DECIMAL(12,2) NOT NULL DEFAULT 0,
                     stock_actual    INT NOT NULL DEFAULT 0,
                     stock_minimo    INT NOT NULL DEFAULT 0,
                     activo          TINYINT(1) NOT NULL DEFAULT 1,
-                    creado_en       TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+                    creado_en       TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                    KEY idx_producto_etiqueta (id_etiqueta)
                 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
                 """
             )
@@ -64,29 +135,78 @@ def crear_tablas_inventario():
                 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
                 """
             )
+
+            cursor.execute(
+                """
+                SELECT COUNT(*) AS n
+                  FROM information_schema.COLUMNS
+                 WHERE TABLE_SCHEMA = DATABASE()
+                   AND TABLE_NAME = 'productos' AND COLUMN_NAME = 'id_etiqueta'
+                """
+            )
+            if cursor.fetchone()['n'] == 0:
+                cursor.execute(
+                    "ALTER TABLE productos "
+                    "ADD COLUMN id_etiqueta INT NULL AFTER categoria, "
+                    "ADD KEY idx_producto_etiqueta (id_etiqueta)"
+                )
+
+            _vincular_categorias_existentes(cursor)
         conexion.commit()
     finally:
         conexion.close()
 
 
-def listar_productos(buscar=None, estado=None, bajo_stock=False):
-    sql = "SELECT * FROM productos WHERE 1=1"
-    params = []
-    if buscar:
-        sql += " AND (codigo LIKE %s OR nombre LIKE %s OR categoria LIKE %s)"
-        patron = f"%{buscar}%"
-        params.extend([patron, patron, patron])
-    if estado == 'ACTIVO':
-        sql += " AND activo = 1"
-    elif estado == 'INACTIVO':
-        sql += " AND activo = 0"
-    if bajo_stock:
-        sql += " AND activo = 1 AND stock_actual <= stock_minimo"
-    sql += " ORDER BY activo DESC, nombre ASC"
 
+
+
+def _select_productos(cursor):
+    """
+    SELECT base de productos con su etiqueta. Devuelve (sql, con_etiquetas).
+    Si Configuración aún no creó la tabla `etiquetas`, se consulta sin ella.
+    """
+    if _etiquetas_disponibles(cursor):
+        return (
+            "SELECT p.*, e.nombre AS etiqueta, e.porcentaje AS etiqueta_porcentaje "
+            "FROM productos p "
+            "LEFT JOIN etiquetas e ON e.id = p.id_etiqueta AND e.tipo = 'producto'",
+            True,
+        )
+    return (
+        "SELECT p.*, NULL AS etiqueta, NULL AS etiqueta_porcentaje FROM productos p",
+        False,
+    )
+
+
+def listar_productos(buscar=None, estado=None, bajo_stock=False,
+                     id_etiqueta=None, sin_clasificar=False):
     conexion = obtener_conexion()
     try:
         with conexion.cursor() as cursor:
+            sql, con_etiquetas = _select_productos(cursor)
+            sql += " WHERE 1=1"
+            params = []
+            if buscar:
+                patron = f"%{buscar}%"
+                if con_etiquetas:
+                    sql += " AND (p.codigo LIKE %s OR p.nombre LIKE %s OR p.categoria LIKE %s OR e.nombre LIKE %s)"
+                    params.extend([patron, patron, patron, patron])
+                else:
+                    sql += " AND (p.codigo LIKE %s OR p.nombre LIKE %s OR p.categoria LIKE %s)"
+                    params.extend([patron, patron, patron])
+            if estado == 'ACTIVO':
+                sql += " AND p.activo = 1"
+            elif estado == 'INACTIVO':
+                sql += " AND p.activo = 0"
+            if bajo_stock:
+                sql += " AND p.activo = 1 AND p.stock_actual <= p.stock_minimo"
+            if id_etiqueta:
+                sql += " AND p.id_etiqueta = %s"
+                params.append(id_etiqueta)
+            elif sin_clasificar:
+                sql += " AND e.id IS NULL" if con_etiquetas else " AND p.id_etiqueta IS NULL"
+            sql += " ORDER BY p.activo DESC, p.nombre ASC"
+
             cursor.execute(sql, params)
             return cursor.fetchall()
     finally:
@@ -97,7 +217,8 @@ def obtener_producto(id_producto):
     conexion = obtener_conexion()
     try:
         with conexion.cursor() as cursor:
-            cursor.execute("SELECT * FROM productos WHERE id_producto = %s", (id_producto,))
+            sql, _ = _select_productos(cursor)
+            cursor.execute(sql + " WHERE p.id_producto = %s", (id_producto,))
             return cursor.fetchone()
     finally:
         conexion.close()
@@ -111,23 +232,24 @@ def _codigo_en_uso(cursor, codigo, excepto_id=None):
     return cursor.fetchone() is not None
 
 
-def crear_producto(codigo, nombre, descripcion, categoria, unidad, costo, precio_venta,
+def crear_producto(codigo, nombre, descripcion, id_etiqueta, unidad, costo, precio_venta,
                    stock_inicial, stock_minimo, id_usuario=None):
     """Crea el producto; si hay stock inicial lo registra como una ENTRADA."""
     conexion = obtener_conexion()
     try:
         with conexion.cursor() as cursor:
+            _validar_etiqueta(cursor, id_etiqueta)
             if _codigo_en_uso(cursor, codigo):
                 raise ErrorInventario('Ya existe un producto con ese código.', 409)
             try:
                 cursor.execute(
                     """
                     INSERT INTO productos
-                        (codigo, nombre, descripcion, categoria, unidad,
+                        (codigo, nombre, descripcion, id_etiqueta, unidad,
                          costo_promedio, precio_venta, stock_actual, stock_minimo)
                     VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
                     """,
-                    (codigo, nombre, descripcion, categoria, unidad,
+                    (codigo, nombre, descripcion, id_etiqueta, unidad,
                      _dinero(costo), _dinero(precio_venta), stock_inicial, stock_minimo),
                 )
             except pymysql.err.IntegrityError:
@@ -151,7 +273,7 @@ def crear_producto(codigo, nombre, descripcion, categoria, unidad, costo, precio
         conexion.close()
 
 
-def actualizar_producto(id_producto, codigo, nombre, descripcion, categoria, unidad,
+def actualizar_producto(id_producto, codigo, nombre, descripcion, id_etiqueta, unidad,
                         precio_venta, stock_minimo):
     """Edita los datos del producto. El stock y el costo solo cambian con movimientos."""
     conexion = obtener_conexion()
@@ -160,18 +282,76 @@ def actualizar_producto(id_producto, codigo, nombre, descripcion, categoria, uni
             cursor.execute("SELECT id_producto FROM productos WHERE id_producto = %s", (id_producto,))
             if cursor.fetchone() is None:
                 raise ErrorInventario('El producto no existe.', 404)
+            _validar_etiqueta(cursor, id_etiqueta)
             if _codigo_en_uso(cursor, codigo, id_producto):
                 raise ErrorInventario('Ya existe otro producto con ese código.', 409)
             cursor.execute(
                 """
                 UPDATE productos
-                   SET codigo = %s, nombre = %s, descripcion = %s, categoria = %s,
+                   SET codigo = %s, nombre = %s, descripcion = %s, id_etiqueta = %s,
                        unidad = %s, precio_venta = %s, stock_minimo = %s
                  WHERE id_producto = %s
                 """,
-                (codigo, nombre, descripcion, categoria, unidad,
+                (codigo, nombre, descripcion, id_etiqueta, unidad,
                  _dinero(precio_venta), stock_minimo, id_producto),
             )
+        conexion.commit()
+    except Exception:
+        conexion.rollback()
+        raise
+    finally:
+        conexion.close()
+
+
+def clasificar_producto(id_producto, id_etiqueta):
+    """RF-04: asigna o cambia la clasificación (etiqueta) de un producto. Devuelve el nombre."""
+    conexion = obtener_conexion()
+    try:
+        with conexion.cursor() as cursor:
+            cursor.execute("SELECT id_producto FROM productos WHERE id_producto = %s", (id_producto,))
+            if cursor.fetchone() is None:
+                raise ErrorInventario('El producto no existe.', 404)
+            nombre_etiqueta = _validar_etiqueta(cursor, id_etiqueta)
+            cursor.execute(
+                "UPDATE productos SET id_etiqueta = %s WHERE id_producto = %s",
+                (id_etiqueta, id_producto),
+            )
+        conexion.commit()
+        return nombre_etiqueta
+    except Exception:
+        conexion.rollback()
+        raise
+    finally:
+        conexion.close()
+
+
+def eliminar_producto(id_producto):
+    """
+    RF-05: elimina un producto. Si ya tiene movimientos, el sistema lo impide.
+    La entrada automática "Stock inicial" (creada al registrar el producto)
+    no cuenta como movimiento: se borra junto con el producto.
+    """
+    conexion = obtener_conexion()
+    try:
+        with conexion.cursor() as cursor:
+            cursor.execute(
+                "SELECT id_producto FROM productos WHERE id_producto = %s FOR UPDATE", (id_producto,))
+            if cursor.fetchone() is None:
+                raise ErrorInventario('El producto no existe.', 404)
+            cursor.execute(
+                """
+                SELECT COUNT(*) AS n
+                  FROM movimientos_inventario
+                 WHERE id_producto = %s
+                   AND NOT (tipo = 'ENTRADA' AND motivo = 'Stock inicial')
+                """,
+                (id_producto,),
+            )
+            if cursor.fetchone()['n'] > 0:
+                raise ErrorInventario(
+                    'No se puede eliminar: el producto ya tiene movimientos registrados.', 409)
+            cursor.execute("DELETE FROM movimientos_inventario WHERE id_producto = %s", (id_producto,))
+            cursor.execute("DELETE FROM productos WHERE id_producto = %s", (id_producto,))
         conexion.commit()
     except Exception:
         conexion.rollback()
@@ -200,6 +380,9 @@ def cambiar_estado_producto(id_producto, activo):
         conexion.close()
 
 
+
+
+
 def registrar_movimiento(id_producto, tipo, cantidad, costo_unitario=None,
                          precio_unitario=None, motivo=None, id_usuario=None):
     """
@@ -223,7 +406,7 @@ def registrar_movimiento(id_producto, tipo, cantidad, costo_unitario=None,
     conexion = obtener_conexion()
     try:
         with conexion.cursor() as cursor:
-      
+
             cursor.execute("SELECT * FROM productos WHERE id_producto = %s FOR UPDATE", (id_producto,))
             producto = cursor.fetchone()
             if producto is None:
@@ -261,7 +444,7 @@ def registrar_movimiento(id_producto, tipo, cantidad, costo_unitario=None,
                     precio_registrado = _dinero(
                         precio_unitario if precio_unitario is not None else producto['precio_venta']
                     )
-              
+         
                     cursor.execute(
                         "INSERT INTO ventas_inventario (monto_total, costo_ventas) VALUES (%s, %s)",
                         (precio_registrado * cantidad, costo_actual * cantidad),
@@ -325,16 +508,25 @@ def obtener_resumen_stock():
     conexion = obtener_conexion()
     try:
         with conexion.cursor() as cursor:
+
+            if _etiquetas_disponibles(cursor):
+                huerfano = (
+                    "NOT EXISTS (SELECT 1 FROM etiquetas e "
+                    "WHERE e.id = p.id_etiqueta AND e.tipo = 'producto')"
+                )
+            else:
+                huerfano = "p.id_etiqueta IS NULL"
             cursor.execute(
-                """
-                SELECT COUNT(*)                                        AS productos_activos,
-                       COALESCE(SUM(stock_actual), 0)                  AS unidades,
-                       COALESCE(SUM(stock_actual * costo_promedio), 0) AS valor_costo,
-                       COALESCE(SUM(stock_actual * precio_venta), 0)   AS valor_venta,
-                       COALESCE(SUM(stock_actual <= stock_minimo), 0)  AS bajo_stock,
-                       COALESCE(SUM(stock_actual = 0), 0)              AS agotados
-                  FROM productos
-                 WHERE activo = 1
+                f"""
+                SELECT COUNT(*)                                          AS productos_activos,
+                       COALESCE(SUM(p.stock_actual), 0)                  AS unidades,
+                       COALESCE(SUM(p.stock_actual * p.costo_promedio), 0) AS valor_costo,
+                       COALESCE(SUM(p.stock_actual * p.precio_venta), 0)   AS valor_venta,
+                       COALESCE(SUM(p.stock_actual <= p.stock_minimo), 0)  AS bajo_stock,
+                       COALESCE(SUM(p.stock_actual = 0), 0)              AS agotados,
+                       COALESCE(SUM({huerfano}), 0)                      AS sin_clasificar
+                  FROM productos p
+                 WHERE p.activo = 1
                 """
             )
             return cursor.fetchone()

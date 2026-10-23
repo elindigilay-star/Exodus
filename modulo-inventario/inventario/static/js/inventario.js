@@ -2,6 +2,7 @@ const API = '/api/inventario';
 const raiz = document.querySelector('.inventario');
 const puedeEditar = raiz.dataset.puedeEditar === 'si';
 let productos = [];
+let etiquetas = [];
 
 function escapar(valor) {
   return String(valor ?? '').replace(/[&<>"']/g, (c) => (
@@ -51,7 +52,7 @@ function post(endpoint, cuerpo) {
   });
 }
 
-// ---------------- Pestañas ----------------
+
 document.querySelectorAll('.inventario .tab').forEach((boton) => {
   boton.addEventListener('click', () => {
     document.querySelectorAll('.inventario .tab').forEach((b) => b.classList.remove('active'));
@@ -61,7 +62,7 @@ document.querySelectorAll('.inventario .tab').forEach((boton) => {
   });
 });
 
-// ---------------- Indicadores ----------------
+
 async function cargarResumen() {
   try {
     const r = await llamarApi('resumen');
@@ -71,9 +72,59 @@ async function cargarResumen() {
     document.getElementById('kpi-venta').textContent = formatoMoneda(r.valor_venta);
     document.getElementById('kpi-bajo').textContent = r.bajo_stock;
     document.getElementById('kpi-agotados').textContent = r.agotados;
+    document.getElementById('kpi-sinclas').textContent = r.sin_clasificar;
   } catch (_err) {
-
+    // Los indicadores son informativos.
   }
+}
+
+function textoEtiqueta(e) {
+  return e.porcentaje > 0 ? `${e.nombre} (${e.porcentaje}%)` : e.nombre;
+}
+
+async function cargarEtiquetas() {
+  try {
+    etiquetas = await llamarApi('etiquetas');
+  } catch (_err) {
+    etiquetas = [];
+  }
+
+  const opciones = etiquetas
+    .map((e) => `<option value="${e.id}">${escapar(textoEtiqueta(e))}</option>`)
+    .join('');
+
+  const selectForm = document.getElementById('prod-etiqueta');
+  if (selectForm) {
+    const actual = selectForm.value;
+    selectForm.innerHTML = '<option value="">Selecciona una clasificación…</option>' + opciones;
+    selectForm.value = actual;
+  }
+  const aviso = document.getElementById('aviso-etiquetas');
+  if (aviso) aviso.classList.toggle('hidden', etiquetas.length > 0);
+
+  const selectClasificar = document.getElementById('clasificar-etiqueta');
+  if (selectClasificar) {
+    selectClasificar.innerHTML = etiquetas.length
+      ? opciones
+      : '<option value="">No hay etiquetas de producto</option>';
+  }
+
+  const filtro = document.getElementById('filtro-etiqueta');
+  const previo = filtro.value;
+  filtro.innerHTML = '<option value="">Todas las clasificaciones</option>'
+    + '<option value="sin">Sin clasificar</option>' + opciones;
+  filtro.value = previo;
+}
+
+function celdaClasificacion(p) {
+  if (p.etiqueta) {
+    const pct = p.etiqueta_porcentaje > 0 ? ` <span class="hint">${p.etiqueta_porcentaje}%</span>` : '';
+    return `${escapar(p.etiqueta)}${pct}`;
+  }
+  if (p.categoria) {
+    return `${escapar(p.categoria)} <span class="badge sinclas">Sin vincular</span>`;
+  }
+  return '<span class="badge sinclas">Sin clasificar</span>';
 }
 
 function etiquetaStock(p) {
@@ -87,8 +138,10 @@ async function cargarProductos() {
   const params = new URLSearchParams();
   const buscar = document.getElementById('filtro-buscar').value.trim();
   const estado = document.getElementById('filtro-estado').value;
+  const etiqueta = document.getElementById('filtro-etiqueta').value;
   if (buscar) params.set('buscar', buscar);
   if (estado) params.set('estado', estado);
+  if (etiqueta) params.set('etiqueta', etiqueta);
   if (document.getElementById('filtro-bajo').checked) params.set('bajo_stock', '1');
 
   try {
@@ -101,16 +154,15 @@ async function cargarProductos() {
         <tr>
           <td>${escapar(p.codigo)}</td>
           <td>${escapar(p.nombre)}<br><span class="hint">${escapar(p.descripcion || '')}</span></td>
-          <td>${escapar(p.categoria || '—')}</td>
+          <td>${celdaClasificacion(p)}</td>
           <td class="num">${p.stock_actual} ${escapar(p.unidad)} ${etiquetaStock(p)}</td>
           <td class="num">${formatoMoneda(p.costo_promedio)}</td>
           <td class="num">${formatoMoneda(p.precio_venta)}</td>
           <td><span class="badge ${p.activo ? 'activo' : 'inactivo'}">${p.activo ? 'ACTIVO' : 'INACTIVO'}</span></td>
           <td>${puedeEditar ? `
             <button class="link-edit" data-editar="${p.id_producto}">Editar</button>
-            ${p.activo
-              ? `<button class="link-danger" data-Eliminar="${p.id_producto}">Eliminar</button>`
-              : `<button class="link-approve" data-activar="${p.id_producto}">Activar</button>`}
+            <button class="link-edit" data-clasificar="${p.id_producto}">Clasificar</button>
+            <button class="link-danger" data-eliminar="${p.id_producto}">Eliminar</button>
           ` : ''}</td>
         </tr>
       `).join('');
@@ -141,11 +193,11 @@ async function cargarSelectsProductos() {
       + activos.map((p) => `<option value="${p.id_producto}">${escapar(p.codigo)} — ${escapar(p.nombre)}</option>`).join('');
     filtro.value = previo;
   } catch (_err) {
-
+    // El error se muestra en la tabla principal.
   }
 }
 
-['filtro-buscar', 'filtro-estado', 'filtro-bajo'].forEach((id) => {
+['filtro-buscar', 'filtro-etiqueta', 'filtro-estado', 'filtro-bajo'].forEach((id) => {
   const el = document.getElementById(id);
   el.addEventListener(id === 'filtro-buscar' ? 'input' : 'change', () => {
     clearTimeout(window.__debounce);
@@ -168,7 +220,7 @@ function entrarModoEdicion(p) {
   document.getElementById('prod-id').value = p.id_producto;
   document.getElementById('prod-codigo').value = p.codigo;
   document.getElementById('prod-nombre').value = p.nombre;
-  document.getElementById('prod-categoria').value = p.categoria || '';
+  document.getElementById('prod-etiqueta').value = p.id_etiqueta || '';
   document.getElementById('prod-unidad').value = p.unidad;
   document.getElementById('prod-precio').value = p.precio_venta;
   document.getElementById('prod-minimo').value = p.stock_minimo;
@@ -176,7 +228,7 @@ function entrarModoEdicion(p) {
   document.getElementById('titulo-form-producto').textContent = `Editar producto ${p.codigo}`;
   document.getElementById('btn-guardar-producto').textContent = 'Guardar cambios';
   document.getElementById('btn-cancelar-edicion').classList.remove('hidden');
-  // El stock y el costo solo cambian con movimientos.
+
   formProducto.querySelectorAll('[data-solo-nuevo]').forEach((c) => c.classList.add('hidden'));
   formProducto.scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
@@ -200,6 +252,39 @@ if (puedeEditar) {
   document.getElementById('btn-cancelar-edicion').addEventListener('click', salirModoEdicion);
 }
 
+
+const dialogoClasificar = document.getElementById('dlg-clasificar');
+const formClasificar = document.getElementById('form-clasificar');
+let idProductoClasificar = null;
+
+function abrirClasificar(p) {
+  idProductoClasificar = p.id_producto;
+  document.getElementById('clasificar-producto').textContent = `${p.codigo} — ${p.nombre}`;
+  const selectEtiqueta = document.getElementById('clasificar-etiqueta');
+  selectEtiqueta.value = p.id_etiqueta || '';
+  if (selectEtiqueta.value === '' && selectEtiqueta.options.length > 0) selectEtiqueta.selectedIndex = 0;
+  dialogoClasificar.showModal();
+}
+
+if (puedeEditar && dialogoClasificar) {
+  document.getElementById('clasificar-cancelar').addEventListener('click', () => dialogoClasificar.close());
+
+  formClasificar.addEventListener('submit', async (evento) => {
+    evento.preventDefault();
+    try {
+      const resultado = await post('productos/clasificar', {
+        id_producto: idProductoClasificar,
+        id_etiqueta: document.getElementById('clasificar-etiqueta').value,
+      });
+      dialogoClasificar.close();
+      mostrarMensaje('msg-lista', resultado.mensaje, 'ok');
+      refrescarTodo();
+    } catch (err) {
+      mostrarMensaje('msg-clasificar', err.message, 'error');
+    }
+  });
+}
+
 document.getElementById('tabla-productos').addEventListener('click', async (evento) => {
   const d = evento.target.dataset;
 
@@ -209,15 +294,24 @@ document.getElementById('tabla-productos').addEventListener('click', async (even
     return;
   }
 
-  const id = d.desactivar || d.activar || d.eliminar;
-  if (!id) return;
-  if (d.eliminar && !confirm('¿Eliminar este producto? Se eliminará permanentemente.')) return;
+  if (d.clasificar) {
+    const p = productos.find((x) => String(x.id_producto) === d.clasificar);
+    if (p) abrirClasificar(p);
+    return;
+  }
 
-  try {
-    await post('productos/estado', { id_producto: id, activo: Boolean(d.activar) });
-    refrescarTodo();
-  } catch (err) {
-    alert(err.message);
+  if (d.eliminar) {
+    const p = productos.find((x) => String(x.id_producto) === d.eliminar);
+    if (!p) return;
+    if (!confirm(`¿Eliminar el producto ${p.codigo} — ${p.nombre}? Esta acción no se puede deshacer.`)) return;
+
+    try {
+      const resultado = await post('productos/eliminar', { id_producto: p.id_producto });
+      mostrarMensaje('msg-lista', resultado.mensaje, 'ok');
+      refrescarTodo();
+    } catch (err) {
+      mostrarMensaje('msg-lista', err.message, 'error');
+    }
   }
 });
 
@@ -292,8 +386,8 @@ if (formMov) {
   });
 }
 
-
-function refrescarTodo() {
+async function refrescarTodo() {
+  await cargarEtiquetas();
   cargarResumen();
   cargarProductos();
   cargarSelectsProductos();
