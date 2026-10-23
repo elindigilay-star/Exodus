@@ -4,26 +4,18 @@ import pymysql.cursors
 from flask import g
 from werkzeug.security import generate_password_hash
 
+from database.connection import obtener_conexion
+
 BASE_DIR = os.path.abspath(os.path.dirname(__file__))
 INSTANCE_DIR = os.path.join(BASE_DIR, "instance")
 os.makedirs(INSTANCE_DIR, exist_ok=True)
-
-CONFIG = {
-    "host": os.environ.get("EXODUS_DB_HOST", "127.0.0.1"),
-    "port": int(os.environ.get("EXODUS_DB_PORT", "3306")),
-    "user": os.environ.get("EXODUS_DB_USER", "exodus"),
-    "password": os.environ.get("EXODUS_DB_PASSWORD", "exodus123"),
-    "database": os.environ.get("EXODUS_DB_NAME", "exodus_contable"),
-    "charset": "utf8mb4",
-    "cursorclass": pymysql.cursors.DictCursor,
-}
 
 
 class Conexion:
     """Envuelve la conexión para usar db.execute(sql, params) como antes."""
 
     def __init__(self):
-        self._con = pymysql.connect(**CONFIG)
+        self._con = obtener_conexion()
 
     def execute(self, sql, params=()):
         cur = self._con.cursor()
@@ -50,7 +42,7 @@ def cerrar_db(_error):
 
 
 def iniciar_db():
-    con = pymysql.connect(**CONFIG)
+    con = obtener_conexion()
     with con.cursor() as cur:
         cur.execute("""CREATE TABLE IF NOT EXISTS usuarios (
             id INT AUTO_INCREMENT PRIMARY KEY,
@@ -161,5 +153,6 @@ def iniciar_db():
                 "INSERT INTO rol_permiso (rol_id, permiso_id) VALUES (%s,%s)",
                 [(rrhh_id, p) for p in rrhh_perms],
             )
+
     con.commit()
     con.close()

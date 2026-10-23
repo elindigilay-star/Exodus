@@ -1,0 +1,205 @@
+{% extends 'base.html' %}
+
+{% block title %}Nómina{% endblock %}
+{% block header_title %}Módulo de Nómina{% endblock %}
+
+{% block head %}
+<link rel="stylesheet" href="{{ url_for('nomina.static', filename='css/nomina.css') }}">
+{% endblock %}
+
+{% block content %}
+<div class="nomina">
+
+    <div class="nomina-tabs">
+        <button class="tab active" data-view="empleados">Empleados</button>
+        <button class="tab" data-view="nomina">Calcular nómina</button>
+        <button class="tab" data-view="novedades">Ausencias y permisos</button>
+    </div>
+
+    <!-- ===================== EMPLEADOS (RF-6 / RF-7) ===================== -->
+    <section class="view active" id="view-empleados">
+        <div class="view-header">
+            <h1>Empleados</h1>
+            <p>Registra empleados nuevos o retíralos del sistema.</p>
+        </div>
+
+        <div class="panel">
+            <h2>Registrar empleado</h2>
+            <form id="form-empleado">
+                <div class="form-grid">
+                    <div class="field">
+                        <label for="emp-nombres">Nombres</label>
+                        <input id="emp-nombres" name="nombres" type="text" required>
+                    </div>
+                    <div class="field">
+                        <label for="emp-apellidos">Apellidos</label>
+                        <input id="emp-apellidos" name="apellidos" type="text" required>
+                    </div>
+                    <div class="field">
+                        <label for="emp-documento">Documento</label>
+                        <input id="emp-documento" name="documento" type="text" required>
+                    </div>
+                    <div class="field">
+                        <label for="emp-cargo">Cargo</label>
+                        <input id="emp-cargo" name="cargo" type="text">
+                    </div>
+                    <div class="field">
+                        <label for="emp-salario">Salario base</label>
+                        <input id="emp-salario" name="salario_base" type="number" min="0" step="1000" required>
+                    </div>
+                    <div class="field">
+                        <label for="emp-fecha">Fecha de ingreso</label>
+                        <input id="emp-fecha" name="fecha_ingreso" type="date" required>
+                    </div>
+                    <div class="form-actions">
+                        <button type="submit" class="primary">Registrar empleado</button>
+                        <div class="msg" id="msg-empleado"></div>
+                    </div>
+                </div>
+            </form>
+        </div>
+
+        <div class="panel">
+            <h2>Empleados registrados</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Nombre</th>
+                        <th>Documento</th>
+                        <th>Cargo</th>
+                        <th class="num">Salario base</th>
+                        <th>Ingreso</th>
+                        <th>Estado</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody id="tabla-empleados">
+                    <tr class="empty-row"><td colspan="7">Cargando…</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </section>
+
+    <!-- ===================== NÓMINA (RF-8) ===================== -->
+    <section class="view" id="view-nomina">
+        <div class="view-header">
+            <h1>Calcular salario neto</h1>
+            <p>Aplica las deducciones y aportes configurados y genera el reporte del periodo.</p>
+        </div>
+
+        <div class="panel">
+            <h2>Calcular</h2>
+            <form id="form-nomina">
+                <div class="form-grid">
+                    <div class="field">
+                        <label for="nom-empleado">Empleado</label>
+                        <select id="nom-empleado" name="id_empleado" required></select>
+                    </div>
+                    <div class="field">
+                        <label for="nom-periodo">Periodo</label>
+                        <input id="nom-periodo" name="periodo" type="month" required>
+                    </div>
+                    <div class="form-actions">
+                        <button type="submit" class="primary">Calcular salario neto</button>
+                        <div class="msg" id="msg-nomina"></div>
+                    </div>
+                </div>
+            </form>
+
+            <div class="report-card" id="reporte-nomina">
+                <h3>Reporte generado</h3>
+                <div class="report-line"><span>Empleado</span><span id="rep-empleado">—</span></div>
+                <div class="report-line"><span>Periodo</span><span id="rep-periodo">—</span></div>
+                <div class="report-line"><span>Salario base</span><span id="rep-base">—</span></div>
+                <div class="report-line"><span>Total deducciones</span><span id="rep-deducciones">—</span></div>
+                <div class="report-line"><span>Aportes del empleador</span><span id="rep-aportes">—</span></div>
+                <div class="report-line total"><span>Salario neto</span><span id="rep-neto">—</span></div>
+            </div>
+        </div>
+
+        <div class="panel">
+            <h2>Historial de nómina</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Empleado</th>
+                        <th>Periodo</th>
+                        <th class="num">Deducciones</th>
+                        <th class="num">Aportes</th>
+                        <th class="num">Salario neto</th>
+                    </tr>
+                </thead>
+                <tbody id="tabla-nomina">
+                    <tr class="empty-row"><td colspan="5">Cargando…</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </section>
+
+    <!-- ===================== NOVEDADES (RF-9) ===================== -->
+    <section class="view" id="view-novedades">
+        <div class="view-header">
+            <h1>Ausencias, vacaciones y permisos</h1>
+            <p>Registra solicitudes y apruébalas o recházalas desde la bandeja.</p>
+        </div>
+
+        <div class="panel">
+            <h2>Registrar solicitud</h2>
+            <form id="form-novedad">
+                <div class="form-grid">
+                    <div class="field">
+                        <label for="nov-empleado">Empleado</label>
+                        <select id="nov-empleado" name="id_empleado" required></select>
+                    </div>
+                    <div class="field">
+                        <label for="nov-tipo">Tipo</label>
+                        <select id="nov-tipo" name="tipo" required>
+                            <option value="AUSENCIA">Ausencia</option>
+                            <option value="VACACIONES">Vacaciones</option>
+                            <option value="PERMISO">Permiso</option>
+                        </select>
+                    </div>
+                    <div class="field">
+                        <label for="nov-inicio">Fecha inicio</label>
+                        <input id="nov-inicio" name="fecha_inicio" type="date" required>
+                    </div>
+                    <div class="field">
+                        <label for="nov-fin">Fecha fin</label>
+                        <input id="nov-fin" name="fecha_fin" type="date" required>
+                    </div>
+                    <div class="field full">
+                        <label for="nov-motivo">Motivo (opcional)</label>
+                        <input id="nov-motivo" name="motivo" type="text">
+                    </div>
+                    <div class="form-actions">
+                        <button type="submit" class="primary">Registrar solicitud</button>
+                        <div class="msg" id="msg-novedad"></div>
+                    </div>
+                </div>
+            </form>
+        </div>
+
+        <div class="panel">
+            <h2>Bandeja de solicitudes</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Empleado</th>
+                        <th>Tipo</th>
+                        <th>Desde</th>
+                        <th>Hasta</th>
+                        <th>Estado</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody id="tabla-novedades">
+                    <tr class="empty-row"><td colspan="6">Cargando…</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </section>
+
+</div>
+
+<script src="{{ url_for('nomina.static', filename='js/nomina.js') }}"></script>
+{% endblock %}

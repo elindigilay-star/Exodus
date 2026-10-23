@@ -1,0 +1,60 @@
+{% extends 'base.html' %}
+
+{% block title %}Balance General{% endblock %}
+{% block header_title %}Balance General{% endblock %}
+
+{% block content %}
+<div class="card">
+    <h3>Resumen de Activos, Pasivos y Patrimonio</h3>
+    
+    <table>
+        <thead>
+            <tr>
+                <th>Estructura Financiera</th>
+                <th style="text-align: right;">Valor ($)</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr class="subtotal">
+                <td colspan="2">ACTIVOS</td>
+            </tr>
+            <tr>
+                <td style="padding-left: 30px;">Efectivo / Flujo de Caja Disponible</td>
+                <td class="monto">${{ "{:,.2f}".format(data.activos.efectivo_caja) }}</td>
+            </tr>
+            <tr>
+                <td style="padding-left: 30px;">Inventario de Mercancía (a costo)</td>
+                <td class="monto">${{ "{:,.2f}".format(data.activos.inventario) }}</td>
+            </tr>
+            <tr class="subtotal">
+                <td>Total Activos</td>
+                <td class="monto">${{ "{:,.2f}".format(data.activos.total_activos) }}</td>
+            </tr>
+
+            <tr class="subtotal">
+                <td colspan="2">PASIVOS</td>
+            </tr>
+            <tr>
+                <td style="padding-left: 30px;">Pasivos Laborales (Retenciones)</td>
+                <td class="monto">${{ "{:,.2f}".format(data.pasivos.pasivos_laborales) }}</td>
+            </tr>
+            <tr class="subtotal">
+                <td>Total Pasivos</td>
+                <td class="monto">${{ "{:,.2f}".format(data.pasivos.total_pasivos) }}</td>
+            </tr>
+
+            <tr class="subtotal">
+                <td colspan="2">PATRIMONIO</td>
+            </tr>
+            <tr>
+                <td style="padding-left: 30px;">Utilidad del Ejercicio</td>
+                <td class="monto">${{ "{:,.2f}".format(data.patrimonio.utilidad_ejercicio) }}</td>
+            </tr>
+            <tr class="total-destacado">
+                <td>Total Patrimonio</td>
+                <td class="monto">${{ "{:,.2f}".format(data.patrimonio.total_patrimonio) }}</td>
+            </tr>
+        </tbody>
+    </table>
+</div>
+{% endblock %}
