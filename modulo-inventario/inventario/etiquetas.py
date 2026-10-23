@@ -1,12 +1,19 @@
-"""Página de configuración: Etiquetas (clasifican productos y definen impuestos)."""
+"""Rutas de Etiquetas del módulo de inventario.
+
+Vive en `modulo-inventario/inventario/etiquetas.py` y se registra
+en la app principal junto con el resto del módulo de inventario.
+
+- Endpoints: /api/inventario/etiquetas...
+- Plantilla: templates/inventario/etiquetas.html
+- Modelo: inventario.modelo
+"""
 
 import pymysql
 from flask import abort, flash, redirect, render_template, request, url_for
 
 from routes.auth import requerir_roles
-
 from . import modelo
-from .rutas import configuracion_bp
+from .rutas import inventario_modulo_bp
 
 ROLES = ('Administrador', 'Contador')
 TIPOS = ('producto', 'impuesto')
@@ -28,7 +35,7 @@ def _leer_formulario():
     return (nombre, tipo, porcentaje), None
 
 
-@configuracion_bp.route('/configuracion/etiquetas', methods=['GET', 'POST'])
+@inventario_modulo_bp.route('/etiquetas', methods=['GET', 'POST'])
 @requerir_roles(*ROLES)
 def etiquetas():
     if request.method == 'POST':
@@ -39,17 +46,17 @@ def etiquetas():
             try:
                 modelo.crear_etiqueta(*datos)
                 flash('Etiqueta creada.', 'ok')
-                return redirect(url_for('configuracion.etiquetas'))
+                return redirect(url_for('inventario_modulo.etiquetas'))
             except pymysql.err.IntegrityError:
                 flash('Ya existe una etiqueta con ese nombre.', 'error')
     return render_template(
-        'configuracion/etiquetas.html',
+        'inventario/etiquetas.html',
         etiquetas=modelo.listar_etiquetas(),
         editar=None,
     )
 
 
-@configuracion_bp.route('/configuracion/etiquetas/<int:id>/editar', methods=['GET', 'POST'])
+@inventario_modulo_bp.route('/etiquetas/<int:id>/editar', methods=['GET', 'POST'])
 @requerir_roles(*ROLES)
 def etiquetas_editar(id):
     fila = modelo.obtener_etiqueta(id)
@@ -63,19 +70,19 @@ def etiquetas_editar(id):
             try:
                 modelo.actualizar_etiqueta(id, *datos)
                 flash('Etiqueta actualizada.', 'ok')
-                return redirect(url_for('configuracion.etiquetas'))
+                return redirect(url_for('inventario_modulo.etiquetas'))
             except pymysql.err.IntegrityError:
                 flash('Ya existe una etiqueta con ese nombre.', 'error')
     return render_template(
-        'configuracion/etiquetas.html',
+        'inventario/etiquetas.html',
         etiquetas=modelo.listar_etiquetas(),
         editar=fila,
     )
 
 
-@configuracion_bp.route('/configuracion/etiquetas/<int:id>/eliminar', methods=['POST'])
+@inventario_modulo_bp.route('/etiquetas/<int:id>/eliminar', methods=['POST'])
 @requerir_roles(*ROLES)
 def etiquetas_eliminar(id):
     modelo.eliminar_etiqueta(id)
     flash('Etiqueta eliminada.', 'ok')
-    return redirect(url_for('configuracion.etiquetas'))
+    return redirect(url_for('inventario_modulo.etiquetas'))

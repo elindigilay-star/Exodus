@@ -64,6 +64,16 @@ def crear_tablas_inventario():
                 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
                 """
             )
+            cursor.execute(
+                """
+                CREATE TABLE IF NOT EXISTS etiquetas (
+                    id INT AUTO_INCREMENT PRIMARY KEY,
+                    nombre VARCHAR(80) NOT NULL UNIQUE,
+                    tipo VARCHAR(20) NOT NULL,
+                    porcentaje DECIMAL(5,2) NOT NULL DEFAULT 0
+                ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
+                """
+            )
         conexion.commit()
     finally:
         conexion.close()
