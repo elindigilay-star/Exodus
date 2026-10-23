@@ -25,11 +25,14 @@ def calcular_balance_general(fecha_inicio=None, fecha_fin=None):
     inventario = consolidado['valor_inventario']
     total_activos = efectivo_caja + inventario
 
-    # 2. Pasivos (Pasivos laborales por retenciones pendientes)
-    pasivos = 0.0
+    # 2. Pasivos
+    # Pasivos laborales: deducciones de nómina retenidas y pendientes de pagar al periodo
+    pasivos_laborales = consolidado.get('deducciones_nomina', 0.0) or 0.0
+    # (Fase futura: aquí se integrarían retenciones en la fuente, CxP e impuestos)
+    total_pasivos = pasivos_laborales
 
-    # 3. Patrimonio
-    patrimonio = total_activos - pasivos
+    # 3. Patrimonio (Activo - Pasivo)
+    patrimonio = total_activos - total_pasivos
 
     return {
         'activos': {
@@ -38,8 +41,8 @@ def calcular_balance_general(fecha_inicio=None, fecha_fin=None):
             'total_activos': total_activos
         },
         'pasivos': {
-            'pasivos_laborales': pasivos,
-            'total_pasivos': pasivos
+            'pasivos_laborales': pasivos_laborales,
+            'total_pasivos': total_pasivos
         },
         'patrimonio': {
             'utilidad_ejercicio': estado_res['utilidad_neta'],

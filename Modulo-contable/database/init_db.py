@@ -62,6 +62,28 @@ def iniciar_db():
                         (usuario, fila["id_usuario"]),
                     )
 
+            # --- Migración: ampliar tabla gastos_deducibles (RF-11 Fase A) ---
+            columnas_gastos = _columnas(cursor, "gastos_deducibles")
+            if "categoria" not in columnas_gastos:
+                cursor.execute(
+                    "ALTER TABLE gastos_deducibles ADD COLUMN categoria VARCHAR(80) NULL AFTER descripcion"
+                )
+            if "tercero" not in columnas_gastos:
+                cursor.execute(
+                    "ALTER TABLE gastos_deducibles ADD COLUMN tercero VARCHAR(150) NULL AFTER categoria"
+                )
+            if "nit" not in columnas_gastos:
+                cursor.execute(
+                    "ALTER TABLE gastos_deducibles ADD COLUMN nit VARCHAR(30) NULL AFTER tercero"
+                )
+            if "numero_documento" not in columnas_gastos:
+                cursor.execute(
+                    "ALTER TABLE gastos_deducibles ADD COLUMN numero_documento VARCHAR(50) NULL AFTER nit"
+                )
+            if "estado_gasto" not in columnas_gastos:
+                cursor.execute(
+                    "ALTER TABLE gastos_deducibles ADD COLUMN estado_gasto ENUM('ACTIVO','ANULADO') NOT NULL DEFAULT 'ACTIVO' AFTER id_usuario"
+                )
 
         conexion.commit()
     finally:

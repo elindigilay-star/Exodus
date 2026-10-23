@@ -33,14 +33,21 @@ def consolidar_informacion_contable(fecha_inicio=None, fecha_fin=None):
         gastos = 0.0
 
     # 4. Calcular inventario inicial (beginning inventory)
-    # Si hay fecha de periodo, intentar obtener el valor de inventario al inicio.
-    # Si no hay historial, asumimos 0.
+    # Aproximación: inventario_inicial = inventario_actual - cambio_neto_del_periodo
+    # donde cambio_neto = entradas_a_costo - salidas_a_costo del periodo.
+    # Si no hay filtro de fecha, inicial = 0 (no hay periodo definido).
+    cambio_neto_periodo = 0.0
     try:
-        # Obtener posición de inventario sin filtro de fecha para obtener el valor actual total
-        # El inventario inicial se calculará como la diferencia en la próxima consulta histórica
-        # Por ahora, dejamos como None y el balance service hará la diferencia si hay datos previos
-        valor_inventario_inicial = 0.0  # Por defecto: si no hay datos previos, inicial = 0
+        compras_periodo = float(inventario.get('compras', 0.0) or 0.0)   # entradas a costo
+        perdidas_periodo = float(inventario.get('perdidas', 0.0) or 0.0)  # salidas/mermas (ya viene con signo negativo)
+        # 'perdidas' en resumen_inventario ya está expresado como valor negativo (salida de stock)
+        cambio_neto_periodo = compras_periodo + perdidas_periodo
     except Exception:
+        cambio_neto_periodo = 0.0
+
+    if fecha_inicio and fecha_fin:
+        valor_inventario_inicial = max(valor_inventario_actual - cambio_neto_periodo, 0.0)
+    else:
         valor_inventario_inicial = 0.0
 
     # 5. Unificar y retornar datos consolidados
@@ -53,6 +60,7 @@ def consolidar_informacion_contable(fecha_inicio=None, fecha_fin=None):
         'compras_inventario': inventario['compras'],
         'costo_ventas_sin_stock': inventario['costo_ventas_manuales'],
         'perdidas_inventario': inventario['perdidas'],
+        'cambio_neto_inventario_periodo': cambio_neto_periodo,
         'valor_inventario': valor_inventario_actual,
-        'valor_inventario_inicial': valor_inventario_inicial  # NUEVO: para cash flow correcto
+        'valor_inventario_inicial': valor_inventario_inicial
     }

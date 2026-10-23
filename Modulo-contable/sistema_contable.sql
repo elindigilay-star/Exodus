@@ -106,9 +106,14 @@ CREATE TABLE `etiquetas` (
 CREATE TABLE `gastos_deducibles` (
   `id_gasto` int(11) NOT NULL,
   `descripcion` varchar(255) NOT NULL,
+  `categoria` varchar(80) DEFAULT NULL,
+  `tercero` varchar(150) DEFAULT NULL,
+  `nit` varchar(30) DEFAULT NULL,
+  `numero_documento` varchar(50) DEFAULT NULL,
   `monto` decimal(12,2) NOT NULL,
   `fecha` datetime NOT NULL DEFAULT current_timestamp(),
-  `id_usuario` int(11) NOT NULL
+  `id_usuario` int(11) NOT NULL,
+  `estado_gasto` enum('ACTIVO','ANULADO') NOT NULL DEFAULT 'ACTIVO'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
