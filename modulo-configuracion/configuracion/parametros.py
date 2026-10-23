@@ -7,6 +7,8 @@ from routes.auth import requerir_roles
 
 from . import modelo
 from .rutas import configuracion_bp
+# Etiquetas las maneja el módulo de inventario
+from inventario.modelo import listar_etiquetas
 
 ROLES = ('Administrador', 'Contador')
 
@@ -33,7 +35,7 @@ def _render(editar=None):
     return render_template(
         'configuracion/parametros.html',
         lista=modelo.listar_parametros(),
-        etiquetas=modelo.listar_etiquetas(),
+        etiquetas=listar_etiquetas(),
         editar=editar,
     )
 
