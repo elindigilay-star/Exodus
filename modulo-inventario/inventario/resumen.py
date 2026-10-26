@@ -40,7 +40,7 @@ def obtener_resumen_inventario(fecha_inicio=None, fecha_fin=None):
                 'perdidas': 0.0,
             }
 
-            # Las tablas de movimientos pueden no existir todavía: se tolera.
+        
             try:
                 cursor.execute(
                     f"""

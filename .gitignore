@@ -1,2 +1,23 @@
+# Python
 __pycache__/
 *.pyc
+
+# Entorno / secretos
+.env
+secret_key
+*.db
+
+# Archivos personales / binarios
+*.log
+*.bak
+*.zip
+# *.xlsx          # descomenta si quieres ignorar TODOS los .xlsx
+# Si prefieres ignorar todos menos el cronograma del profe:
+# *.xlsx
+# !Cronograma_semanal.xlsx
+
+# IDE / virtualenvs (opcional, pero recomendado)
+.idea/
+.vscode/
+venv/
+node_modules/
