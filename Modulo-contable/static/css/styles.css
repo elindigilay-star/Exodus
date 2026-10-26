@@ -161,6 +161,7 @@ body {
     flex: 1;
     padding: 40px;
     overflow-y: auto;
+    min-width: 0; /* Previene desbordamiento en contenedores flex */
 }
 
 .header {
@@ -192,14 +193,17 @@ body {
     color: var(--secondary-color);
 }
 
-/* Tarjetas */
+/* Tarjetas (Corregido) */
 .card {
     background-color: var(--card-bg);
     padding: 32px;
     border-radius: 12px;
     border: 1px solid var(--border-color);
     box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.05);
-    max-width: 850px;
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
+    overflow-x: auto; /* Permite scroll horizontal si la tabla excede el contenedor */
 }
 
 .card p {
@@ -413,7 +417,6 @@ td {
 .btn-danger { background-color: var(--danger-color); color: #fff; }
 .btn-danger:hover { background-color: #912018; }
 
-
 /* Botones de acciones en tablas */
 .acciones {
     display: flex;
@@ -438,12 +441,6 @@ td {
     background-color: #1D4F91;
     color: #fff;
 }
-
-.btn-danger {
-    background-color: #B42318;
-    color: #fff;
-}
-.btn-danger:hover { background-color: #912018; }
 
 .btn-delete {
     background-color: #FDECEA;
