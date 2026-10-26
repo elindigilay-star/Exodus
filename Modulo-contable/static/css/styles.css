@@ -457,3 +457,118 @@ td {
 .dash-kpis div { background: #E8F0FA; border-radius: 10px; padding: 12px 16px; }
 .dash-kpis span { display: block; font-size: 13px; color: #52627A; }
 .dash-kpis strong { font-size: 20px; color: #0F1B2D; }
+
+/* Contenedor principal del filtro */
+.filtro-periodo {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+    background-color: #f8fafc;
+    padding: 16px;
+    border-radius: 10px;
+    border: 1px solid var(--border-color);
+    margin-bottom: 24px;
+}
+
+/* Grupos individuales para asociar Label e Input */
+.filtro-grupo {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.filtro-periodo label {
+    font-size: 0.88rem;
+    font-weight: 600;
+    color: var(--text-muted);
+}
+
+/* Campos de fecha */
+.filtro-periodo input[type="date"] {
+    padding: 8px 12px;
+    font-size: 0.9rem;
+    font-family: 'Inter', sans-serif;
+    color: var(--text-primary);
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    background-color: #ffffff;
+    outline: none;
+    transition: all 0.2s ease;
+}
+
+.filtro-periodo input[type="date"]:focus {
+    border-color: var(--secondary-color);
+    box-shadow: 0 0 0 3px rgba(29, 79, 145, 0.15);
+}
+
+/* Botones del filtro */
+.filtro-acciones {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-left: auto; /* Empuja los botones hacia la derecha si hay espacio */
+}
+
+/* ==========================================
+   ESTILOS PARA EL MODAL DE EDICIÓN
+   ========================================== */
+
+/* Fondo oscuro translúcido */
+#modal-editar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background-color: rgba(15, 27, 45, 0.6); /* Oscurecido elegante */
+    backdrop-filter: blur(4px); /* Efecto de desenfoque de fondo */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    padding: 16px;
+    box-sizing: border-box;
+}
+
+/* Tarjeta principal con bordes pulidos y scroll invisible */
+#modal-editar .card {
+    width: 100%;
+    max-width: 500px;
+    max-height: 85vh;
+    overflow-y: auto;
+    margin: 0 auto;
+    background-color: #ffffff;
+    
+    /* Bordes y sombras avanzadas */
+    border-radius: 16px;
+    border: 1px solid var(--border-color);
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+    padding: 32px;
+
+    /* Ocultar barra de scroll en Firefox y IE/Edge */
+    scrollbar-width: none; /* Firefox */
+    -ms-overflow-style: none; /* IE y Edge */
+}
+
+/* Ocultar barra de scroll en Chrome, Safari y Opera */
+#modal-editar .card::-webkit-scrollbar {
+    display: none;
+}
+
+/* Disposición para campos lado a lado */
+.form-row {
+    display: flex;
+    gap: 12px;
+}
+
+.form-row .form-group {
+    flex: 1;
+}
+
+@media (max-width: 600px) {
+    .filtro-acciones {
+        margin-left: 0;
+        width: 100%;
+    }
+}
