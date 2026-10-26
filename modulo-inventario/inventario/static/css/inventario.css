@@ -229,7 +229,7 @@
   .inventario .form-grid { grid-template-columns: 1fr; }
 }
 
-/* ---- Específico de inventario ---- */
+
 .inventario .kpis {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
@@ -275,4 +275,45 @@
 .inventario .readonly-note {
   background: var(--accent-tint); color: var(--accent-strong);
   border-radius: 7px; padding: 10px 14px; font-size: 13px; margin-bottom: 20px;
+}
+
+.inventario .badge.sinclas { background: var(--warn-tint); color: var(--warn); }
+.inventario .hint.warn { color: var(--warn); font-weight: 500; }
+.inventario .hint a { color: var(--accent); }
+.inventario dialog {
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 22px 24px;
+  width: min(440px, 92vw);
+  background: var(--surface);
+  color: var(--ink);
+}
+.inventario dialog::backdrop { background: rgba(15, 27, 45, 0.45); }
+.inventario dialog h2 {
+  font-family: var(--font-display);
+  font-size: 16px;
+  margin: 0 0 8px;
+}
+.inventario dialog .field { margin: 14px 0 6px; }
+
+.inventario .aviso {
+  background: var(--warn-tint);
+  color: var(--warn);
+  border-radius: 7px;
+  padding: 10px 14px;
+  font-size: 13px;
+  margin-bottom: 16px;
+}
+.inventario .aviso a { color: var(--warn); font-weight: 600; }
+
+.inventario dialog {
+  position: fixed;
+  inset: 0;
+  margin: auto;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 22px 24px;
+  width: min(440px, 92vw);
+  background: var(--surface);
+  color: var(--ink);
 }
