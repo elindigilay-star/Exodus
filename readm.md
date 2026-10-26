@@ -1,8 +1,8 @@
 # ESPECIFICACIÓN DE REQUISITOS DE SOFTWARE
 
-**PROYECTO:** Desarrollo de un software integral para la administración, gestión y contabilidad de las PYMES (Pequeñas y Medianas Empresas) — **EXODUS CONTABLE**
+**PROYECTO:** Desarrollo de una **aplicación web** integral para la administración, gestión y contabilidad de las PYMES (Pequeñas y Medianas Empresas) — **EXODUS CONTABLE**
 
-*(Avances – V3)*
+*(Avances – V3 Web — Flask)*
 
 **Presentado por:**
 
@@ -45,7 +45,7 @@ SERVICIO NACIONAL DE APRENDIZAJE – SENA
 
 Actualmente, muchas PYMES en Colombia tienen problemas para organizar sus procesos contables, de inventario y nómina, ya que suelen trabajar con registros manuales o herramientas separadas como hojas de cálculo o archivos independientes. Esto provoca errores, pérdida de información y falta de control, además de dificultades para integrar los datos entre las diferentes áreas de la empresa. También se presentan retos en el cumplimiento de normas legales y en el acceso a software contable, debido a los altos costos o requerimientos técnicos.
 
-Por esta razón, nace **Exodus Contable**, un software de escritorio que busca facilitar la gestión empresarial mediante la integración de los módulos de inventario, nómina y contabilidad en un solo sistema. La idea es ofrecer una herramienta práctica, accesible y fácil de usar, que funcione sin necesidad de internet y ayude a las empresas a llevar un control más claro, seguro y automatizado de su información financiera.
+Por esta razón, nace **Exodus Contable**, una **aplicación web** que busca facilitar la gestión empresarial mediante la integración de los módulos de inventario, nómina y contabilidad en un solo sistema. La idea es ofrecer una herramienta práctica, accesible y fácil de usar, que funcione en red local o servidor, y ayude a las empresas a llevar un control más claro, seguro y automatizado de su información financiera.
 
 ---
 
@@ -61,7 +61,7 @@ Por otro lado, el acceso a software contable especializado es limitado debido a 
 
 ### 1.2 Formulación del problema
 
-¿Cómo desarrollar un sistema de software de escritorio, accesible e integrado, que permita a las PYMES gestionar de manera eficiente sus procesos de inventario, nómina y contabilidad, garantizando la organización, confiabilidad y cumplimiento normativo de la información?
+¿Cómo desarrollar una **aplicación web** accesible e integrada, que permita a las PYMES gestionar de manera eficiente sus procesos de inventario, nómina y contabilidad, garantizando la organización, confiabilidad y cumplimiento normativo de la información?
 
 ---
 
@@ -69,7 +69,7 @@ Por otro lado, el acceso a software contable especializado es limitado debido a 
 
 ### 2.1 Objetivo General
 
-Desarrollar un software de escritorio que permita a las PYMES gestionar de manera integrada los procesos de inventario, nómina y contabilidad, mejorando la organización, el control y la confiabilidad de la información financiera.
+Desarrollar una **aplicación web** que permita a las PYMES gestionar de manera integrada los procesos de inventario, nómina y contabilidad, mejorando la organización, el control y la confiabilidad de la información financiera.
 
 ### 2.2 Objetivos Específicos
 
@@ -150,7 +150,7 @@ Desarrollar un software de escritorio que permita a las PYMES gestionar de maner
 
 El desarrollo de Exodus Contable se justifica por la necesidad que tienen las pequeñas y medianas empresas (PYMES) de contar con una herramienta que les permita gestionar de manera organizada sus procesos contables, de inventario y nómina. Actualmente, muchas de estas empresas utilizan métodos manuales o sistemas no integrados, lo que genera errores, pérdida de información y dificultades en el control de sus operaciones financieras.
 
-Además, la implementación de este software representa una alternativa accesible frente a los sistemas contables tradicionales, que suelen ser costosos o requieren infraestructura tecnológica avanzada. Exodus Contable busca ofrecer una solución práctica, de fácil uso y sin necesidad de conexión a internet, permitiendo a las empresas mejorar su eficiencia operativa y optimizar la toma de decisiones.
+Además, la implementación de esta aplicación web representa una alternativa accesible frente a los sistemas contables tradicionales, que suelen ser costosos o requieren infraestructura tecnológica avanzada. Exodus Contable busca ofrecer una solución práctica, de fácil uso, accesible desde navegador en red local o servidor, permitiendo a las empresas mejorar su eficiencia operativa y optimizar la toma de decisiones.
 
 Finalmente, este sistema contribuye al cumplimiento de la normativa contable y laboral colombiana, automatizando procesos clave como el cálculo de nómina y la generación de reportes financieros. De esta manera, no solo se mejora la organización interna de las empresas, sino que también se reduce el riesgo de errores y sanciones legales, fortaleciendo su crecimiento y sostenibilidad.
 
@@ -164,11 +164,11 @@ Finalmente, este sistema contribuye al cumplimiento de la normativa contable y l
 
 ## 6. Metodología
 
-Para el desarrollo del proyecto Exodus Contable se utilizará una metodología de tipo incremental, la cual permite construir el sistema por módulos funcionales, facilitando su desarrollo, prueba y mejora continua. Esta metodología es adecuada debido a la estructura modular del sistema (inventario, nómina, contabilidad, configuración y seguridad), permitiendo avanzar de manera organizada y controlada en cada componente.
+Para el desarrollo del proyecto Exodus Contable se utiliza una metodología de tipo incremental, la cual permite construir el sistema por módulos funcionales, facilitando su desarrollo, prueba y mejora continua. Esta metodología es adecuada debido a la estructura modular del sistema (inventario, nómina, contabilidad, configuración y seguridad), permitiendo avanzar de manera organizada y controlada en cada componente.
 
-El proceso inicia con la fase de análisis de requisitos, donde se identifican las necesidades del sistema y se definen los requerimientos funcionales y no funcionales. Posteriormente, se realiza el diseño del sistema, incluyendo la estructura de los módulos, la interfaz gráfica y la organización de los datos. Luego, se lleva a cabo la implementación utilizando el lenguaje de programación **Python** y librerías como **Tkinter**, seguido de pruebas por cada módulo para verificar su correcto funcionamiento.
+El proceso inicia con la fase de análisis de requisitos, donde se identifican las necesidades del sistema y se definen los requerimientos funcionales y no funcionales. Posteriormente, se realiza el diseño del sistema, incluyendo la estructura de los módulos, la interfaz web y la organización de los datos. Luego, se lleva a cabo la implementación utilizando el lenguaje de programación **Python** con el framework web **Flask**, plantillas **Jinja2**, **HTML/CSS/JavaScript** para el frontend, y **MySQL** como base de datos, seguido de pruebas por cada módulo para verificar su correcto funcionamiento.
 
-Finalmente, se realiza la integración de todos los módulos en un solo sistema, junto con pruebas generales y ajustes necesarios. Esta metodología permite detectar errores de manera temprana, mejorar progresivamente el software y asegurar que el producto final cumpla con los objetivos planteados.
+Finalmente, se realiza la integración de todos los módulos en una sola aplicación web, junto con pruebas generales y ajustes necesarios. Esta metodología permite detectar errores de manera temprana, mejorar progresivamente el software y asegurar que el producto final cumpla con los objetivos planteados.
 
 ---
 
@@ -1197,6 +1197,6 @@ Los requisitos asociados fueron redefinidos como requisitos de información (RI)
 
 ## 10. Conclusión
 
-El sistema Exodus Contable integra en una sola aplicación funciones administrativas, contables y de gestión, facilitando el manejo de la información en las PYMES. Gracias a los requisitos definidos y los diagramas UML, se logró organizar bien el funcionamiento del sistema y cómo interactúan los usuarios con cada módulo.
+El sistema Exodus Contable integra en una **aplicación web (Flask)** funciones administrativas, contables y de gestión, facilitando el manejo de la información en las PYMES. Gracias a los requisitos definidos y los diagramas UML, se logró organizar bien el funcionamiento del sistema y cómo interactúan los usuarios con cada módulo.
 
-Además, los módulos de configuración y seguridad permiten controlar accesos y personalizar el sistema, haciendo que sea más confiable y útil. En general, el proyecto muestra cómo una buena organización y diseño ayudan a crear una solución práctica y funcional.
+La arquitectura modular basada en **Blueprints de Flask** permite independencia entre módulos (inventario, nómina, contabilidad, configuración, seguridad), facilitando mantenimiento y escalabilidad. Los módulos de configuración y seguridad permiten controlar accesos y personalizar el sistema, haciendo que sea más confiable y útil. En general, el proyecto muestra cómo una buena organización y diseño ayudan a crear una solución práctica, funcional y accesible desde navegador.
