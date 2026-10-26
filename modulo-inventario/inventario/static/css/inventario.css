@@ -305,3 +305,15 @@
   margin-bottom: 16px;
 }
 .inventario .aviso a { color: var(--warn); font-weight: 600; }
+
+.inventario dialog {
+  position: fixed;
+  inset: 0;
+  margin: auto;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 22px 24px;
+  width: min(440px, 92vw);
+  background: var(--surface);
+  color: var(--ink);
+}
