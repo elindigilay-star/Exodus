@@ -3,10 +3,10 @@ from services.estado_resultados_service import generar_estado_resultados
 
 
 def calcular_balance_general(fecha_inicio=None, fecha_fin=None):
-    """
-    CU-04: Calcula las partidas del Balance General.
+    """CU-04: Calcula las partidas del Balance General.
+
     El inventario se refleja así:
-      - Las compras (entradas) y el costo de ventas sin stock salen del efectivo.
+      - Cambio en inventario (valor final - valor inicial) afecta al efectivo.
       - La mercancía que queda en bodega es un activo (a costo promedio).
     """
     try:
@@ -17,17 +17,22 @@ def calcular_balance_general(fecha_inicio=None, fecha_fin=None):
     consolidado = consolidar_informacion_contable(fecha_inicio, fecha_fin)
 
     # 1. Activos
-    pago_mercancia = consolidado['compras_inventario'] + consolidado['costo_ventas_sin_stock']
+    # Cambio en inventario = valor actual - valor inicial
+    # Si hay más inventario al final que al principio, significa que se compró mercancía con cash
+    cambio_inventario = consolidado['valor_inventario'] - consolidado['valor_inventario_inicial']
     gastos_en_efectivo = estado_res['desglose_gastos']['nomina'] + estado_res['desglose_gastos']['gastos_deducibles']
-    efectivo_caja = estado_res['ingresos_totales'] - pago_mercancia - gastos_en_efectivo
+    efectivo_caja = estado_res['ingresos_totales'] - cambio_inventario - gastos_en_efectivo
     inventario = consolidado['valor_inventario']
     total_activos = efectivo_caja + inventario
 
-    # 2. Pasivos (Pasivos laborales por retenciones pendientes)
-    pasivos = 0.0
+    # 2. Pasivos
+    # Pasivos laborales: deducciones de nómina retenidas y pendientes de pagar al periodo
+    pasivos_laborales = consolidado.get('deducciones_nomina', 0.0) or 0.0
+    # (Fase futura: aquí se integrarían retenciones en la fuente, CxP e impuestos)
+    total_pasivos = pasivos_laborales
 
-    # 3. Patrimonio
-    patrimonio = total_activos - pasivos
+    # 3. Patrimonio (Activo - Pasivo)
+    patrimonio = total_activos - total_pasivos
 
     return {
         'activos': {
@@ -36,8 +41,8 @@ def calcular_balance_general(fecha_inicio=None, fecha_fin=None):
             'total_activos': total_activos
         },
         'pasivos': {
-            'pasivos_laborales': pasivos,
-            'total_pasivos': pasivos
+            'pasivos_laborales': pasivos_laborales,
+            'total_pasivos': total_pasivos
         },
         'patrimonio': {
             'utilidad_ejercicio': estado_res['utilidad_neta'],

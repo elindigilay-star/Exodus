@@ -6,7 +6,19 @@
 {% block content %}
 <div class="card">
     <h3>Resumen de Activos, Pasivos y Patrimonio</h3>
-    
+
+    <!-- Filtro de periodo -->
+    <form class="filtro-periodo" method="GET" action="{{ url_for('contabilidad.ver_balance_general_html') }}">
+        <label for="fecha_inicio">Desde:</label>
+        <input type="date" id="fecha_inicio" name="fecha_inicio" value="{{ fecha_inicio or '' }}">
+        <label for="fecha_fin">Hasta:</label>
+        <input type="date" id="fecha_fin" name="fecha_fin" value="{{ fecha_fin or '' }}">
+        <button type="submit" class="btn btn-primary">Filtrar</button>
+        {% if fecha_inicio or fecha_fin %}
+            <a href="{{ url_for('contabilidad.ver_balance_general_html') }}" class="btn btn-secondary">Limpiar</a>
+        {% endif %}
+    </form>
+
     <table>
         <thead>
             <tr>
@@ -35,7 +47,7 @@
                 <td colspan="2">PASIVOS</td>
             </tr>
             <tr>
-                <td style="padding-left: 30px;">Pasivos Laborales (Retenciones)</td>
+                <td style="padding-left: 30px;">Pasivos Laborales (Retenciones / Deducciones nómina)</td>
                 <td class="monto">${{ "{:,.2f}".format(data.pasivos.pasivos_laborales) }}</td>
             </tr>
             <tr class="subtotal">
@@ -56,5 +68,10 @@
             </tr>
         </tbody>
     </table>
+
+    <div class="actions">
+        <a href="/api/contabilidad/exportar-reporte?tipo=balance&formato=pdf&fecha_inicio={{ fecha_inicio or '' }}&fecha_fin={{ fecha_fin or '' }}" class="btn btn-primary">Exportar PDF</a>
+        <a href="/api/contabilidad/exportar-reporte?tipo=balance&formato=excel&fecha_inicio={{ fecha_inicio or '' }}&fecha_fin={{ fecha_fin or '' }}" class="btn btn-success">Exportar Excel</a>
+    </div>
 </div>
 {% endblock %}

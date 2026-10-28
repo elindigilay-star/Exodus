@@ -1,0 +1,220 @@
+{% extends 'base.html' %}
+
+{% block title %}Gastos Deducibles{% endblock %}
+{% block header_title %}Gastos Deducibles Registrados{% endblock %}
+
+{% block content %}
+<div class="card">
+    <p>Listado de gastos deducibles. Los gastos anulados quedan marcados y ya no se suman a los reportes contables.</p>
+
+    <!-- Filtro de periodo -->
+    <form class="filtro-periodo" method="GET" action="{{ url_for('contabilidad.ver_listar_gastos_html') }}">
+        <label for="fecha_inicio">Desde:</label>
+        <input type="date" id="fecha_inicio" name="fecha_inicio" value="{{ fecha_inicio or '' }}">
+        <label for="fecha_fin">Hasta:</label>
+        <input type="date" id="fecha_fin" name="fecha_fin" value="{{ fecha_fin or '' }}">
+        <button type="submit" class="btn btn-primary">Filtrar</button>
+        {% if fecha_inicio or fecha_fin %}
+            <a href="{{ url_for('contabilidad.ver_listar_gastos_html') }}" class="btn btn-secondary">Limpiar</a>
+        {% endif %}
+        <a href="{{ url_for('contabilidad.ver_registrar_gasto_html') }}" class="btn btn-success" style="margin-left: 10px;">+ Nuevo Gasto</a>
+    </form>
+
+    <div id="mensaje-contenedor"></div>
+
+    <table id="tabla-gastos">
+        <thead>
+            <tr>
+                <th>Fecha</th>
+                <th>Descripción</th>
+                <th>Categoría</th>
+                <th>Tercero</th>
+                <th>NIT</th>
+                <th>Documento</th>
+                <th style="text-align: right;">Monto ($)</th>
+                <th>Usuario</th>
+                <th>Estado</th>
+                <th style="text-align: center;">Acciones</th>
+            </tr>
+        </thead>
+        <tbody>
+            <!-- filas cargadas por JS -->
+        </tbody>
+    </table>
+
+    <div id="paginacion" style="margin-top: 1rem;"></div>
+</div>
+
+<!-- Modal de edición -->
+<div id="modal-editar" style="display:none;">
+    <div class="card" style="max-width: 500px; margin: 2rem auto;">
+        <h3>Editar Gasto</h3>
+        <div id="mensaje-editar"></div>
+        <form id="form-editar-gasto">
+            <input type="hidden" id="edit_id_gasto">
+            <div class="form-group">
+                <label for="edit_descripcion">Descripción</label>
+                <input type="text" id="edit_descripcion" name="descripcion" required>
+            </div>
+            <div class="form-group">
+                <label for="edit_monto">Monto ($)</label>
+                <input type="number" step="0.01" id="edit_monto" name="monto" required>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="edit_categoria">Categoría</label>
+                    <input type="text" id="edit_categoria" name="categoria">
+                </div>
+                <div class="form-group">
+                    <label for="edit_tercero">Tercero / Proveedor</label>
+                    <input type="text" id="edit_tercero" name="tercero">
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="edit_nit">NIT / Documento</label>
+                    <input type="text" id="edit_nit" name="nit">
+                </div>
+                <div class="form-group">
+                    <label for="edit_numero_documento">Número Documento</label>
+                    <input type="text" id="edit_numero_documento" name="numero_documento">
+                </div>
+            </div>
+            <div class="form-group">
+                <label for="edit_fecha">Fecha</label>
+                <input type="date" id="edit_fecha" name="fecha">
+            </div>
+            <div class="actions" style="margin-top: 1rem;">
+                <button type="button" class="btn btn-secondary" onclick="cerrarModalEditar()">Cancelar</button>
+                <button type="submit" class="btn btn-primary">Guardar Cambios</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+const API_BASE = '/api/contabilidad/gastos';
+
+async function cargarGastos() {
+    const params = new URLSearchParams(window.location.search);
+    const fecha_inicio = params.get('fecha_inicio') || '';
+    const fecha_fin = params.get('fecha_fin') || '';
+    const qs = new URLSearchParams();
+    if (fecha_inicio) qs.set('fecha_inicio', fecha_inicio);
+    if (fecha_fin) qs.set('fecha_fin', fecha_fin);
+    qs.set('estado', 'ACTIVO');
+
+    try {
+        const response = await fetch(`${API_BASE}?${qs.toString()}`);
+        const result = await response.json();
+        const tbody = document.querySelector('#tabla-gastos tbody');
+        tbody.innerHTML = '';
+
+        if (result.estado !== 'exito') {
+            tbody.innerHTML = `<tr><td colspan="10" style="text-align:center;">Error al cargar gastos: ${result.mensaje}</td></tr>`;
+            return;
+        }
+
+        const gastos = result.data || [];
+        if (gastos.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="10" style="text-align:center;">No hay gastos registrados en este período.</td></tr>`;
+            return;
+        }
+
+        gastos.forEach(g => {
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td>${g.fecha || '-'}</td>
+                <td>${g.descripcion || '-'}</td>
+                <td>${g.categoria || '-'}</td>
+                <td>${g.tercero || '-'}</td>
+                <td>${g.nit || '-'}</td>
+                <td>${g.numero_documento || '-'}</td>
+                <td class="monto" style="text-align: right;">${parseFloat(g.monto || 0).toLocaleString('es-CO', {minimumFractionDigits: 2})}</td>
+                <td>${g.usuario || '-'}</td>
+                <td><span class="badge">${g.estado_gasto || 'ACTIVO'}</span></td>
+                <td style="text-align: center;">
+                    <button class="btn btn-small btn-primary" onclick="abrirEditar(${g.id_gasto}, '${(g.descripcion||'').replace(/'/g, "\\'")}', ${g.monto}, '${g.categoria||''}', '${g.tercero||''}', '${g.nit||''}', '${g.numero_documento||''}', '${(g.fecha||'').slice(0,10)}')">Editar</button>
+                    <button class="btn btn-small btn-danger" onclick="anularGasto(${g.id_gasto})">Anular</button>
+                </td>
+            `;
+            tbody.appendChild(tr);
+        });
+    } catch (error) {
+        document.getElementById('mensaje-contenedor').innerHTML = '<div class="alert alert-danger">Error de conexión al cargar los gastos.</div>';
+    }
+}
+
+function abrirEditar(id, descripcion, monto, categoria, tercero, nit, numero_documento, fecha) {
+    document.getElementById('edit_id_gasto').value = id;
+    document.getElementById('edit_descripcion').value = descripcion;
+    document.getElementById('edit_monto').value = monto;
+    document.getElementById('edit_categoria').value = categoria;
+    document.getElementById('edit_tercero').value = tercero;
+    document.getElementById('edit_nit').value = nit;
+    document.getElementById('edit_numero_documento').value = numero_documento;
+    document.getElementById('edit_fecha').value = fecha;
+    document.getElementById('mensaje-editar').innerHTML = '';
+    document.getElementById('modal-editar').style.display = 'block';
+}
+
+function cerrarModalEditar() {
+    document.getElementById('modal-editar').style.display = 'none';
+}
+
+document.getElementById('form-editar-gasto').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    const id = document.getElementById('edit_id_gasto').value;
+    const descripcion = document.getElementById('edit_descripcion').value;
+    const monto = document.getElementById('edit_monto').value;
+    const categoria = document.getElementById('edit_categoria').value;
+    const tercero = document.getElementById('edit_tercero').value;
+    const nit = document.getElementById('edit_nit').value;
+    const numero_documento = document.getElementById('edit_numero_documento').value;
+    const fecha = document.getElementById('edit_fecha').value;
+    const msgDiv = document.getElementById('mensaje-editar');
+
+    try {
+        const response = await fetch(`${API_BASE}/${id}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ descripcion, monto, categoria, tercero, nit, numero_documento, fecha })
+        });
+        const result = await response.json();
+        if (response.ok) {
+            msgDiv.innerHTML = '<div class="alert alert-success">Gasto actualizado correctamente.</div>';
+            setTimeout(() => { cerrarModalEditar(); cargarGastos(); }, 800);
+        } else {
+            msgDiv.innerHTML = `<div class="alert alert-danger">${result.mensaje || 'No se pudo actualizar.'}</div>`;
+        }
+    } catch (error) {
+        msgDiv.innerHTML = '<div class="alert alert-danger">Error de conexión al actualizar.</div>';
+    }
+});
+
+async function anularGasto(id) {
+    if (!confirm('¿Está seguro de que desea anular este gasto? Ya no se incluirá en los reportes contables.')) return;
+    try {
+        const response = await fetch(`${API_BASE}/${id}`, { method: 'DELETE' });
+        const result = await response.json();
+        if (response.ok) {
+            cargarGastos();
+        } else {
+            alert(result.mensaje || 'No se pudo anular el gasto.');
+        }
+    } catch (error) {
+        alert('Error de conexión al anular el gasto.');
+    }
+}
+
+document.addEventListener('DOMContentLoaded', cargarGastos);
+</script>
+<style>
+.filtro-periodo { display: flex; gap: 1rem; align-items: center; flex-wrap: wrap; margin-bottom: 1rem; }
+.filtro-periodo label { font-size: 0.9rem; }
+.filtro-periodo input[type="date"] { padding: 0.4rem; }
+.badge { display: inline-block; padding: 0.15rem 0.5rem; border-radius: 0.25rem; font-size: 0.75rem; background: #e2e8f0; color: #334155; }
+.btn-small { padding: 0.25rem 0.6rem; font-size: 0.8rem; margin: 0 0.2rem; }
+#modal-editar { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.4); display: flex; align-items: center; justify-content: center; z-index: 1000; }
+</style>
+{% endblock %}

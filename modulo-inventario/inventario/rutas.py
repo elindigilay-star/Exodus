@@ -15,10 +15,9 @@ from functools import wraps
 import pymysql
 from flask import Blueprint, jsonify, render_template, request, session
 
-# `stock` es el modelo del propio módulo.
+
 from . import stock as modelo
-# `login_requerido` y la conexión a la base de datos son de la app principal
-# (Modulo-contable), que es la que usa este módulo.
+
 from routes.auth import login_requerido
 
 inventario_modulo_bp = Blueprint(
@@ -27,7 +26,7 @@ inventario_modulo_bp = Blueprint(
     static_folder='static',
 )
 
-# Consultar: cualquier usuario con sesión. Modificar: estos roles.
+
 ROLES_ESCRITURA = ('Administrador', 'Contador', 'Auxiliar')
 
 
@@ -94,6 +93,13 @@ def _dinero(valor, nombre, obligatorio=True):
     return numero
 
 
+def _id_etiqueta(valor):
+    """La clasificación (etiqueta de tipo producto) es obligatoria (RF-04)."""
+    if valor in (None, ''):
+        raise modelo.ErrorInventario('Selecciona la clasificación (etiqueta) del producto.')
+    return _entero(valor, 'la clasificación', minimo=1, obligatorio=True)
+
+
 def _normalizar(fila):
     salida = {}
     for clave, valor in fila.items():
@@ -121,14 +127,14 @@ def _campos_producto(datos):
         'codigo': codigo.upper(),
         'nombre': nombre,
         'descripcion': _texto(datos.get('descripcion'), 255),
-        'categoria': _texto(datos.get('categoria'), 80),
+        'id_etiqueta': _id_etiqueta(datos.get('id_etiqueta')),
         'unidad': _texto(datos.get('unidad'), 20) or 'und',
         'precio_venta': _dinero(datos.get('precio_venta'), 'el precio de venta'),
         'stock_minimo': _entero(datos.get('stock_minimo'), 'el stock mínimo'),
     }
 
 
-# Errores siempre en JSON para que el JavaScript los muestre
+
 @inventario_modulo_bp.errorhandler(modelo.ErrorInventario)
 def _error_negocio(error):
     return jsonify({'error': str(error)}), error.codigo
@@ -139,7 +145,7 @@ def _error_bd(_error):
     return jsonify({'error': 'No se pudo completar la operación en la base de datos.'}), 500
 
 
-# ---------------- Vista HTML ----------------
+
 
 @inventario_modulo_bp.route('/modulo', methods=['GET'])
 @login_requerido
@@ -150,7 +156,16 @@ def modulo():
     )
 
 
-# ---------------- Productos ----------------
+
+
+
+@inventario_modulo_bp.route('/etiquetas', methods=['GET'])
+@acceso_api()
+def api_listar_etiquetas():
+    """Etiquetas de tipo producto creadas en Configuración → Etiquetas."""
+    return jsonify(_normalizar_lista(modelo.listar_etiquetas_producto())), 200
+
+
 
 @inventario_modulo_bp.route('/resumen', methods=['GET'])
 @acceso_api()
@@ -162,10 +177,18 @@ def api_resumen():
 @acceso_api()
 def api_listar_productos():
     estado = (request.args.get('estado') or '').upper() or None
+
+
+    etiqueta = (request.args.get('etiqueta') or '').strip()
+    sin_clasificar = etiqueta == 'sin'
+    id_etiqueta = int(etiqueta) if etiqueta.isdigit() else None
+
     productos = modelo.listar_productos(
         buscar=(request.args.get('buscar') or '').strip() or None,
         estado=estado,
         bajo_stock=request.args.get('bajo_stock') == '1',
+        id_etiqueta=id_etiqueta,
+        sin_clasificar=sin_clasificar,
     )
     return jsonify(_normalizar_lista(productos)), 200
 
@@ -179,7 +202,7 @@ def api_crear_producto():
     stock_inicial = _entero(datos.get('stock_inicial'), 'el stock inicial')
 
     id_producto = modelo.crear_producto(
-        campos['codigo'], campos['nombre'], campos['descripcion'], campos['categoria'],
+        campos['codigo'], campos['nombre'], campos['descripcion'], campos['id_etiqueta'],
         campos['unidad'], costo, campos['precio_venta'], stock_inicial,
         campos['stock_minimo'], session.get('usuario_id'),
     )
@@ -194,9 +217,30 @@ def api_actualizar_producto():
     campos = _campos_producto(datos)
     modelo.actualizar_producto(
         id_producto, campos['codigo'], campos['nombre'], campos['descripcion'],
-        campos['categoria'], campos['unidad'], campos['precio_venta'], campos['stock_minimo'],
+        campos['id_etiqueta'], campos['unidad'], campos['precio_venta'], campos['stock_minimo'],
     )
     return jsonify({'mensaje': 'Producto actualizado correctamente.'}), 200
+
+
+@inventario_modulo_bp.route('/productos/clasificar', methods=['POST'])
+@acceso_api(*ROLES_ESCRITURA)
+def api_clasificar_producto():
+    """RF-04: asigna o cambia la clasificación (etiqueta) de un producto."""
+    datos = _datos_json()
+    id_producto = _entero(datos.get('id_producto'), 'el producto', minimo=1, obligatorio=True)
+    id_etiqueta = _id_etiqueta(datos.get('id_etiqueta'))
+    nombre = modelo.clasificar_producto(id_producto, id_etiqueta)
+    return jsonify({'mensaje': f'Producto clasificado como "{nombre}".', 'etiqueta': nombre}), 200
+
+
+@inventario_modulo_bp.route('/productos/eliminar', methods=['POST'])
+@acceso_api(*ROLES_ESCRITURA)
+def api_eliminar_producto():
+    """RF-05: elimina el producto; se impide si tiene movimientos."""
+    datos = _datos_json()
+    id_producto = _entero(datos.get('id_producto'), 'el producto', minimo=1, obligatorio=True)
+    modelo.eliminar_producto(id_producto)
+    return jsonify({'mensaje': 'Producto eliminado correctamente.'}), 200
 
 
 @inventario_modulo_bp.route('/productos/estado', methods=['POST'])
@@ -209,7 +253,8 @@ def api_estado_producto():
     return jsonify({'mensaje': 'Producto activado.' if activo else 'Producto desactivado.'}), 200
 
 
-# ---------------- Movimientos ----------------
+
+
 
 @inventario_modulo_bp.route('/movimientos', methods=['GET'])
 @acceso_api()
@@ -240,18 +285,18 @@ def api_registrar_movimiento():
     return jsonify({'mensaje': 'Movimiento registrado correctamente.', **resultado}), 201
 
 
-# ---------------- Enlace con la aplicación ----------------
+
 
 def registrar_inventario(app):
     """Registra el blueprint y prepara las tablas. Se llama una vez desde app.py.
 
     Se monta en /api/inventario:
       - vista:  /api/inventario/modulo
-      - API:    /api/inventario/productos, /movimientos, /resumen, ...
+      - API:    /api/inventario/productos, /movimientos, /resumen, /etiquetas, ...
       - static: /api/inventario/static/css/inventario.css, .../js/inventario.js
     """
     app.register_blueprint(inventario_modulo_bp, url_prefix='/api/inventario')
     try:
         modelo.crear_tablas_inventario()
-    except Exception as error:  # La app arranca aunque la base de datos esté apagada
+    except Exception as error: 
         print(f"AVISO: no se pudieron preparar las tablas de inventario: {error}")
