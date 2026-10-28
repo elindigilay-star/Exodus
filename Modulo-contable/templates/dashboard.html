@@ -35,16 +35,16 @@
         </a>
         <a class="module-card" href="/api/inventario/modulo">
             <h3>Inventario</h3>
-            <p>Productos, existencias, entradas, ventas y ajustes de stock.</p>
+            <p>Productos, existencias, entradas, ventas, ajustes de stock y etiquetas.</p>
         </a>
         <a class="module-card" href="/api/nomina/modulo">
             <h3>Nómina</h3>
             <p>Gestiona empleados, calcula la nómina y las novedades.</p>
         </a>
         {% if session.get('usuario_rol') in ('Administrador', 'Contador') %}
-        <a class="module-card" href="/configuracion/etiquetas">
+        <a class="module-card" href="/configuracion/parametros">
             <h3>Configuración</h3>
-            <p>Etiquetas, parámetros{% if session.get('usuario_rol') == 'Administrador' %}, roles y usuarios{% endif %} del sistema.</p>
+            <p>Parámetros{% if session.get('usuario_rol') == 'Administrador' %}, roles y usuarios{% endif %} del sistema.</p>
         </a>
         {% endif %}
     </div>

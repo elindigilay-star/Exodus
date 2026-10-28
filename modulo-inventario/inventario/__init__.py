@@ -8,15 +8,18 @@ aplicación principal (`Modulo-contable/app.py`) con una sola llamada:
     registrar_inventario(app)
 
 `registrar_inventario(app)` registra las rutas en /api/inventario, deja
-disponible la vista /api/inventario/modulo y se asegura de que las tablas
-(productos, movimientos_inventario) existan.
+disponible la vista /api/inventario/modulo y la vista de etiquetas
+/api/inventario/etiquetas, y se asegura de que las tablas
+(productos, movimientos_inventario, etiquetas) existan.
 
 El módulo comparte la base de datos MySQL `sistema_contable` con el resto de
-Modulo-contable (por eso `stock.py` y `resumen.py` usan
+Modulo-contable (por eso `stock.py`, `resumen.py` y `modelo.py` usan
 `database.connection.obtener_conexion`), y también comparte la sesión de
 usuarios (por eso `rutas.py` usa `routes.auth.login_requerido`).
 """
 
 from .rutas import registrar_inventario
+# Importar etiquetas para que se registren sus rutas en el blueprint
+from . import etiquetas  # noqa: F401
 
 __all__ = ['registrar_inventario']

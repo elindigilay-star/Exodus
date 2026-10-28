@@ -112,8 +112,12 @@ CREATE TABLE `gastos_deducibles` (
   `numero_documento` varchar(50) DEFAULT NULL,
   `monto` decimal(12,2) NOT NULL,
   `fecha` datetime NOT NULL DEFAULT current_timestamp(),
+ Leudo
+  `id_usuario` int(11) NOT NULL
+
   `id_usuario` int(11) NOT NULL,
   `estado_gasto` enum('ACTIVO','ANULADO') NOT NULL DEFAULT 'ACTIVO'
+ main
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --

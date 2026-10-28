@@ -1,6 +1,13 @@
-{% extends "base.html" %}
-{% block title %}Iniciar sesión{% endblock %}
-{% block body %}
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Iniciar sesión · Exodus Contable</title>
+  <link rel="icon" type="image/png" href="{{ url_for('static', filename='favicon.png') }}?v=2">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/exodus.css') }}">
+</head>
+<body>
 <main class="login">
   <section class="login-brand">
     <p class="wordmark">Exodus Contable</p>
@@ -9,7 +16,7 @@
   </section>
 
   <section class="login-panel">
-    <form class="login-form" method="post" action="{{ url_for('login') }}" novalidate>
+    <form class="login-form" method="post" action="{{ url_for('auth.login') }}" novalidate>
       <h2>Iniciar sesión</h2>
       <p class="muted">Entra con tu usuario y contraseña.</p>
 
@@ -85,4 +92,5 @@
   typeNext(0);
 })();
 </script>
-{% endblock %}
+</body>
+</html>

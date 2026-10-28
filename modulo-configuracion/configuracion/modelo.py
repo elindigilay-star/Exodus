@@ -1,74 +1,16 @@
 """Acceso a datos del módulo de configuración.
 
 Tablas creadas/consultadas en la base `sistema_contable`:
-  - etiquetas, parametros          (catálogo contable)
-  - roles, permisos, rol_permiso   (control de acceso)
+  - parametros                   (catálogo contable)
+  - roles, permisos, rol_permiso (control de acceso)
+
+Las etiquetas se manejan ahora en el módulo de inventario (`modulo-inventario/inventario/modelo.py`).
 
 Los usuarios NO se manejan aquí: se usan los de `models.usuario`
 (la misma tabla `usuarios` del inicio de sesión de Modulo-contable).
 """
 
 from database.connection import obtener_conexion
-
-
-# ---------------------------------------------------------------
-# Etiquetas
-# ---------------------------------------------------------------
-
-def listar_etiquetas():
-    conexion = obtener_conexion()
-    try:
-        with conexion.cursor() as cursor:
-            cursor.execute("SELECT * FROM etiquetas ORDER BY tipo, nombre")
-            return cursor.fetchall()
-    finally:
-        conexion.close()
-
-
-def obtener_etiqueta(id_etiqueta):
-    conexion = obtener_conexion()
-    try:
-        with conexion.cursor() as cursor:
-            cursor.execute("SELECT * FROM etiquetas WHERE id = %s", (id_etiqueta,))
-            return cursor.fetchone()
-    finally:
-        conexion.close()
-
-
-def crear_etiqueta(nombre, tipo, porcentaje):
-    conexion = obtener_conexion()
-    try:
-        with conexion.cursor() as cursor:
-            cursor.execute(
-                "INSERT INTO etiquetas (nombre, tipo, porcentaje) VALUES (%s, %s, %s)",
-                (nombre, tipo, porcentaje),
-            )
-        conexion.commit()
-    finally:
-        conexion.close()
-
-
-def actualizar_etiqueta(id_etiqueta, nombre, tipo, porcentaje):
-    conexion = obtener_conexion()
-    try:
-        with conexion.cursor() as cursor:
-            cursor.execute(
-                "UPDATE etiquetas SET nombre = %s, tipo = %s, porcentaje = %s WHERE id = %s",
-                (nombre, tipo, porcentaje, id_etiqueta),
-            )
-        conexion.commit()
-    finally:
-        conexion.close()
-
-
-def eliminar_etiqueta(id_etiqueta):
-    conexion = obtener_conexion()
-    try:
-        with conexion.cursor() as cursor:
-            cursor.execute("DELETE FROM etiquetas WHERE id = %s", (id_etiqueta,))
-        conexion.commit()
-    finally:
-        conexion.close()
 
 
 # ---------------------------------------------------------------

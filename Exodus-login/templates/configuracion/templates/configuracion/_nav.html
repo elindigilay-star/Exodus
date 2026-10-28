@@ -1,0 +1,11 @@
+<link rel="stylesheet" href="{{ url_for('configuracion.static', filename='css/configuracion.css') }}">
+<nav class="subnav" aria-label="Secciones de configuración">
+    <a href="{{ url_for('configuracion.parametros_index') }}"
+       class="{{ 'active' if request.path.startswith('/configuracion/parametros') else '' }}">Parámetros</a>
+    {% if session.get('usuario_rol') == 'Administrador' %}
+    <a href="{{ url_for('configuracion.roles_index') }}"
+       class="{{ 'active' if request.path.startswith('/configuracion/roles') else '' }}">Roles y Permisos</a>
+    <a href="{{ url_for('configuracion.usuarios') }}"
+       class="{{ 'active' if request.path.startswith('/configuracion/usuarios') else '' }}">Usuarios</a>
+    {% endif %}
+</nav>
