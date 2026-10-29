@@ -1,0 +1,54 @@
+/* Estilos del módulo de configuración (subnavegación y lista de permisos). */
+
+.subnav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 0 0 20px;
+  padding: 10px 12px;
+  background: #ffffff;
+  border: 1px solid #dbe2ea;
+  border-radius: 10px;
+}
+
+.subnav a {
+  padding: 6px 12px;
+  border-radius: 8px;
+  text-decoration: none;
+  font-weight: 500;
+  color: var(--primary-color, #1d4f91);
+}
+
+.subnav a:hover {
+  background: rgba(29, 79, 145, 0.10);
+}
+
+.subnav a.active {
+  background: var(--primary-color, #1d4f91);
+  color: #ffffff;
+}
+
+.permisos-lista {
+  display: grid;
+  gap: 8px;
+  padding: 6px 0;
+}
+
+.permiso-check {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  font-weight: 400;
+  cursor: pointer;
+}
+
+.permiso-check input {
+  width: auto;
+  margin-top: 3px;
+}
+
+/* Las cajas de Descripción quedan fijas: se quita la manija de la esquina
+   y no se pueden estirar. */
+.form-group textarea {
+  resize: none;
+}

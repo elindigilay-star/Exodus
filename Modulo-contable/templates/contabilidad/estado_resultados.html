@@ -1,0 +1,66 @@
+{% extends 'base.html' %}
+
+{% block title %}Estado de Resultados{% endblock %}
+{% block header_title %}Estado de Resultados Consolidado{% endblock %}
+
+{% block content %}
+<div class="card">
+    <p>Consolidación de ingresos de inventario, costos de ventas, nómina y gastos del período.</p>
+
+    <!-- Filtro de periodo -->
+    <form class="filtro-periodo" method="GET" action="{{ url_for('contabilidad.ver_estado_resultados_html') }}">
+        <label for="fecha_inicio">Desde:</label>
+        <input type="date" id="fecha_inicio" name="fecha_inicio" value="{{ fecha_inicio or '' }}">
+        <label for="fecha_fin">Hasta:</label>
+        <input type="date" id="fecha_fin" name="fecha_fin" value="{{ fecha_fin or '' }}">
+        <button type="submit" class="btn btn-primary">Filtrar</button>
+        {% if fecha_inicio or fecha_fin %}
+            <a href="{{ url_for('contabilidad.ver_estado_resultados_html') }}" class="btn btn-secondary">Limpiar</a>
+        {% endif %}
+    </form>
+
+    <table>
+        <thead>
+            <tr>
+                <th>Concepto / Rubro</th>
+                <th style="text-align: right;">Monto ($)</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>Ingresos Totales (Ventas de Inventario)</td>
+                <td class="monto">${{ "{:,.2f}".format(data.ingresos_totales) }}</td>
+            </tr>
+            <tr>
+                <td>Costo de Ventas</td>
+                <td class="monto">${{ "{:,.2f}".format(data.costo_ventas) }}</td>
+            </tr>
+            <tr class="subtotal">
+                <td>Utilidad Bruta</td>
+                <td class="monto">${{ "{:,.2f}".format(data.utilidad_bruta) }}</td>
+            </tr>
+            <tr>
+                <td>Gastos Operativos (Nómina)</td>
+                <td class="monto">${{ "{:,.2f}".format(data.desglose_gastos.nomina) }}</td>
+            </tr>
+            <tr>
+                <td>Gastos Deducibles (Otros)</td>
+                <td class="monto">${{ "{:,.2f}".format(data.desglose_gastos.gastos_deducibles) }}</td>
+            </tr>
+            <tr>
+                <td>Pérdidas de Inventario (mermas y ajustes)</td>
+                <td class="monto">${{ "{:,.2f}".format(data.desglose_gastos.perdidas_inventario) }}</td>
+            </tr>
+            <tr class="total-destacado">
+                <td>UTILIDAD NETA DEL EJERCICIO</td>
+                <td class="monto">${{ "{:,.2f}".format(data.utilidad_neta) }}</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <div class="actions">
+        <a href="/api/contabilidad/exportar-reporte?tipo=estado_resultados&formato=pdf&fecha_inicio={{ fecha_inicio or '' }}&fecha_fin={{ fecha_fin or '' }}" class="btn btn-primary">Exportar PDF</a>
+        <a href="/api/contabilidad/exportar-reporte?tipo=estado_resultados&formato=excel&fecha_inicio={{ fecha_inicio or '' }}&fecha_fin={{ fecha_fin or '' }}" class="btn btn-success">Exportar Excel</a>
+    </div>
+</div>
+{% endblock %}

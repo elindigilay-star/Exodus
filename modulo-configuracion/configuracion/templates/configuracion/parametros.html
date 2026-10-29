@@ -1,0 +1,98 @@
+{% extends 'base.html' %}
+
+{% block title %}Parámetros{% endblock %}
+{% block header_title %}Configuración &middot; Parámetros{% endblock %}
+
+{% block content %}
+{% include 'configuracion/_nav.html' %}
+{% with mensajes = get_flashed_messages(with_categories=true) %}
+    {% for categoria, texto in mensajes %}
+        <div class="alert {{ 'alert-success' if categoria == 'ok' else 'alert-danger' }}">{{ texto }}</div>
+    {% endfor %}
+{% endwith %}
+
+<div class="card">
+    <h2 style="font-family:'Poppins',sans-serif;font-size:1.1rem;color:var(--primary-color);margin-bottom:6px;">
+        {{ 'Editar parámetro' if editar else 'Agregar parámetro' }}
+    </h2>
+    <p>Define valores legales y de negocio vinculados a una etiqueta.</p>
+
+    <form method="post"
+          action="{% if editar %}{{ url_for('configuracion.parametros_editar', id_parametro=editar['id']) }}{% else %}{{ url_for('configuracion.parametros_index') }}{% endif %}">
+        <input type="hidden" name="csrf" value="{{ csrf_token() }}">
+
+        <div class="form-group">
+            <label for="nombre">Nombre</label>
+            <input id="nombre" name="nombre" type="text" required
+                   value="{{ editar['nombre'] if editar else '' }}">
+        </div>
+
+        <div class="form-group">
+            <label for="etiqueta_id">Etiqueta</label>
+            <select id="etiqueta_id" name="etiqueta_id" required>
+                <option value="">Selecciona una etiqueta</option>
+                {% for e in etiquetas %}
+                <option value="{{ e['id'] }}" {% if editar and editar['etiqueta_id'] == e['id'] %}selected{% endif %}>{{ e['nombre'] }}</option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label for="valor">Valor</label>
+            <input id="valor" name="valor" type="text" required
+                   value="{{ editar['valor'] if editar else '' }}">
+        </div>
+
+        <div class="form-group">
+            <label for="descripcion">Descripción <small style="color:var(--text-muted);font-weight:400;">(opcional)</small></label>
+            <textarea id="descripcion" name="descripcion" rows="2">{{ editar['descripcion'] if editar else '' }}</textarea>
+        </div>
+
+        <div class="actions">
+            <button class="btn btn-primary" type="submit">
+                {{ 'Guardar cambios' if editar else 'Crear parámetro' }}
+            </button>
+            {% if editar %}
+                <a class="btn btn-secondary" href="{{ url_for('configuracion.parametros_index') }}">Cancelar</a>
+            {% endif %}
+        </div>
+    </form>
+</div>
+
+<div class="card" style="margin-top:24px;max-width:100%;">
+    <h2 style="font-family:'Poppins',sans-serif;font-size:1.1rem;color:var(--primary-color);">Parámetros registrados</h2>
+    <table>
+        <thead>
+            <tr>
+                <th>Nombre</th>
+                <th>Etiqueta</th>
+                <th>Valor</th>
+                <th>Descripción</th>
+                <th>Acciones</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for p in lista %}
+            <tr>
+                <td>{{ p['nombre'] }}</td>
+                <td>{{ p['etiqueta_nombre'] }}</td>
+                <td>{{ p['valor'] }}</td>
+                <td>{{ p['descripcion'] or '—' }}</td>
+                <td>
+                    <div class="acciones">
+                        <a href="{{ url_for('configuracion.parametros_editar', id_parametro=p['id']) }}" class="btn btn-sm btn-edit">Editar</a>
+                        <form method="post" action="{{ url_for('configuracion.parametros_eliminar', id_parametro=p['id']) }}"
+                              onsubmit="return confirm('¿Eliminar este parámetro?');">
+                            <input type="hidden" name="csrf" value="{{ csrf_token() }}">
+                            <button type="submit" class="btn btn-sm btn-delete">Eliminar</button>
+                        </form>
+                    </div>
+                </td>
+            </tr>
+            {% else %}
+            <tr><td colspan="5">Todavía no hay parámetros. Crea el primero con el formulario.</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

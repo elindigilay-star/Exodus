@@ -1,0 +1,236 @@
+{% extends 'base.html' %}
+
+{% block title %}Inventario{% endblock %}
+{% block header_title %}Módulo de Inventario{% endblock %}
+
+{% block head %}
+<link rel="stylesheet" href="{{ url_for('inventario_modulo.static', filename='css/inventario.css') }}">
+{% endblock %}
+
+{% block content %}
+<div class="inventario" data-puede-editar="{{ 'si' if puede_editar else 'no' }}">
+
+    {% if not puede_editar %}
+    <div class="readonly-note">Tu rol solo puede consultar el inventario. Para registrar productos o movimientos pide acceso a un Administrador, Contador o Auxiliar.</div>
+    {% endif %}
+
+    <div class="kpis" id="kpis">
+        <div class="kpi"><span>Productos activos</span><strong id="kpi-productos">—</strong></div>
+        <div class="kpi"><span>Unidades en stock</span><strong id="kpi-unidades">—</strong></div>
+        <div class="kpi"><span>Valor a costo</span><strong id="kpi-costo">—</strong></div>
+        <div class="kpi"><span>Valor a precio de venta</span><strong id="kpi-venta">—</strong></div>
+        <div class="kpi alerta"><span>Con stock bajo</span><strong id="kpi-bajo">—</strong></div>
+        <div class="kpi alerta"><span>Agotados</span><strong id="kpi-agotados">—</strong></div>
+        <div class="kpi alerta"><span>Sin clasificar</span><strong id="kpi-sinclas">—</strong></div>
+    </div>
+
+    <div class="inv-tabs">
+        <button class="tab active" data-view="productos">Productos</button>
+        <button class="tab" data-view="movimientos">Movimientos</button>
+    </div>
+
+    <section class="view active" id="view-productos">
+        <div class="view-header">
+            <h1>Productos</h1>
+            <p>Catálogo con existencias, costo promedio, precio de venta y clasificación.</p>
+        </div>
+
+        {% if puede_editar %}
+        <div class="panel">
+            <h2 id="titulo-form-producto">Registrar producto</h2>
+
+            <div class="aviso hidden" id="aviso-etiquetas">
+                Aún no hay etiquetas de tipo <strong>Producto</strong>. Créalas primero en
+                <a href="/configuracion/etiquetas">Configuración → Etiquetas</a>
+                para poder clasificar los productos.
+            </div>
+
+            <form id="form-producto" autocomplete="off">
+                <input type="hidden" name="id_producto" id="prod-id">
+                <div class="form-grid">
+                    <div class="field">
+                        <label for="prod-codigo">Código</label>
+                        <input id="prod-codigo" name="codigo" type="text" maxlength="40" required>
+                    </div>
+                    <div class="field">
+                        <label for="prod-nombre">Nombre</label>
+                        <input id="prod-nombre" name="nombre" type="text" maxlength="150" required>
+                    </div>
+                    <div class="field">
+                        <label for="prod-etiqueta">Clasificación (etiqueta)</label>
+                        <select id="prod-etiqueta" name="id_etiqueta" required>
+                            <option value="">Selecciona una clasificación…</option>
+                        </select>
+                        <span class="hint">Se administran en <a href="/configuracion/etiquetas">Configuración → Etiquetas</a>.</span>
+                    </div>
+                    <div class="field">
+                        <label for="prod-unidad">Unidad de medida</label>
+                        <input id="prod-unidad" name="unidad" type="text" maxlength="20" value="und">
+                    </div>
+                    <div class="field">
+                        <label for="prod-precio">Precio de venta</label>
+                        <input id="prod-precio" name="precio_venta" type="number" min="0" step="0.01" required>
+                    </div>
+                    <div class="field">
+                        <label for="prod-minimo">Stock mínimo (alerta)</label>
+                        <input id="prod-minimo" name="stock_minimo" type="number" min="0" step="1" value="0">
+                    </div>
+                    <div class="field" data-solo-nuevo>
+                        <label for="prod-costo">Costo de compra</label>
+                        <input id="prod-costo" name="costo" type="number" min="0" step="0.01" value="0">
+                    </div>
+                    <div class="field" data-solo-nuevo>
+                        <label for="prod-stock">Stock inicial</label>
+                        <input id="prod-stock" name="stock_inicial" type="number" min="0" step="1" value="0">
+                    </div>
+                    <div class="field full">
+                        <label for="prod-descripcion">Descripción (opcional)</label>
+                        <input id="prod-descripcion" name="descripcion" type="text" maxlength="255">
+                    </div>
+                    <div class="form-actions">
+                        <button type="submit" class="primary" id="btn-guardar-producto">Registrar producto</button>
+                        <button type="button" class="secondary hidden" id="btn-cancelar-edicion">Cancelar edición</button>
+                        <div class="msg" id="msg-producto"></div>
+                    </div>
+                </div>
+            </form>
+        </div>
+        {% endif %}
+
+        <div class="panel">
+            <h2>Productos registrados</h2>
+            <div class="msg" id="msg-lista"></div>
+            <div class="toolbar">
+                <input type="search" id="filtro-buscar" placeholder="Buscar por código, nombre o clasificación…">
+                <select id="filtro-etiqueta">
+                    <option value="">Todas las clasificaciones</option>
+                    <option value="sin">Sin clasificar</option>
+                </select>
+                <select id="filtro-estado">
+                    <option value="ACTIVO">Activos</option>
+                    <option value="INACTIVO">Inactivos</option>
+                    <option value="">Todos</option>
+                </select>
+                <label class="check"><input type="checkbox" id="filtro-bajo"> Solo stock bajo</label>
+            </div>
+            <div class="table-wrap">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Código</th>
+                            <th>Producto</th>
+                            <th>Clasificación</th>
+                            <th class="num">Stock</th>
+                            <th class="num">Costo prom.</th>
+                            <th class="num">Precio venta</th>
+                            <th>Estado</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody id="tabla-productos">
+                        <tr class="empty-row"><td colspan="8">Cargando…</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </section>
+
+    <section class="view" id="view-movimientos">
+        <div class="view-header">
+            <h1>Movimientos de stock</h1>
+            <p>Entradas, ventas, salidas y ajustes. Las ventas alimentan el Estado de Resultados.</p>
+        </div>
+
+        {% if puede_editar %}
+        <div class="panel">
+            <h2>Registrar movimiento</h2>
+            <form id="form-movimiento" autocomplete="off">
+                <div class="form-grid">
+                    <div class="field">
+                        <label for="mov-producto">Producto</label>
+                        <select id="mov-producto" name="id_producto" required></select>
+                    </div>
+                    <div class="field">
+                        <label for="mov-tipo">Tipo</label>
+                        <select id="mov-tipo" name="tipo" required>
+                            <option value="ENTRADA">Entrada (compra / reposición)</option>
+                            <option value="VENTA">Venta</option>
+                            <option value="SALIDA">Salida (daño, merma, uso interno)</option>
+                            <option value="AJUSTE">Ajuste por conteo físico</option>
+                        </select>
+                    </div>
+                    <div class="field">
+                        <label for="mov-cantidad" id="lbl-cantidad">Cantidad</label>
+                        <input id="mov-cantidad" name="cantidad" type="number" min="0" step="1" required>
+                        <span class="hint" id="hint-stock"></span>
+                    </div>
+                    <div class="field" id="campo-costo">
+                        <label for="mov-costo">Costo unitario de compra</label>
+                        <input id="mov-costo" name="costo_unitario" type="number" min="0" step="0.01">
+                    </div>
+                    <div class="field hidden" id="campo-precio">
+                        <label for="mov-precio">Precio unitario de venta</label>
+                        <input id="mov-precio" name="precio_unitario" type="number" min="0" step="0.01">
+                    </div>
+                    <div class="field full">
+                        <label for="mov-motivo" id="lbl-motivo">Motivo (opcional)</label>
+                        <input id="mov-motivo" name="motivo" type="text" maxlength="255">
+                    </div>
+                    <div class="form-actions">
+                        <button type="submit" class="primary">Registrar movimiento</button>
+                        <div class="msg" id="msg-movimiento"></div>
+                    </div>
+                </div>
+            </form>
+        </div>
+        {% endif %}
+
+        <div class="panel">
+            <h2>Historial</h2>
+            <div class="toolbar">
+                <select id="filtro-mov-producto"><option value="">Todos los productos</option></select>
+            </div>
+            <div class="table-wrap">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Fecha</th>
+                            <th>Producto</th>
+                            <th>Tipo</th>
+                            <th class="num">Cantidad</th>
+                            <th class="num">Stock resultante</th>
+                            <th class="num">Valor unitario</th>
+                            <th>Motivo</th>
+                            <th>Usuario</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tabla-movimientos">
+                        <tr class="empty-row"><td colspan="8">Cargando…</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </section>
+
+    {% if puede_editar %}
+    <dialog id="dlg-clasificar">
+        <form id="form-clasificar" autocomplete="off">
+            <h2>Clasificar producto</h2>
+            <p class="hint" id="clasificar-producto"></p>
+            <div class="field">
+                <label for="clasificar-etiqueta">Clasificación (etiqueta)</label>
+                <select id="clasificar-etiqueta" required></select>
+            </div>
+            <div class="form-actions">
+                <button type="submit" class="primary">Confirmar</button>
+                <button type="button" class="secondary" id="clasificar-cancelar">Cancelar</button>
+                <div class="msg" id="msg-clasificar"></div>
+            </div>
+        </form>
+    </dialog>
+    {% endif %}
+
+</div>
+
+<script src="{{ url_for('inventario_modulo.static', filename='js/inventario.js') }}"></script>
+{% endblock %}

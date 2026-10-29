@@ -1,0 +1,97 @@
+{% extends 'base.html' %}
+
+{% block title %}Registrar Gasto{% endblock %}
+{% block header_title %}Registrar Nuevo Gasto Deducible{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div id="mensaje-contenedor"></div>
+
+    <form id="form-gasto">
+        <div class="form-group">
+            <label for="descripcion">Descripción del Gasto</label>
+            <input type="text" id="descripcion" name="descripcion" placeholder="Ej: Compra de papelería" required>
+        </div>
+
+        <div class="form-group">
+            <label for="monto">Monto ($)</label>
+            <input type="number" step="0.01" id="monto" name="monto" placeholder="Ej: 150000.00" required>
+        </div>
+
+        <div class="form-row">
+            <div class="form-group">
+                <label for="categoria">Categoría</label>
+                <input type="text" id="categoria" name="categoria" placeholder="Ej: Servicios públicos, Arriendo, Papelería">
+            </div>
+            <div class="form-group">
+                <label for="tercero">Tercero / Proveedor</label>
+                <input type="text" id="tercero" name="tercero" placeholder="Ej: Proveedor XYZ">
+            </div>
+        </div>
+
+        <div class="form-row">
+            <div class="form-group">
+                <label for="nit">NIT / Documento</label>
+                <input type="text" id="nit" name="nit" placeholder="Ej: 900123456-1">
+            </div>
+            <div class="form-group">
+                <label for="numero_documento">Número Documento (factura/recibo)</label>
+                <input type="text" id="numero_documento" name="numero_documento" placeholder="Ej: FAC-00123">
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label for="fecha">Fecha del gasto</label>
+            <input type="date" id="fecha" name="fecha">
+        </div>
+
+        <p class="nota-usuario">Se registrará a nombre de <strong>{{ session.get('usuario_nombre') }}</strong> ({{ session.get('usuario_rol') }}).</p>
+
+        <button type="submit" class="btn btn-primary">Guardar Gasto</button>
+    </form>
+</div>
+
+<script>
+function obtenerValor(id) {
+    const el = document.getElementById(id);
+    return el ? el.value : '';
+}
+
+document.getElementById('form-gasto').addEventListener('submit', async function(e) {
+    e.preventDefault();
+
+    const descripcion = obtenerValor('descripcion');
+    const monto = obtenerValor('monto');
+    const categoria = obtenerValor('categoria');
+    const tercero = obtenerValor('tercero');
+    const nit = obtenerValor('nit');
+    const numero_documento = obtenerValor('numero_documento');
+    const fecha = obtenerValor('fecha');
+    const msgDiv = document.getElementById('mensaje-contenedor');
+
+    msgDiv.innerHTML = '';
+
+    try {
+        const response = await fetch('/api/contabilidad/gastos', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ descripcion, monto, categoria, tercero, nit, numero_documento, fecha })
+        });
+
+        let result = {};
+        try { result = await response.json(); } catch (_) {}
+
+        if (response.status === 403) {
+            msgDiv.innerHTML = '<div class="alert alert-danger">Tu rol no tiene permiso para registrar gastos (solo Contador o Administrador).</div>';
+        } else if (response.ok) {
+            msgDiv.innerHTML = `<div class="alert alert-success">${result.data.mensaje}</div>`;
+            document.getElementById('form-gasto').reset();
+        } else {
+            msgDiv.innerHTML = `<div class="alert alert-danger">${result.mensaje || 'No se pudo guardar el gasto.'}</div>`;
+        }
+    } catch (error) {
+        msgDiv.innerHTML = `<div class="alert alert-danger">Error de conexión al guardar el gasto.</div>`;
+    }
+});
+</script>
+{% endblock %}

@@ -1,0 +1,59 @@
+{% extends 'base.html' %}
+
+{% block title %}Inicio{% endblock %}
+{% block header_title %}Bienvenido, {{ session.get('usuario_nombre') }}{% endblock %}
+
+{% block content %}
+<div class="card">
+    <p>Seleccione un módulo para comenzar a trabajar.</p>
+
+    {% if resumen %}
+    <div class="dash-kpis">
+        <div><span>Ventas registradas</span><strong>${{ "{:,.2f}".format(resumen.ventas) }}</strong></div>
+        <div><span>Valor del inventario</span><strong>${{ "{:,.2f}".format(resumen.valor_inventario) }}</strong></div>
+        <div><span>Productos activos</span><strong>{{ resumen.productos_activos }}</strong></div>
+        <div><span>Con stock bajo</span><strong>{{ resumen.bajo_stock }}</strong></div>
+    </div>
+    {% endif %}
+
+    <div class="module-grid">
+        {% set rol = session.get('usuario_rol') %}
+        {% if rol in ('Administrador', 'Contador') %}
+        <a class="module-card" href="/api/contabilidad/ver-estado-resultados">
+            <h3>Estado de Resultados</h3>
+            <p>Consulta el resultado consolidado del período.</p>
+        </a>
+        <a class="module-card" href="/api/contabilidad/ver-balance-general">
+            <h3>Balance General</h3>
+            <p>Revisa la situación financiera de la empresa.</p>
+        </a>
+        <a class="module-card" href="/api/contabilidad/ver-registrar-gasto">
+            <h3>Gastos Deducibles</h3>
+            <p>Registra nuevos gastos deducibles.</p>
+        </a>
+        <a class="module-card" href="/api/contabilidad/ver-listar-gastos">
+            <h3>Listar Gastos</h3>
+            <p>Consulta, edita y anula gastos deducibles registrados.</p>
+        </a>
+        {% endif %}
+        {% if rol in ('Administrador', 'Contador', 'Auxiliar') %}
+        <a class="module-card" href="/api/inventario/modulo">
+            <h3>Inventario</h3>
+            <p>Productos, existencias, entradas, ventas y ajustes de stock.</p>
+        </a>
+        {% endif %}
+        {% if rol in ('Administrador', 'Recursos Humanos') %}
+        <a class="module-card" href="/api/nomina/modulo">
+            <h3>Nómina</h3>
+            <p>Gestiona empleados, calcula la nómina y las novedades.</p>
+        </a>
+        {% endif %}
+        {% if rol in ('Administrador', 'Contador') %}
+        <a class="module-card" href="/configuracion/etiquetas">
+            <h3>Configuración</h3>
+            <p>Etiquetas, parámetros{% if rol == 'Administrador' %}, roles y usuarios{% endif %} del sistema.</p>
+        </a>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
