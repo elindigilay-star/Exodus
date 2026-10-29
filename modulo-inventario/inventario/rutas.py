@@ -15,10 +15,9 @@ from functools import wraps
 import pymysql
 from flask import Blueprint, jsonify, render_template, request, session
 
+from routes.auth import requerir_roles
 
 from . import stock as modelo
-
-from routes.auth import login_requerido
 
 inventario_modulo_bp = Blueprint(
     'inventario_modulo', __name__,
@@ -44,7 +43,9 @@ def acceso_api(*roles):
             if not session.get('usuario_id'):
                 return jsonify({'error': 'Tu sesión expiró. Inicia sesión de nuevo.'}), 401
             if roles and not _rol_en(roles):
-                return jsonify({'error': 'Tu rol no tiene permiso para modificar el inventario.'}), 403
+                return jsonify({
+                    'error': 'Tu rol no tiene permiso para acceder al inventario.',
+                }), 403
             return f(*args, **kwargs)
         return interno
     return decorador
@@ -69,8 +70,8 @@ def _entero(valor, nombre, minimo=0, obligatorio=False):
         return minimo if minimo > 0 else 0
     try:
         numero = Decimal(str(valor))
-    except InvalidOperation:
-        raise modelo.ErrorInventario(f'{nombre.capitalize()} debe ser un número entero.')
+    except InvalidOperation as error:
+        raise modelo.ErrorInventario(f'{nombre.capitalize()} debe ser un número entero.') from error
     if numero != numero.to_integral_value():
         raise modelo.ErrorInventario(f'{nombre.capitalize()} debe ser un número entero.')
     numero = int(numero)
@@ -86,8 +87,8 @@ def _dinero(valor, nombre, obligatorio=True):
         return None
     try:
         numero = Decimal(str(valor))
-    except InvalidOperation:
-        raise modelo.ErrorInventario(f'{nombre.capitalize()} debe ser un número.')
+    except InvalidOperation as error:
+        raise modelo.ErrorInventario(f'{nombre.capitalize()} debe ser un número.') from error
     if not numero.is_finite() or numero < 0:
         raise modelo.ErrorInventario(f'{nombre.capitalize()} no puede ser negativo.')
     return numero
@@ -148,7 +149,7 @@ def _error_bd(_error):
 
 
 @inventario_modulo_bp.route('/modulo', methods=['GET'])
-@login_requerido
+@requerir_roles(*ROLES_ESCRITURA)
 def modulo():
     return render_template(
         'inventario/modulo.html',
@@ -160,7 +161,7 @@ def modulo():
 
 
 @inventario_modulo_bp.route('/etiquetas', methods=['GET'])
-@acceso_api()
+@acceso_api(*ROLES_ESCRITURA)
 def api_listar_etiquetas():
     """Etiquetas de tipo producto creadas en Configuración → Etiquetas."""
     return jsonify(_normalizar_lista(modelo.listar_etiquetas_producto())), 200
@@ -168,13 +169,13 @@ def api_listar_etiquetas():
 
 
 @inventario_modulo_bp.route('/resumen', methods=['GET'])
-@acceso_api()
+@acceso_api(*ROLES_ESCRITURA)
 def api_resumen():
     return jsonify(_normalizar(modelo.obtener_resumen_stock())), 200
 
 
 @inventario_modulo_bp.route('/productos', methods=['GET'])
-@acceso_api()
+@acceso_api(*ROLES_ESCRITURA)
 def api_listar_productos():
     estado = (request.args.get('estado') or '').upper() or None
 
@@ -206,7 +207,10 @@ def api_crear_producto():
         campos['unidad'], costo, campos['precio_venta'], stock_inicial,
         campos['stock_minimo'], session.get('usuario_id'),
     )
-    return jsonify({'mensaje': 'Producto registrado correctamente.', 'id_producto': id_producto}), 201
+    return jsonify({
+        'mensaje': 'Producto registrado correctamente.',
+        'id_producto': id_producto,
+    }), 201
 
 
 @inventario_modulo_bp.route('/productos/actualizar', methods=['POST'])
@@ -257,7 +261,7 @@ def api_estado_producto():
 
 
 @inventario_modulo_bp.route('/movimientos', methods=['GET'])
-@acceso_api()
+@acceso_api(*ROLES_ESCRITURA)
 def api_listar_movimientos():
     try:
         id_producto = int(request.args.get('id_producto') or 0) or None
@@ -278,7 +282,9 @@ def api_registrar_movimiento():
     resultado = modelo.registrar_movimiento(
         id_producto, tipo, cantidad,
         costo_unitario=_dinero(datos.get('costo_unitario'), 'el costo unitario', obligatorio=False),
-        precio_unitario=_dinero(datos.get('precio_unitario'), 'el precio unitario', obligatorio=False),
+        precio_unitario=_dinero(
+            datos.get('precio_unitario'), 'el precio unitario', obligatorio=False
+        ),
         motivo=_texto(datos.get('motivo'), 255),
         id_usuario=session.get('usuario_id'),
     )
@@ -298,5 +304,5 @@ def registrar_inventario(app):
     app.register_blueprint(inventario_modulo_bp, url_prefix='/api/inventario')
     try:
         modelo.crear_tablas_inventario()
-    except Exception as error: 
+    except (pymysql.MySQLError, OSError, ValueError) as error:
         print(f"AVISO: no se pudieron preparar las tablas de inventario: {error}")

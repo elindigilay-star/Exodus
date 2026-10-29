@@ -14,7 +14,7 @@ disponible la vista /api/inventario/modulo y se asegura de que las tablas
 El módulo comparte la base de datos MySQL `sistema_contable` con el resto de
 Modulo-contable (por eso `stock.py` y `resumen.py` usan
 `database.connection.obtener_conexion`), y también comparte la sesión de
-usuarios (por eso `rutas.py` usa `routes.auth.login_requerido`).
+usuarios (por eso `rutas.py` usa `routes.auth.requerir_roles`).
 """
 
 from .rutas import registrar_inventario

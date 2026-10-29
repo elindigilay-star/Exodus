@@ -189,7 +189,10 @@ def listar_productos(buscar=None, estado=None, bajo_stock=False,
             if buscar:
                 patron = f"%{buscar}%"
                 if con_etiquetas:
-                    sql += " AND (p.codigo LIKE %s OR p.nombre LIKE %s OR p.categoria LIKE %s OR e.nombre LIKE %s)"
+                    sql += (
+                        " AND (p.codigo LIKE %s OR p.nombre LIKE %s"
+                        " OR p.categoria LIKE %s OR e.nombre LIKE %s)"
+                    )
                     params.extend([patron, patron, patron, patron])
                 else:
                     sql += " AND (p.codigo LIKE %s OR p.nombre LIKE %s OR p.categoria LIKE %s)"
@@ -252,21 +255,24 @@ def crear_producto(codigo, nombre, descripcion, id_etiqueta, unidad, costo, prec
                     (codigo, nombre, descripcion, id_etiqueta, unidad,
                      _dinero(costo), _dinero(precio_venta), stock_inicial, stock_minimo),
                 )
-            except pymysql.err.IntegrityError:
-                raise ErrorInventario('Ya existe un producto con ese código.', 409)
+            except pymysql.err.IntegrityError as error:
+                raise ErrorInventario(
+                    'Ya existe un producto con ese código.', 409
+                ) from error
             id_producto = cursor.lastrowid
             if stock_inicial > 0:
                 cursor.execute(
                     """
                     INSERT INTO movimientos_inventario
-                        (id_producto, tipo, cantidad, stock_resultante, costo_unitario, motivo, id_usuario)
+                        (id_producto, tipo, cantidad, stock_resultante,
+                         costo_unitario, motivo, id_usuario)
                     VALUES (%s, 'ENTRADA', %s, %s, %s, 'Stock inicial', %s)
                     """,
                     (id_producto, stock_inicial, stock_inicial, _dinero(costo), id_usuario),
                 )
         conexion.commit()
         return id_producto
-    except Exception:
+    except (pymysql.MySQLError, ErrorInventario):
         conexion.rollback()
         raise
     finally:
@@ -279,7 +285,10 @@ def actualizar_producto(id_producto, codigo, nombre, descripcion, id_etiqueta, u
     conexion = obtener_conexion()
     try:
         with conexion.cursor() as cursor:
-            cursor.execute("SELECT id_producto FROM productos WHERE id_producto = %s", (id_producto,))
+            cursor.execute(
+                "SELECT id_producto FROM productos WHERE id_producto = %s",
+                (id_producto,),
+            )
             if cursor.fetchone() is None:
                 raise ErrorInventario('El producto no existe.', 404)
             _validar_etiqueta(cursor, id_etiqueta)
@@ -296,7 +305,7 @@ def actualizar_producto(id_producto, codigo, nombre, descripcion, id_etiqueta, u
                  _dinero(precio_venta), stock_minimo, id_producto),
             )
         conexion.commit()
-    except Exception:
+    except (pymysql.MySQLError, ErrorInventario):
         conexion.rollback()
         raise
     finally:
@@ -308,7 +317,10 @@ def clasificar_producto(id_producto, id_etiqueta):
     conexion = obtener_conexion()
     try:
         with conexion.cursor() as cursor:
-            cursor.execute("SELECT id_producto FROM productos WHERE id_producto = %s", (id_producto,))
+            cursor.execute(
+                "SELECT id_producto FROM productos WHERE id_producto = %s",
+                (id_producto,),
+            )
             if cursor.fetchone() is None:
                 raise ErrorInventario('El producto no existe.', 404)
             nombre_etiqueta = _validar_etiqueta(cursor, id_etiqueta)
@@ -318,7 +330,7 @@ def clasificar_producto(id_producto, id_etiqueta):
             )
         conexion.commit()
         return nombre_etiqueta
-    except Exception:
+    except (pymysql.MySQLError, ErrorInventario):
         conexion.rollback()
         raise
     finally:
@@ -335,7 +347,10 @@ def eliminar_producto(id_producto):
     try:
         with conexion.cursor() as cursor:
             cursor.execute(
-                "SELECT id_producto FROM productos WHERE id_producto = %s FOR UPDATE", (id_producto,))
+                "SELECT id_producto FROM productos WHERE id_producto = %s "
+                "FOR UPDATE",
+                (id_producto,),
+            )
             if cursor.fetchone() is None:
                 raise ErrorInventario('El producto no existe.', 404)
             cursor.execute(
@@ -350,10 +365,13 @@ def eliminar_producto(id_producto):
             if cursor.fetchone()['n'] > 0:
                 raise ErrorInventario(
                     'No se puede eliminar: el producto ya tiene movimientos registrados.', 409)
-            cursor.execute("DELETE FROM movimientos_inventario WHERE id_producto = %s", (id_producto,))
+            cursor.execute(
+                "DELETE FROM movimientos_inventario WHERE id_producto = %s",
+                (id_producto,),
+            )
             cursor.execute("DELETE FROM productos WHERE id_producto = %s", (id_producto,))
         conexion.commit()
-    except Exception:
+    except (pymysql.MySQLError, ErrorInventario):
         conexion.rollback()
         raise
     finally:
@@ -365,7 +383,10 @@ def cambiar_estado_producto(id_producto, activo):
     conexion = obtener_conexion()
     try:
         with conexion.cursor() as cursor:
-            cursor.execute("SELECT id_producto FROM productos WHERE id_producto = %s", (id_producto,))
+            cursor.execute(
+                "SELECT id_producto FROM productos WHERE id_producto = %s",
+                (id_producto,),
+            )
             if cursor.fetchone() is None:
                 raise ErrorInventario('El producto no existe.', 404)
             cursor.execute(
@@ -373,7 +394,7 @@ def cambiar_estado_producto(id_producto, activo):
                 (1 if activo else 0, id_producto),
             )
         conexion.commit()
-    except Exception:
+    except (pymysql.MySQLError, ErrorInventario):
         conexion.rollback()
         raise
     finally:
@@ -407,12 +428,19 @@ def registrar_movimiento(id_producto, tipo, cantidad, costo_unitario=None,
     try:
         with conexion.cursor() as cursor:
 
-            cursor.execute("SELECT * FROM productos WHERE id_producto = %s FOR UPDATE", (id_producto,))
+            cursor.execute(
+                "SELECT * FROM productos WHERE id_producto = %s FOR UPDATE",
+                (id_producto,),
+            )
             producto = cursor.fetchone()
             if producto is None:
                 raise ErrorInventario('El producto no existe.', 404)
             if not producto['activo']:
-                raise ErrorInventario('El producto está inactivo. Actívalo para registrar movimientos.', 409)
+                raise ErrorInventario(
+                    'El producto está inactivo. Actívalo para registrar '
+                    'movimientos.',
+                    409,
+                )
 
             stock = producto['stock_actual']
             costo_actual = Decimal(producto['costo_promedio'])
@@ -421,38 +449,50 @@ def registrar_movimiento(id_producto, tipo, cantidad, costo_unitario=None,
             id_venta = None
 
             if tipo == 'ENTRADA':
-                costo_entrada = _dinero(costo_unitario if costo_unitario is not None else costo_actual)
+                costo_entrada = _dinero(
+                    costo_unitario if costo_unitario is not None else costo_actual
+                )
                 delta = cantidad
                 nuevo_stock = stock + delta
                 nuevo_costo = _dinero(
-                    (Decimal(stock) * costo_actual + Decimal(delta) * costo_entrada) / Decimal(nuevo_stock)
+                    (Decimal(stock) * costo_actual
+                     + Decimal(delta) * costo_entrada) / Decimal(nuevo_stock)
                 )
                 costo_movimiento = costo_entrada
             elif tipo == 'AJUSTE':
                 delta = cantidad - stock
                 if delta == 0:
-                    raise ErrorInventario('El conteo coincide con el stock actual; no hay nada que ajustar.')
+                    raise ErrorInventario(
+                        'El conteo coincide con el stock actual; '
+                        'no hay nada que ajustar.'
+                    )
                 nuevo_stock = cantidad
                 costo_movimiento = costo_actual
             else:  # VENTA o SALIDA
                 if cantidad > stock:
-                    raise ErrorInventario(f'Stock insuficiente: hay {stock} y se piden {cantidad}.', 409)
+                    raise ErrorInventario(
+                        f'Stock insuficiente: hay {stock} y se piden {cantidad}.',
+                        409,
+                    )
                 delta = -cantidad
                 nuevo_stock = stock + delta
                 costo_movimiento = costo_actual
                 if tipo == 'VENTA':
                     precio_registrado = _dinero(
-                        precio_unitario if precio_unitario is not None else producto['precio_venta']
+                        precio_unitario if precio_unitario is not None
+                        else producto['precio_venta']
                     )
-         
+
                     cursor.execute(
-                        "INSERT INTO ventas_inventario (monto_total, costo_ventas) VALUES (%s, %s)",
+                        "INSERT INTO ventas_inventario "
+                        "(monto_total, costo_ventas) VALUES (%s, %s)",
                         (precio_registrado * cantidad, costo_actual * cantidad),
                     )
                     id_venta = cursor.lastrowid
 
             cursor.execute(
-                "UPDATE productos SET stock_actual = %s, costo_promedio = %s WHERE id_producto = %s",
+                "UPDATE productos SET stock_actual = %s, costo_promedio = %s "
+                "WHERE id_producto = %s",
                 (nuevo_stock, nuevo_costo, id_producto),
             )
             cursor.execute(
@@ -473,7 +513,7 @@ def registrar_movimiento(id_producto, tipo, cantidad, costo_unitario=None,
             'stock_resultante': nuevo_stock,
             'costo_promedio': float(nuevo_costo),
         }
-    except Exception:
+    except (pymysql.MySQLError, ErrorInventario):
         conexion.rollback()
         raise
     finally:
