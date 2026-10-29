@@ -11,8 +11,10 @@ def calcular_balance_general(fecha_inicio=None, fecha_fin=None):
     """
     try:
         estado_res = generar_estado_resultados(fecha_inicio, fecha_fin)
-    except ValueError:
-        raise ValueError("No existen datos contables suficientes para calcular el Balance General.")
+    except ValueError as error:
+        raise ValueError(
+            "No existen datos contables suficientes para calcular el Balance General."
+        ) from error
 
     consolidado = consolidar_informacion_contable(fecha_inicio, fecha_fin)
 
@@ -20,7 +22,8 @@ def calcular_balance_general(fecha_inicio=None, fecha_fin=None):
     # Cambio en inventario = valor actual - valor inicial
     # Si hay más inventario al final que al principio, significa que se compró mercancía con cash
     cambio_inventario = consolidado['valor_inventario'] - consolidado['valor_inventario_inicial']
-    gastos_en_efectivo = estado_res['desglose_gastos']['nomina'] + estado_res['desglose_gastos']['gastos_deducibles']
+    desglose = estado_res['desglose_gastos']
+    gastos_en_efectivo = desglose['nomina'] + desglose['gastos_deducibles']
     efectivo_caja = estado_res['ingresos_totales'] - cambio_inventario - gastos_en_efectivo
     inventario = consolidado['valor_inventario']
     total_activos = efectivo_caja + inventario

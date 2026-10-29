@@ -8,7 +8,8 @@ def insertar_gasto(descripcion, monto, id_usuario, categoria=None, tercero=None,
         with conexion.cursor() as cursor:
             sql = """
                 INSERT INTO gastos_deducibles
-                    (descripcion, monto, id_usuario, fecha, categoria, tercero, nit, numero_documento)
+                    (descripcion, monto, id_usuario, fecha, categoria,
+                     tercero, nit, numero_documento)
                 VALUES (%s, %s, %s, COALESCE(%s, NOW()), %s, %s, %s, %s)
             """
             cursor.execute(sql, (descripcion, monto, id_usuario, fecha,
@@ -23,12 +24,15 @@ def obtener_total_gastos(fecha_inicio=None, fecha_fin=None):
     conexion = obtener_conexion()
     try:
         with conexion.cursor() as cursor:
-            sql = "SELECT COALESCE(SUM(monto), 0) AS total FROM gastos_deducibles WHERE estado_gasto = 'ACTIVO'"
+            sql = (
+                "SELECT COALESCE(SUM(monto), 0) AS total "
+                "FROM gastos_deducibles WHERE estado_gasto = 'ACTIVO'"
+            )
             params = []
             if fecha_inicio and fecha_fin:
                 sql += " AND fecha BETWEEN %s AND %s"
                 params.extend([fecha_inicio, fecha_fin])
-            
+
             cursor.execute(sql, params)
             resultado = cursor.fetchone()
             return float(resultado['total']) if resultado else 0.0
@@ -36,7 +40,7 @@ def obtener_total_gastos(fecha_inicio=None, fecha_fin=None):
         conexion.close()
 
 def listar_gastos(fecha_inicio=None, fecha_fin=None, estado_gasto='ACTIVO'):
-    """Lista los gastos deducibles con sus metadatos, opcionalmente filtrados por periodo y estado."""
+    """Lista los gastos deducibles filtrados por periodo y estado."""
     conexion = obtener_conexion()
     try:
         with conexion.cursor() as cursor:

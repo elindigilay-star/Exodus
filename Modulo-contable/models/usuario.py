@@ -8,7 +8,10 @@ def obtener_usuario_por_id(id_usuario):
     conexion = obtener_conexion()
     try:
         with conexion.cursor() as cursor:
-            sql = "SELECT id_usuario, nombre, email, rol FROM usuarios WHERE id_usuario = %s"
+            sql = (
+                "SELECT id_usuario, nombre, email, rol, activo "
+                "FROM usuarios WHERE id_usuario = %s"
+            )
             cursor.execute(sql, (id_usuario,))
             return cursor.fetchone()
     finally:
@@ -98,7 +101,10 @@ def contar_admins_activos(excluir_id=None):
     conexion = obtener_conexion()
     try:
         with conexion.cursor() as cursor:
-            sql = "SELECT COUNT(*) AS total FROM usuarios WHERE LOWER(rol) = 'administrador' AND activo = 1"
+            sql = (
+                "SELECT COUNT(*) AS total FROM usuarios "
+                "WHERE LOWER(rol) = 'administrador' AND activo = 1"
+            )
             params = []
             if excluir_id is not None:
                 sql += " AND id_usuario <> %s"
@@ -161,5 +167,86 @@ def eliminar_usuario(id_usuario):
             )
             conexion.commit()
             return cursor.rowcount
+    finally:
+        conexion.close()
+
+
+# ---------------------------------------------------------------
+# Intentos de inicio de sesión (persistidos, no en memoria)
+# ---------------------------------------------------------------
+
+def segundos_bloqueado(usuario, ip):
+    """Segundos que le quedan de bloqueo a (usuario, ip); 0 si no está bloqueado."""
+    conexion = obtener_conexion()
+    try:
+        with conexion.cursor() as cursor:
+            cursor.execute(
+                """
+                SELECT TIMESTAMPDIFF(SECOND, NOW(), bloqueado_hasta) AS restante
+                FROM intentos_login
+                WHERE usuario = %s AND ip = %s AND bloqueado_hasta > NOW()
+                """,
+                (usuario, ip),
+            )
+            fila = cursor.fetchone()
+            return max(int(fila["restante"]), 0) if fila else 0
+    finally:
+        conexion.close()
+
+
+def registrar_intento_fallido(usuario, ip, max_intentos, segundos_bloqueo):
+    """Suma un fallo y bloquea la combinación usuario/IP al llegar al máximo."""
+    conexion = obtener_conexion()
+    try:
+        with conexion.cursor() as cursor:
+            cursor.execute(
+                """
+                SELECT fallos,
+                       (bloqueado_hasta IS NOT NULL AND bloqueado_hasta > NOW()) AS vigente
+                FROM intentos_login
+                WHERE usuario = %s AND ip = %s
+                FOR UPDATE
+                """,
+                (usuario, ip),
+            )
+            fila = cursor.fetchone()
+
+            fallos = 0
+            if fila and not fila["vigente"]:
+                fallos = int(fila["fallos"])
+            fallos += 1
+
+            bloqueado_hasta = None
+            if fallos >= max_intentos:
+                cursor.execute("SELECT DATE_ADD(NOW(), INTERVAL %s SECOND) AS hasta",
+                               (segundos_bloqueo,))
+                bloqueado_hasta = cursor.fetchone()["hasta"]
+                fallos = 0
+
+            cursor.execute(
+                """
+                INSERT INTO intentos_login (usuario, ip, fallos, bloqueado_hasta)
+                VALUES (%s, %s, %s, %s)
+                ON DUPLICATE KEY UPDATE
+                    fallos = VALUES(fallos),
+                    bloqueado_hasta = VALUES(bloqueado_hasta)
+                """,
+                (usuario, ip, fallos, bloqueado_hasta),
+            )
+        conexion.commit()
+    finally:
+        conexion.close()
+
+
+def limpiar_intentos(usuario, ip):
+    """Borra el historial de fallos después de un inicio de sesión correcto."""
+    conexion = obtener_conexion()
+    try:
+        with conexion.cursor() as cursor:
+            cursor.execute(
+                "DELETE FROM intentos_login WHERE usuario = %s AND ip = %s",
+                (usuario, ip),
+            )
+        conexion.commit()
     finally:
         conexion.close()

@@ -4,7 +4,10 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Iniciar sesión · Exodus Contable</title>
-  <link rel="icon" type="image/png" href="{{ url_for('static', filename='favicon.png') }}?v=2">
+  <link rel="icon" href="{{ url_for('static', filename='img/favicon.ico') }}" sizes="any">
+  <link rel="icon" type="image/png" sizes="32x32" href="{{ url_for('static', filename='img/favicon-32x32.png') }}">
+  <link rel="icon" type="image/png" sizes="16x16" href="{{ url_for('static', filename='img/favicon-16x16.png') }}">
+  <link rel="apple-touch-icon" sizes="180x180" href="{{ url_for('static', filename='img/apple-touch-icon.png') }}">
   <link rel="stylesheet" href="{{ url_for('static', filename='css/exodus.css') }}">
 </head>
 <body>
@@ -17,6 +20,7 @@
 
   <section class="login-panel">
     <form class="login-form" method="post" action="{{ url_for('auth.login') }}" novalidate>
+      <input type="hidden" name="csrf" value="{{ csrf_token() }}">
       <h2>Iniciar sesión</h2>
       <p class="muted">Entra con tu usuario y contraseña.</p>
 

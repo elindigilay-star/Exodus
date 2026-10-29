@@ -17,6 +17,8 @@
     {% endif %}
 
     <div class="module-grid">
+        {% set rol = session.get('usuario_rol') %}
+        {% if rol in ('Administrador', 'Contador') %}
         <a class="module-card" href="/api/contabilidad/ver-estado-resultados">
             <h3>Estado de Resultados</h3>
             <p>Consulta el resultado consolidado del período.</p>
@@ -33,18 +35,23 @@
             <h3>Listar Gastos</h3>
             <p>Consulta, edita y anula gastos deducibles registrados.</p>
         </a>
+        {% endif %}
+        {% if rol in ('Administrador', 'Contador', 'Auxiliar') %}
         <a class="module-card" href="/api/inventario/modulo">
             <h3>Inventario</h3>
-            <p>Productos, existencias, entradas, ventas, ajustes de stock y etiquetas.</p>
+            <p>Productos, existencias, entradas, ventas y ajustes de stock.</p>
         </a>
+        {% endif %}
+        {% if rol in ('Administrador', 'Recursos Humanos') %}
         <a class="module-card" href="/api/nomina/modulo">
             <h3>Nómina</h3>
             <p>Gestiona empleados, calcula la nómina y las novedades.</p>
         </a>
-        {% if session.get('usuario_rol') in ('Administrador', 'Contador') %}
-        <a class="module-card" href="/configuracion/parametros">
+        {% endif %}
+        {% if rol in ('Administrador', 'Contador') %}
+        <a class="module-card" href="/configuracion/etiquetas">
             <h3>Configuración</h3>
-            <p>Parámetros{% if session.get('usuario_rol') == 'Administrador' %}, roles y usuarios{% endif %} del sistema.</p>
+            <p>Etiquetas, parámetros{% if rol == 'Administrador' %}, roles y usuarios{% endif %} del sistema.</p>
         </a>
         {% endif %}
     </div>

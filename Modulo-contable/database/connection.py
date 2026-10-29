@@ -1,12 +1,11 @@
+"""Conexión única a MySQL para todos los módulos de EXODUS Contable."""
+
 import pymysql
 from pymysql.cursors import DictCursor
 
+from config import DB_CONFIG
+
+
 def obtener_conexion():
-    """Establece y retorna una conexión activa a la base de datos MySQL."""
-    return pymysql.connect(
-        host='localhost',
-        user='root',         # Cambia por tu usuario de MySQL
-        password='',         # Cambia por tu contraseña de MySQL
-        database='sistema_contable',
-        cursorclass=DictCursor
-    )
+    """Devuelve una conexión nueva usando la configuración central."""
+    return pymysql.connect(cursorclass=DictCursor, **DB_CONFIG)

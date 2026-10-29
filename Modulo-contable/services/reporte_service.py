@@ -70,7 +70,8 @@ def exportar_estado_resultados_pdf(datos_reporte, periodo_txt=""):
         ['Ingresos Totals', _monto(datos_reporte['ingresos_totales'])],
         ['Costo de Ventas', _monto(datos_reporte['costo_ventas'])],
         ['Utilidad Bruta', _monto(datos_reporte['utilidad_bruta'])],
-        ['Gastos Operativos (Nómina + Deducibles + Pérdidas)', _monto(datos_reporte['gastos_operativos'])],
+        ['Gastos Operativos (Nómina + Deducibles + Pérdidas)',
+         _monto(datos_reporte['gastos_operativos'])],
         ['UTILIDAD NETA', _monto(datos_reporte['utilidad_neta'])]
     ]
     elementos.append(_construir_tabla(tabla_datos, ancho_col=[300, 150]))
