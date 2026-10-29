@@ -1,58 +1,155 @@
+/* =========================================================
+   exodus.css
+   Login, inicio, módulos, subnavegación y formularios de usuarios.
+   Orden: 1 Tokens · 2 Base · 3 Componentes · 4 Páginas · 5 Responsive · 6 Accesibilidad
+   ========================================================= */
+
+/* ---------- 1. Tokens ---------- */
 :root {
+  /* Texto y superficies */
   --ink: #0F1B2D;
   --ink-soft: #52627A;
+  --ink-pale: #BFD0DF;
   --mist: #F4F6F9;
   --paper: #FFFFFF;
+  --surface-alt: #F6F9FB;
+  --disabled-bg: #EEF2F5;
   --line: #D9E0E8;
-  --brand: #0B1F33;
-  --brand-2: #12304D;
-  --gold: #B8934A;
+  --border-input: #98A9B8;
+
+  /* Marca */
   --primary: #1D4F91;
   --primary-dark: #163E73;
+  --grad-brand: linear-gradient(135deg, rgba(11, 31, 51, 0.96), rgba(18, 48, 77, 0.96));
+  --line-on-dark: rgba(255, 255, 255, 0.18);
+  --shadow-brand: 0 8px 32px rgba(0, 0, 0, 0.25);
+
+  /* Estados */
   --success: #1E7B4F;
   --success-dark: #17623E;
+  --success-bg: #E6F4EC;
+  --success-ink: #14532D;
   --danger: #B42318;
   --danger-dark: #912018;
-  --warning: #B54708;
   --danger-bg: #FDECEA;
+  --danger-ink: #7A1A12;
   --info-bg: #E8F0FA;
+
   --font: "Segoe UI", system-ui, -apple-system, "Helvetica Neue", Arial, sans-serif;
 }
-* { box-sizing: border-box; }
+
+/* ---------- 2. Base ---------- */
+*, *::before, *::after { box-sizing: border-box; }
 html, body { margin: 0; }
-body { font-family: var(--font); color: var(--ink); background: var(--mist); line-height: 1.55; font-size: 16px; }
+body {
+  font-family: var(--font);
+  color: var(--ink);
+  background: var(--mist);
+  line-height: 1.55;
+  font-size: 1rem;
+}
 h1, h2 { line-height: 1.15; margin: 0; letter-spacing: -0.01em; }
 .muted { color: var(--ink-soft); margin: 0.35rem 0 0; }
 :focus-visible { outline: 3px solid var(--primary); outline-offset: 2px; }
 
 .wordmark { font-weight: 700; letter-spacing: 0.01em; color: inherit; text-decoration: none; font-size: 1.1rem; margin: 0; }
 
-.btn { font: inherit; font-weight: 600; border-radius: 6px; cursor: pointer; min-height: 44px; padding: 0 1.1rem; border: 1px solid transparent; }
-.btn-primary { background: var(--primary); color: #fff; width: 100%; margin-top: 1.4rem; }
+/* ---------- 3. Componentes ---------- */
+
+/* Botones */
+.btn {
+  font: inherit;
+  font-weight: 600;
+  border-radius: 6px;
+  cursor: pointer;
+  min-height: 44px;
+  padding: 0 1.1rem;
+  border: 1px solid transparent;
+  transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+}
+.btn:disabled,
+.btn[aria-disabled="true"] { opacity: .55; cursor: not-allowed; pointer-events: none; }
+
+.btn-primary { background: var(--primary); color: #fff; }
 .btn-primary:hover { background: var(--primary-dark); }
-.btn-inline { display: inline-flex; align-items: center; width: auto; text-decoration: none; margin-top: 1rem; }
+.btn-success { background: var(--success); color: #fff; }
+.btn-success:hover { background: var(--success-dark); }
+.btn-danger { background: var(--danger); color: #fff; }
+.btn-danger:hover { background: var(--danger-dark); }
 .btn-quiet { background: transparent; color: #fff; border-color: rgba(255,255,255,.4); min-height: 36px; padding: 0 .9rem; }
 .btn-quiet:hover { background: rgba(255,255,255,.12); }
 
+/* Modificadores */
+.btn-block { width: 100%; margin-top: 1.4rem; }
+.btn-inline { display: inline-flex; align-items: center; text-decoration: none; margin-top: 1rem; }
+/* Compatibilidad: el botón del login sigue siendo de ancho completo sin cambiar el HTML */
+.login-form .btn-primary:not(.btn-inline) { width: 100%; margin-top: 1.4rem; }
+
+/* Alertas (se aceptan ambos nombres) */
 .alert { margin: 1rem 0 0; padding: .7rem .9rem; border-radius: 6px; border-left: 4px solid; font-size: .95rem; }
 .alert-info { background: var(--info-bg); border-color: var(--primary); color: var(--ink); }
-.alert-error { background: var(--danger-bg); border-color: var(--danger); color: #7A1A12; }
-.alert-ok    { background: #E6F4EC; border-color: var(--success); color: #14532D; }
+.alert-error,
+.alert-danger { background: var(--danger-bg); border-color: var(--danger); color: var(--danger-ink); }
+.alert-ok,
+.alert-success { background: var(--success-bg); border-color: var(--success); color: var(--success-ink); }
 
-.btn-success { background: var(--success); color: #fff; }
-.btn-success:hover { background: var(--success-dark); }
-.btn-danger  { background: var(--danger); color: #fff; }
-.btn-danger:hover  { background: var(--danger-dark); }
+/* Campos de formulario compartidos (login, tag-form, user-form) o usa la clase .input */
+.input,
+:is(.login-form, .tag-form, .user-form) :is(input[type="text"], input[type="password"], select) {
+  width: 100%;
+  min-height: 44px;
+  padding: 0 .75rem;
+  font: inherit;
+  color: var(--ink);
+  border: 1px solid var(--border-input);
+  border-radius: 6px;
+  background: var(--paper);
+}
+.input:focus,
+:is(.login-form, .tag-form, .user-form) :is(input[type="text"], input[type="password"], select):focus {
+  border-color: var(--primary);
+}
+:is(.login-form, .tag-form, .user-form) :is(input, select):disabled,
+.input:disabled { background: var(--disabled-bg); color: var(--ink-soft); cursor: not-allowed; }
 
+:is(.login-form, .tag-form, .user-form) label { display: block; font-weight: 600; }
 
-.login { display: grid; grid-template-columns: 1.1fr 1fr; min-height: 100vh; }
-.login-brand {
-  background: linear-gradient(135deg, rgba(11, 31, 51, 0.96), rgba(18, 48, 77, 0.96));
+/* Acciones en filas */
+.acciones { display: flex; gap: 1rem; align-items: center; }
+.acciones form { margin: 0; }
+.acciones a { color: var(--primary-dark); font-weight: 600; }
+.link-danger { background: none; border: 0; padding: 0; font: inherit; font-weight: 600; color: var(--danger); cursor: pointer; }
+.link-danger:hover { text-decoration: underline; }
+
+/* Barra superior y panel de marca (mismo degradado) */
+.login-brand,
+.topbar {
+  background: var(--grad-brand);
   backdrop-filter: blur(18px) saturate(1.4);
   -webkit-backdrop-filter: blur(18px) saturate(1.4);
-  border-right: 1px solid rgba(255, 255, 255, 0.18);
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.25);
+  box-shadow: var(--shadow-brand);
   color: #fff;
+}
+
+.topbar {
+  border-bottom: 1px solid var(--line-on-dark);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: .75rem 2rem;
+}
+.topbar form { margin: 0; }
+.topbar-user { display: flex; align-items: center; gap: 1.2rem; }
+.who { display: flex; flex-direction: column; text-align: right; line-height: 1.25; font-size: .9rem; }
+.who span { color: var(--ink-pale); }
+
+/* ---------- 4. Páginas ---------- */
+
+/* Login */
+.login { display: grid; grid-template-columns: 1.1fr 1fr; min-height: 100vh; min-height: 100dvh; }
+.login-brand {
+  border-right: 1px solid var(--line-on-dark);
   padding: 3rem 4rem;
   display: flex;
   flex-direction: column;
@@ -60,13 +157,20 @@ h1, h2 { line-height: 1.15; margin: 0; letter-spacing: -0.01em; }
   gap: 1.5rem;
 }
 .login-brand h1 { font-size: clamp(2rem, 3.4vw, 3rem); max-width: 18ch; }
-.login-brand .lead { color: #BFD0DF; max-width: 40ch; margin: 0; font-size: 1.1rem; }
+.login-brand .lead { color: var(--ink-pale); max-width: 40ch; margin: 0; font-size: 1.1rem; }
+.login-panel { display: flex; align-items: center; justify-content: center; padding: 2rem; background: var(--paper); }
+.login-form { width: 100%; max-width: 380px; }
+.login-form h2 { font-size: 1.6rem; }
+.login-form label { margin: 1.1rem 0 .35rem; }
+.login-form .check { display: flex; gap: .6rem; align-items: flex-start; font-weight: 400; margin-top: 1.1rem; }
+.login-form .check input { width: 18px; height: 18px; margin-top: .2rem; accent-color: var(--primary); }
+.login-form .check small { display: block; color: var(--ink-soft); }
 
+/* Efecto máquina de escribir */
 .typewriter .type-target {
   display: block;
   border-right: 3px solid var(--primary);
   padding-right: .08em;
-  vertical-align: bottom;
   max-width: 100%;
 }
 .typewriter .type-target.is-done { border-right-color: transparent; }
@@ -80,37 +184,8 @@ h1, h2 { line-height: 1.15; margin: 0; letter-spacing: -0.01em; }
   animation: typewriter-blink 0.85s steps(1) infinite;
 }
 @keyframes typewriter-blink { 50% { opacity: 0; } }
-.login-panel { display: flex; align-items: center; justify-content: center; padding: 2rem; background: var(--paper); }
-.login-form { width: 100%; max-width: 380px; }
-.login-form h2 { font-size: 1.6rem; }
-.login-form label { display: block; font-weight: 600; margin: 1.1rem 0 .35rem; }
-.login-form input[type="text"], .login-form input[type="password"] {
-  width: 100%; min-height: 44px; padding: 0 .75rem; font: inherit; color: var(--ink);
-  border: 1px solid #98A9B8; border-radius: 6px; background: #fff;
-}
-.login-form input[type="text"]:focus, .login-form input[type="password"]:focus { border-color: var(--primary); }
-.login-form .check { display: flex; gap: .6rem; align-items: flex-start; font-weight: 400; margin-top: 1.1rem; }
-.login-form .check input { width: 18px; height: 18px; margin-top: .2rem; accent-color: var(--primary); }
-.login-form .check small { display: block; color: var(--ink-soft); }
 
-.topbar {
-  background: linear-gradient(135deg, rgba(11, 31, 51, 0.96), rgba(18, 48, 77, 0.96));
-  backdrop-filter: blur(18px) saturate(1.4);
-  -webkit-backdrop-filter: blur(18px) saturate(1.4);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.18);
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.25);
-  color: #fff;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 1rem;
-  padding: .75rem 2rem;
-}
-.topbar-user { display: flex; align-items: center; gap: 1.2rem; }
-.who { display: flex; flex-direction: column; text-align: right; line-height: 1.25; font-size: .9rem; }
-.who span { color: #BFD0DF; }
-.topbar form { margin: 0; }
-
+/* Inicio */
 .home { max-width: 960px; margin: 0 auto; padding: 2.5rem 1.5rem 4rem; }
 .greeting h1 { font-size: clamp(1.8rem, 3vw, 2.4rem); }
 .section-title { font-size: 1.1rem; margin: 2.5rem 0 .75rem; color: var(--ink-soft); font-weight: 600; }
@@ -119,64 +194,68 @@ h1, h2 { line-height: 1.15; margin: 0; letter-spacing: -0.01em; }
 .ledger li { border-left: 6px solid var(--tick); }
 .ledger li + li { border-top: 1px solid var(--line); }
 .ledger-row { display: grid; grid-template-columns: 11rem 1fr auto; gap: 1.5rem; align-items: baseline; padding: 1.25rem 1.5rem; color: inherit; text-decoration: none; }
-a.ledger-row:hover { background: #F6F9FB; }
+a.ledger-row:hover { background: var(--surface-alt); }
 .ledger-name { font-weight: 700; font-size: 1.15rem; }
 .ledger-desc { color: var(--ink-soft); }
 .ledger-meta { color: var(--ink-soft); font-size: .9rem; font-variant-numeric: tabular-nums; white-space: nowrap; }
-.is-locked { opacity: .55; }
+.is-locked,
+[aria-disabled="true"].ledger-row { opacity: .55; pointer-events: none; cursor: not-allowed; }
 
+/* Módulos */
 .back { color: var(--primary-dark); font-weight: 600; text-decoration: none; display: inline-block; margin-bottom: 1.2rem; }
 .back:hover { text-decoration: underline; }
 .module-head { border-left: 6px solid var(--tick); padding-left: 1rem; }
+
 .req-table { width: 100%; border-collapse: collapse; background: var(--paper); border: 1px solid var(--line); margin-top: 1.5rem; }
 .req-table th, .req-table td { text-align: left; padding: .75rem 1rem; border-bottom: 1px solid var(--line); }
-.req-table th { font-size: .9rem; color: var(--ink-soft); background: #F6F9FB; }
+.req-table th { font-size: .9rem; color: var(--ink-soft); background: var(--surface-alt); }
 .req-table .code { font-variant-numeric: tabular-nums; font-weight: 600; width: 6rem; }
 
-.tag-form { display: grid; grid-template-columns: 2fr 1.2fr 1fr auto; gap: 1rem; align-items: end; margin-top: 1.5rem; }
-.tag-form label { display: block; font-weight: 600; margin-bottom: .35rem; }
-.tag-form input[type="text"], .tag-form select {
-  width: 100%; min-height: 44px; padding: 0 .75rem; font: inherit; color: var(--ink);
-  border: 1px solid #98A9B8; border-radius: 6px; background: #fff;
-}
-.tag-form input[type="text"]:focus, .tag-form select:focus { border-color: var(--primary); }
-.tag-form .btn-primary { margin-top: 0; width: auto; }
-
-.acciones { display: flex; gap: 1rem; align-items: center; }
-.acciones form { margin: 0; }
-.acciones a { color: var(--primary-dark); font-weight: 600; }
-.link-danger { background: none; border: 0; padding: 0; font: inherit; font-weight: 600; color: var(--danger); cursor: pointer; }
-.link-danger:hover { text-decoration: underline; }
-
-@media (max-width: 800px) {
-  .login { grid-template-columns: 1fr; min-height: 0; }
-  .login-brand { padding: 2rem 1.5rem; }
-  .login-panel { padding: 2rem 1.5rem 3rem; }
-  .topbar { padding: .75rem 1rem; }
-  .who { display: none; }
-  .ledger-row { grid-template-columns: 1fr; gap: .25rem; }
-  .tag-form { grid-template-columns: 1fr; }
-}
 .subnav { display: flex; gap: 1.5rem; margin-top: 1.5rem; border-bottom: 1px solid var(--line); }
-.subnav a { padding: .5rem 0; color: var(--ink-soft); text-decoration: none; font-weight: 600; border-bottom: 3px solid transparent; margin-bottom: -1px; }
+.subnav a { padding: .5rem 0; color: var(--ink-soft); text-decoration: none; font-weight: 600; border-bottom: 3px solid transparent; margin-bottom: -1px; white-space: nowrap; }
 .subnav a:hover { color: var(--ink); }
 .subnav a[aria-current="page"] { color: var(--ink); border-bottom-color: var(--tick); }
 
+/* Formulario de etiquetas */
+.tag-form { display: grid; grid-template-columns: 2fr 1.2fr 1fr auto; gap: 1rem; align-items: end; margin-top: 1.5rem; }
+.tag-form label { margin-bottom: .35rem; }
+
+/* Formulario de usuarios */
 .user-form { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1rem 1.25rem; margin-top: 1.5rem; }
-.user-form label { display: block; font-weight: 600; margin-bottom: .35rem; }
-.user-form input[type="text"], .user-form input[type="password"], .user-form select {
-  width: 100%; min-height: 44px; padding: 0 .75rem; font: inherit; color: var(--ink);
-  border: 1px solid #98A9B8; border-radius: 6px; background: #fff;
-}
-.user-form input:disabled { background: #EEF2F5; color: var(--ink-soft); }
-.user-form input:focus, .user-form select:focus { border-color: var(--primary); }
+.user-form label { margin-bottom: .35rem; }
 .user-form small { display: block; color: var(--ink-soft); margin-top: .25rem; }
 .user-form .full { grid-column: 1 / -1; }
 .user-form .check { display: flex; gap: .6rem; align-items: center; font-weight: 400; margin: 0; }
 .user-form .check input { width: 18px; height: 18px; accent-color: var(--primary); }
-.user-form .btn-primary { margin-top: 0; width: auto; }
 .is-off { color: var(--ink-soft); }
 
+/* ---------- 5. Responsive ---------- */
 @media (max-width: 800px) {
+  .login { grid-template-columns: 1fr; min-height: 0; }
+  .login-brand { padding: 2rem 1.5rem; border-right: 0; }
+  .login-panel { padding: 2rem 1.5rem 3rem; }
+
+  .topbar { padding: .75rem 1rem; }
+  /* El usuario conectado sigue visible, en versión compacta */
+  .who { font-size: .8rem; max-width: 8rem; }
+  .who > * { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+  .ledger-row { grid-template-columns: 1fr; gap: .25rem; }
+  .tag-form { grid-template-columns: 1fr; }
   .user-form { grid-template-columns: 1fr; }
+
+  /* Tablas y subnav con scroll horizontal */
+  .req-table { display: block; overflow-x: auto; }
+  .subnav { overflow-x: auto; scrollbar-width: thin; }
+}
+
+/* ---------- 6. Accesibilidad ---------- */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: .01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: .01ms !important;
+    scroll-behavior: auto !important;
+  }
+  .typewriter .type-cursor { animation: none; }
 }
