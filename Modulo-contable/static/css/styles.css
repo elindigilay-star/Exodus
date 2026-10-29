@@ -54,6 +54,31 @@ body {
     padding-left: 12px;
 }
 
+/* Marca: logo centrado sobre el nombre de la aplicación */
+.sidebar-brand {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 24px;
+}
+
+.sidebar-logo {
+    width: 88px;
+    height: 88px;
+    padding: 6px;
+    border-radius: 20px;
+    background: #eef4fb;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.35);
+    object-fit: contain;
+}
+
+.sidebar .sidebar-brand h2 {
+    margin: 0;
+    padding: 0;
+    text-align: center;
+}
+
 .sidebar nav a {
     color: #cbd5e1;
     font-size: 0.95rem;
