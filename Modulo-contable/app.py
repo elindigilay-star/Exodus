@@ -16,7 +16,7 @@ import sys
 
 import pymysql
 from flask import (Flask, abort, jsonify, redirect, render_template, request,
-                   session, url_for)
+                   send_from_directory, session, url_for)
 
 RUTA_APP = os.path.dirname(os.path.abspath(__file__))
 RUTA_PROYECTO = os.path.dirname(RUTA_APP)
@@ -93,6 +93,14 @@ def crear_app():
         resp.headers['Referrer-Policy'] = 'same-origin'
         resp.headers['Cache-Control'] = 'no-store'
         return resp
+
+    @app.route('/favicon.ico')
+    def favicon():
+        """Sirve el icono a navegadores que lo piden directamente en la raíz."""
+        return send_from_directory(
+            app.static_folder, 'img/favicon.ico',
+            mimetype='image/vnd.microsoft.icon',
+        )
 
     @app.route('/')
     def inicio():
