@@ -1,5 +1,7 @@
 <link rel="stylesheet" href="{{ url_for('configuracion.static', filename='css/configuracion.css') }}">
 <nav class="subnav" aria-label="Secciones de configuración">
+    <a href="{{ url_for('configuracion.etiquetas') }}"
+       class="{{ 'active' if request.path.startswith('/configuracion/etiquetas') else '' }}">Etiquetas</a>
     <a href="{{ url_for('configuracion.parametros_index') }}"
        class="{{ 'active' if request.path.startswith('/configuracion/parametros') else '' }}">Parámetros</a>
     {% if session.get('usuario_rol') == 'Administrador' %}

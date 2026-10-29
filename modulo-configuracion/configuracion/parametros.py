@@ -7,8 +7,6 @@ from routes.auth import requerir_roles
 
 from . import modelo
 from .rutas import configuracion_bp
-# Etiquetas las maneja el módulo de inventario
-from inventario.modelo import listar_etiquetas
 
 ROLES = ('Administrador', 'Contador')
 
@@ -35,7 +33,7 @@ def _render(editar=None):
     return render_template(
         'configuracion/parametros.html',
         lista=modelo.listar_parametros(),
-        etiquetas=listar_etiquetas(),
+        etiquetas=modelo.listar_etiquetas(),
         editar=editar,
     )
 
@@ -57,10 +55,13 @@ def parametros_index():
     return _render()
 
 
-@configuracion_bp.route('/configuracion/parametros/<int:id>/editar', methods=['GET', 'POST'])
+@configuracion_bp.route(
+    '/configuracion/parametros/<int:id_parametro>/editar',
+    methods=['GET', 'POST'],
+)
 @requerir_roles(*ROLES)
-def parametros_editar(id):
-    fila = modelo.obtener_parametro(id)
+def parametros_editar(id_parametro):
+    fila = modelo.obtener_parametro(id_parametro)
     if fila is None:
         abort(404)
     if request.method == 'POST':
@@ -69,7 +70,7 @@ def parametros_editar(id):
             flash(error, 'error')
         else:
             try:
-                modelo.actualizar_parametro(id, *datos)
+                modelo.actualizar_parametro(id_parametro, *datos)
                 flash('Parámetro actualizado.', 'ok')
                 return redirect(url_for('configuracion.parametros_index'))
             except pymysql.err.IntegrityError:
@@ -77,9 +78,9 @@ def parametros_editar(id):
     return _render(editar=fila)
 
 
-@configuracion_bp.route('/configuracion/parametros/<int:id>/eliminar', methods=['POST'])
+@configuracion_bp.route('/configuracion/parametros/<int:id_parametro>/eliminar', methods=['POST'])
 @requerir_roles(*ROLES)
-def parametros_eliminar(id):
-    modelo.eliminar_parametro(id)
+def parametros_eliminar(id_parametro):
+    modelo.eliminar_parametro(id_parametro)
     flash('Parámetro eliminado.', 'ok')
     return redirect(url_for('configuracion.parametros_index'))

@@ -9,18 +9,18 @@ from routes.auth import requerir_roles
 
 from .rutas import configuracion_bp
 
-ROLES_VALIDOS = ('Administrador', 'Contador', 'Auxiliar', 'Empleado')
+ROLES_VALIDOS = ('Administrador', 'Contador', 'Auxiliar', 'Empleado', 'Recursos Humanos')
 PATRON_USUARIO = re.compile(r'^[A-Za-z0-9._-]{3,50}$')
 DOMINIO_EMAIL = 'exodo.local'
 
 
-def _render(v=None, editar=None):
+def _render(v=None, datos_edicion=None):
     return render_template(
         'configuracion/usuarios.html',
         lista=modelo.listar_usuarios(),
         roles=ROLES_VALIDOS,
         v=v or {},
-        editar=editar,
+        editar=datos_edicion,
     )
 
 
@@ -44,7 +44,10 @@ def usuarios():
 
         error = None
         if not PATRON_USUARIO.match(usuario):
-            error = 'El usuario debe tener de 3 a 50 caracteres: letras, números, punto, guion o guion bajo.'
+            error = (
+                'El usuario debe tener de 3 a 50 caracteres: letras, '
+                'números, punto, guion o guion bajo.'
+            )
         elif not nombre:
             error = 'Escribe el nombre completo.'
         elif rol not in ROLES_VALIDOS:
@@ -78,10 +81,10 @@ def usuarios():
     return _render()
 
 
-@configuracion_bp.route('/configuracion/usuarios/<int:id>/editar', methods=['GET', 'POST'])
+@configuracion_bp.route('/configuracion/usuarios/<int:id_usuario>/editar', methods=['GET', 'POST'])
 @requerir_roles('Administrador')
-def editar(id):
-    fila = modelo.obtener_usuario_completo(id)
+def editar(id_usuario):
+    fila = modelo.obtener_usuario_completo(id_usuario)
     if fila is None:
         abort(404)
 
@@ -105,47 +108,53 @@ def editar(id):
             error = 'Elige un rol válido.'
         elif clave and len(clave) < 8:
             error = 'La nueva contraseña debe tener al menos 8 caracteres.'
-        elif modelo.existe_email(email, excluir_id=id):
+        elif modelo.existe_email(email, excluir_id=id_usuario):
             error = 'Ya existe otro usuario con ese email.'
 
         if not error:
             deja_de_ser_admin = (rol or '').strip().lower() != 'administrador' or not activo
-            if id == session.get('usuario_id') and ((rol or '').strip().lower() != (fila['rol'] or '').strip().lower() or not activo):
+            mismo_usuario = id_usuario == session.get('usuario_id')
+            cambia_rol = (
+                (rol or '').strip().lower()
+                != (fila['rol'] or '').strip().lower()
+            )
+            if mismo_usuario and (cambia_rol or not activo):
                 error = 'No puedes cambiar tu propio rol ni desactivarte.'
             elif ((fila['rol'] or '').strip().lower() == 'administrador' and fila['activo']
-                  and deja_de_ser_admin and modelo.contar_admins_activos(excluir_id=id) == 0):
+                  and deja_de_ser_admin
+                  and modelo.contar_admins_activos(excluir_id=id_usuario) == 0):
                 error = 'Debe quedar al menos un administrador activo.'
 
         if error:
             flash(error, 'error')
-            return _render(v, editar=fila)
+            return _render(v, datos_edicion=fila)
 
         try:
-            modelo.actualizar_usuario(id, nombre, rol, activo, clave or None)
+            modelo.actualizar_usuario(id_usuario, nombre, rol, activo, clave or None)
         except pymysql.err.IntegrityError:
             flash('No se pudo actualizar: el email ya está en uso.', 'error')
-            return _render(v, editar=fila)
+            return _render(v, datos_edicion=fila)
 
         flash('Usuario actualizado.', 'ok')
         return redirect(url_for('configuracion.usuarios'))
 
-    return _render(v, editar=fila)
+    return _render(v, datos_edicion=fila)
 
 
-@configuracion_bp.route('/configuracion/usuarios/<int:id>/eliminar', methods=['POST'])
+@configuracion_bp.route('/configuracion/usuarios/<int:id_usuario>/eliminar', methods=['POST'])
 @requerir_roles('Administrador')
-def eliminar(id):
-    fila = modelo.obtener_usuario_completo(id)
+def eliminar(id_usuario):
+    fila = modelo.obtener_usuario_completo(id_usuario)
     if fila is None:
         abort(404)
 
-    if id == session.get('usuario_id'):
+    if id_usuario == session.get('usuario_id'):
         flash('No puedes eliminar tu propio usuario.', 'error')
     elif ((fila['rol'] or '').strip().lower() == 'administrador' and fila['activo']
-          and modelo.contar_admins_activos(excluir_id=id) == 0):
+          and modelo.contar_admins_activos(excluir_id=id_usuario) == 0):
         flash('Debe quedar al menos un administrador activo.', 'error')
     else:
-        modelo.eliminar_usuario(id)
+        modelo.eliminar_usuario(id_usuario)
         flash('Usuario desactivado. Ya no puede iniciar sesión.', 'ok')
 
     return redirect(url_for('configuracion.usuarios'))

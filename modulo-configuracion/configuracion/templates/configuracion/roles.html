@@ -18,7 +18,7 @@
     <p>Define qué puede hacer cada rol dentro del sistema.</p>
 
     <form method="post"
-          action="{% if editar %}{{ url_for('configuracion.roles_editar', id=editar['id']) }}{% else %}{{ url_for('configuracion.roles_index') }}{% endif %}">
+          action="{% if editar %}{{ url_for('configuracion.roles_editar', id_rol=editar['id']) }}{% else %}{{ url_for('configuracion.roles_index') }}{% endif %}">
         <input type="hidden" name="csrf" value="{{ csrf_token() }}">
 
         <div class="form-group">
@@ -75,8 +75,8 @@
                 <td>{{ r['permisos']|length }}</td>
                 <td>
                     <div class="acciones">
-                        <a href="{{ url_for('configuracion.roles_editar', id=r['id']) }}" class="btn btn-sm btn-edit">Editar</a>
-                        <form method="post" action="{{ url_for('configuracion.roles_eliminar', id=r['id']) }}"
+                        <a href="{{ url_for('configuracion.roles_editar', id_rol=r['id']) }}" class="btn btn-sm btn-edit">Editar</a>
+                        <form method="post" action="{{ url_for('configuracion.roles_eliminar', id_rol=r['id']) }}"
                               onsubmit="return confirm('¿Eliminar este rol?');">
                             <input type="hidden" name="csrf" value="{{ csrf_token() }}">
                             <button type="submit" class="btn btn-sm btn-delete">Eliminar</button>

@@ -7,17 +7,14 @@ __pycache__/
 secret_key
 *.db
 
-# Archivos personales / binarios
+# Archivos temporales / binarios
 *.log
 *.bak
 *.zip
-# *.xlsx          # descomenta si quieres ignorar TODOS los .xlsx
-# Si prefieres ignorar todos menos el cronograma del profe:
-# *.xlsx
-# !Cronograma_semanal.xlsx
 
 # IDE / virtualenvs (opcional, pero recomendado)
 .idea/
 .vscode/
 venv/
+.venv/
 node_modules/

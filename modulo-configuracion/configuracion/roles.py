@@ -46,10 +46,10 @@ def roles_index():
     return _render()
 
 
-@configuracion_bp.route('/configuracion/roles/<int:id>/editar', methods=['GET', 'POST'])
+@configuracion_bp.route('/configuracion/roles/<int:id_rol>/editar', methods=['GET', 'POST'])
 @requerir_roles(*ROLES)
-def roles_editar(id):
-    fila = modelo.obtener_rol(id)
+def roles_editar(id_rol):
+    fila = modelo.obtener_rol(id_rol)
     if fila is None:
         abort(404)
     if request.method == 'POST':
@@ -58,26 +58,26 @@ def roles_editar(id):
             flash(error, 'error')
         else:
             try:
-                modelo.actualizar_rol(id, *datos)
+                modelo.actualizar_rol(id_rol, *datos)
                 flash('Rol actualizado.', 'ok')
                 return redirect(url_for('configuracion.roles_index'))
             except pymysql.err.IntegrityError:
                 flash('Ya existe un rol con ese nombre.', 'error')
     editar_data = dict(fila)
-    editar_data['permisos_ids'] = [p['id'] for p in modelo.listar_permisos_de_rol(id)]
+    editar_data['permisos_ids'] = [p['id'] for p in modelo.listar_permisos_de_rol(id_rol)]
     return _render(editar=editar_data)
 
 
-@configuracion_bp.route('/configuracion/roles/<int:id>/eliminar', methods=['POST'])
+@configuracion_bp.route('/configuracion/roles/<int:id_rol>/eliminar', methods=['POST'])
 @requerir_roles(*ROLES)
-def roles_eliminar(id):
-    fila = modelo.obtener_rol(id)
+def roles_eliminar(id_rol):
+    fila = modelo.obtener_rol(id_rol)
     if fila is None:
         abort(404)
     en_uso = modelo.contar_usuarios_con_rol(fila['nombre'])
     if en_uso > 0:
         flash(f'No se puede eliminar: hay {en_uso} usuario(s) activo(s) con este rol.', 'error')
     else:
-        modelo.eliminar_rol(id)
+        modelo.eliminar_rol(id_rol)
         flash('Rol eliminado.', 'ok')
     return redirect(url_for('configuracion.roles_index'))

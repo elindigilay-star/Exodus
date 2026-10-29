@@ -1,8 +1,0 @@
-<nav class="subnav" aria-label="Secciones de configuración">
-  <a href="{{ url_for('configuracion.etiquetas') }}" {% if request.blueprint == 'configuracion' %}aria-current="page"{% endif %}>Etiquetas</a>
-  <a href="{{ url_for('parametros.index') }}" {% if request.blueprint == 'parametros' %}aria-current="page"{% endif %}>Parámetros</a>
-  {% if usuario and usuario['rol'] == 'administrador' %}
-  <a href="{{ url_for('usuarios.usuarios') }}" {% if request.blueprint == 'usuarios' %}aria-current="page"{% endif %}>Usuarios</a>
-  <a href="{{ url_for('roles.index') }}" {% if request.blueprint == 'roles' %}aria-current="page"{% endif %}>Roles y Permisos</a>
-  {% endif %}
-</nav>

@@ -1,10 +1,12 @@
 from datetime import date, datetime
 from decimal import Decimal
 
+import pymysql
 from flask import Blueprint, jsonify, render_template, request
 
+from routes.auth import api_requerir_roles, requerir_roles
+
 from . import modelo
-from routes.auth import login_requerido
 
 nomina_bp = Blueprint('nomina', __name__, template_folder='templates', static_folder='static')
 
@@ -13,7 +15,9 @@ ESTADOS_NOVEDAD = {'PENDIENTE', 'APROBADA', 'RECHAZADA'}
 
 
 def _datos_json():
-    return request.get_json(silent=True) or request.form
+    """Las escrituras de la API solo aceptan JSON (protección CSRF)."""
+    datos = request.get_json(silent=True)
+    return datos if isinstance(datos, dict) else {}
 
 
 def _a_float(valor):
@@ -24,7 +28,7 @@ def _a_float(valor):
 
 
 def _normalizar(fila):
-    """Convierte Decimal y fechas a tipos que el JSON representa igual que en PHP."""
+    """Convierte Decimal y fechas a tipos serializables en JSON."""
     salida = {}
     for clave, valor in fila.items():
         if isinstance(valor, Decimal):
@@ -47,13 +51,14 @@ def _normalizar_lista(filas):
 # ---------------------------------------------------------------
 
 @nomina_bp.route('/modulo', methods=['GET'])
-@login_requerido
+@requerir_roles('Administrador', 'Recursos Humanos')
 def modulo():
     """Vista completa del módulo de nómina (empleados, calcular, novedades)."""
     return render_template('nomina/modulo.html')
 
 
 @nomina_bp.route('/resumen', methods=['GET'])
+@api_requerir_roles('Administrador', 'Recursos Humanos')
 def api_resumen_nomina():
     """Retorna el resumen de nómina en formato JSON."""
     f_inicio = request.args.get('fecha_inicio')
@@ -63,7 +68,7 @@ def api_resumen_nomina():
 
 
 @nomina_bp.route('/ver-resumen', methods=['GET'])
-@login_requerido
+@requerir_roles('Administrador', 'Recursos Humanos')
 def ver_resumen_nomina_html():
     """Renderiza la vista HTML del resumen de nómina."""
     datos = modelo.obtener_resumen_nomina()
@@ -75,12 +80,14 @@ def ver_resumen_nomina_html():
 # ---------------------------------------------------------------
 
 @nomina_bp.route('/empleados', methods=['GET'])
+@api_requerir_roles('Administrador', 'Recursos Humanos')
 def api_listar_empleados():
     estado = request.args.get('estado')
     return jsonify(_normalizar_lista(modelo.listar_empleados(estado))), 200
 
 
 @nomina_bp.route('/empleados', methods=['POST'])
+@api_requerir_roles('Administrador', 'Recursos Humanos')
 def api_crear_empleado():
     datos = _datos_json()
     nombres = (datos.get('nombres') or '').strip()
@@ -91,7 +98,10 @@ def api_crear_empleado():
     salario_base = _a_float(datos.get('salario_base'))
 
     if not nombres or not apellidos or not documento or not fecha_ingreso:
-        return jsonify({'error': 'Faltan datos: nombres, apellidos, documento y fecha de ingreso son obligatorios.'}), 422
+        return jsonify({
+            'error': 'Faltan datos: nombres, apellidos, documento y fecha '
+                     'de ingreso son obligatorios.',
+        }), 422
 
     if salario_base is None or salario_base <= 0:
         return jsonify({'error': 'El salario base debe ser un número mayor a 0.'}), 422
@@ -99,11 +109,18 @@ def api_crear_empleado():
     if modelo.obtener_empleado_por_documento(documento):
         return jsonify({'error': 'Ya existe un empleado registrado con ese documento.'}), 409
 
-    id_empleado = modelo.crear_empleado(nombres, apellidos, documento, cargo or None, salario_base, fecha_ingreso)
-    return jsonify({'mensaje': 'Empleado registrado correctamente.', 'id_empleado': id_empleado}), 200
+    id_empleado = modelo.crear_empleado(
+        nombres, apellidos, documento, cargo or None,
+        salario_base, fecha_ingreso,
+    )
+    return jsonify({
+        'mensaje': 'Empleado registrado correctamente.',
+        'id_empleado': id_empleado,
+    }), 200
 
 
 @nomina_bp.route('/empleados/eliminar', methods=['POST'])
+@api_requerir_roles('Administrador', 'Recursos Humanos')
 def api_eliminar_empleado():
     datos = _datos_json()
     id_empleado = datos.get('id_empleado')
@@ -122,13 +139,17 @@ def api_eliminar_empleado():
 # ---------------------------------------------------------------
 
 @nomina_bp.route('/calcular', methods=['POST'])
+@api_requerir_roles('Administrador', 'Recursos Humanos')
 def api_calcular_nomina():
     datos = _datos_json()
     id_empleado = datos.get('id_empleado')
     periodo = (datos.get('periodo') or '').strip()
 
     if not id_empleado or not periodo:
-        return jsonify({'error': 'Faltan datos: selecciona un empleado y un periodo (AAAA-MM).'}), 422
+        return jsonify({
+            'error': 'Faltan datos: selecciona un empleado y un periodo '
+                     '(AAAA-MM).',
+        }), 422
 
     empleado = modelo.obtener_empleado(id_empleado, solo_activo=True)
     if not empleado:
@@ -164,6 +185,7 @@ def api_calcular_nomina():
 
 
 @nomina_bp.route('/historial', methods=['GET'])
+@api_requerir_roles('Administrador', 'Recursos Humanos')
 def api_historial_nomina():
     return jsonify(_normalizar_lista(modelo.listar_historial_nomina())), 200
 
@@ -173,12 +195,14 @@ def api_historial_nomina():
 # ---------------------------------------------------------------
 
 @nomina_bp.route('/novedades', methods=['GET'])
+@api_requerir_roles('Administrador', 'Recursos Humanos')
 def api_listar_novedades():
     estado = request.args.get('estado')
     return jsonify(_normalizar_lista(modelo.listar_novedades(estado))), 200
 
 
 @nomina_bp.route('/novedades', methods=['POST'])
+@api_requerir_roles('Administrador', 'Recursos Humanos')
 def api_crear_novedad():
     datos = _datos_json()
     id_empleado = datos.get('id_empleado')
@@ -188,13 +212,18 @@ def api_crear_novedad():
     motivo = (datos.get('motivo') or '').strip()
 
     if not id_empleado or not tipo or not fecha_inicio or not fecha_fin:
-        return jsonify({'error': 'Faltan datos: empleado, tipo, fecha de inicio y fecha de fin.'}), 422
+        return jsonify({
+            'error': 'Faltan datos: empleado, tipo, fecha de inicio y fecha '
+                     'de fin.',
+        }), 422
 
     if tipo not in TIPOS_NOVEDAD:
         return jsonify({'error': 'Tipo de novedad no válido.'}), 422
 
     if fecha_fin < fecha_inicio:
-        return jsonify({'error': 'La fecha de fin no puede ser anterior a la fecha de inicio.'}), 422
+        return jsonify({
+            'error': 'La fecha de fin no puede ser anterior a la fecha de inicio.',
+        }), 422
 
     if not modelo.obtener_empleado(id_empleado, solo_activo=True):
         return jsonify({'error': 'Empleado no encontrado o inactivo.'}), 404
@@ -202,11 +231,17 @@ def api_crear_novedad():
     if modelo.existe_novedad_cruzada(id_empleado, fecha_inicio, fecha_fin):
         return jsonify({'error': 'El empleado ya tiene una solicitud en esas fechas.'}), 409
 
-    id_novedad = modelo.crear_novedad(id_empleado, tipo, fecha_inicio, fecha_fin, motivo or None)
-    return jsonify({'mensaje': 'Solicitud registrada correctamente.', 'id_novedad': id_novedad}), 200
+    id_novedad = modelo.crear_novedad(
+        id_empleado, tipo, fecha_inicio, fecha_fin, motivo or None,
+    )
+    return jsonify({
+        'mensaje': 'Solicitud registrada correctamente.',
+        'id_novedad': id_novedad,
+    }), 200
 
 
 @nomina_bp.route('/novedades/estado', methods=['POST'])
+@api_requerir_roles('Administrador', 'Recursos Humanos')
 def api_actualizar_novedad():
     datos = _datos_json()
     id_novedad = datos.get('id_novedad')
@@ -237,5 +272,5 @@ def registrar_nomina(app):
     app.register_blueprint(nomina_bp, url_prefix='/api/nomina')
     try:
         modelo.crear_tablas_nomina()
-    except Exception as error:  # La app arranca aunque la base de datos esté apagada
+    except (pymysql.MySQLError, OSError, ValueError) as error:
         print(f"AVISO: no se pudieron preparar las tablas de nómina: {error}")

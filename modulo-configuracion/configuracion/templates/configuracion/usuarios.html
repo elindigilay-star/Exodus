@@ -24,7 +24,7 @@
     </p>
 
     <form method="post"
-          action="{% if editar %}{{ url_for('configuracion.editar', id=editar['id_usuario']) }}{% else %}{{ url_for('configuracion.usuarios') }}{% endif %}">
+          action="{% if editar %}{{ url_for('configuracion.editar', id_usuario=editar['id_usuario']) }}{% else %}{{ url_for('configuracion.usuarios') }}{% endif %}">
         <input type="hidden" name="csrf" value="{{ csrf_token() }}">
 
         <div class="form-group">
@@ -108,9 +108,9 @@
                 <td>{{ 'Activo' if u['activo'] else 'Inactivo' }}</td>
                 <td>
     <div class="acciones">
-        <a href="{{ url_for('configuracion.editar', id=u['id_usuario']) }}" class="btn btn-sm btn-edit">Editar</a>
+        <a href="{{ url_for('configuracion.editar', id_usuario=u['id_usuario']) }}" class="btn btn-sm btn-edit">Editar</a>
         {% if u['activo'] and u['id_usuario'] != session.get('usuario_id') %}
-        <form method="post" action="{{ url_for('configuracion.eliminar', id=u['id_usuario']) }}"
+        <form method="post" action="{{ url_for('configuracion.eliminar', id_usuario=u['id_usuario']) }}"
               onsubmit="return confirm('¿Desactivar este usuario? Ya no podrá iniciar sesión.');">
             <input type="hidden" name="csrf" value="{{ csrf_token() }}">
             <button type="submit" class="btn btn-sm btn-delete">Eliminar</button>

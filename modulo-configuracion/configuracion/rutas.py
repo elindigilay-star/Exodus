@@ -1,17 +1,18 @@
 """Rutas del módulo de configuración.
 
-Un solo blueprint (`configuracion`) agrupa las tres páginas:
+Un solo blueprint (`configuracion`) agrupa las cuatro páginas:
+  - /configuracion/etiquetas            (Administrador, Contador)
   - /configuracion/parametros           (Administrador, Contador)
   - /configuracion/roles                (Administrador)
   - /configuracion/usuarios             (Administrador)
 
-Cada página vive en su propio archivo (parametros.py, roles.py,
+Cada página vive en su propio archivo (etiquetas.py, parametros.py, roles.py,
 usuarios.py) y añade sus rutas a este mismo blueprint.
-
-Las etiquetas se movieron al módulo de inventario (/api/inventario/etiquetas).
 """
 
 from flask import Blueprint
+
+import pymysql
 
 configuracion_bp = Blueprint(
     'configuracion', __name__,
@@ -22,7 +23,9 @@ configuracion_bp = Blueprint(
 
 # Importar los archivos de rutas registra sus vistas en el blueprint.
 # Debe ir al final para que `configuracion_bp` ya exista.
-from . import usuarios, parametros, roles  # noqa: E402,F401
+from . import (  # noqa: E402,F401  pylint: disable=unused-import
+    usuarios, etiquetas, parametros, roles
+)
 
 
 def registrar_configuracion(app):
@@ -39,5 +42,5 @@ def registrar_configuracion(app):
     try:
         from . import modelo
         modelo.crear_tablas_configuracion()
-    except Exception as error:  # La app arranca aunque la base de datos esté apagada
+    except (pymysql.MySQLError, OSError, ValueError) as error:
         print(f"AVISO: no se pudieron preparar las tablas de configuración: {error}")

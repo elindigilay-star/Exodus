@@ -1,3 +1,5 @@
+import pymysql
+
 from database.connection import obtener_conexion
 
 
@@ -40,14 +42,15 @@ def obtener_resumen_inventario(fecha_inicio=None, fecha_fin=None):
                 'perdidas': 0.0,
             }
 
-        
             try:
                 cursor.execute(
                     f"""
                     SELECT COALESCE(SUM(v.costo_ventas), 0) AS costo
                       FROM ventas_inventario v
                      WHERE v.id_venta NOT IN (
-                               SELECT id_venta FROM movimientos_inventario WHERE id_venta IS NOT NULL)
+                               SELECT id_venta
+                                 FROM movimientos_inventario
+                                WHERE id_venta IS NOT NULL)
                            {filtro_v}
                     """,
                     params_v,
@@ -57,8 +60,12 @@ def obtener_resumen_inventario(fecha_inicio=None, fecha_fin=None):
                 filtro_m, params_m = _rango('fecha', fecha_inicio, fecha_fin)
                 cursor.execute(
                     f"""
-                    SELECT COALESCE(SUM(CASE WHEN tipo = 'ENTRADA' THEN cantidad * costo_unitario END), 0) AS compras,
-                           COALESCE(SUM(CASE WHEN tipo IN ('SALIDA', 'AJUSTE') THEN -cantidad * costo_unitario END), 0) AS perdidas
+                    SELECT COALESCE(SUM(
+                               CASE WHEN tipo = 'ENTRADA'
+                                    THEN cantidad * costo_unitario END), 0) AS compras,
+                           COALESCE(SUM(
+                               CASE WHEN tipo IN ('SALIDA', 'AJUSTE')
+                                    THEN -cantidad * costo_unitario END), 0) AS perdidas
                       FROM movimientos_inventario
                      WHERE 1 = 1 {filtro_m}
                     """,
@@ -67,7 +74,7 @@ def obtener_resumen_inventario(fecha_inicio=None, fecha_fin=None):
                 fila = cursor.fetchone()
                 resultado['compras'] = float(fila['compras'])
                 resultado['perdidas'] = float(fila['perdidas'])
-            except Exception as error:
+            except pymysql.MySQLError as error:
                 print(f"AVISO: movimientos de inventario no disponibles: {error}")
             return resultado
     finally:

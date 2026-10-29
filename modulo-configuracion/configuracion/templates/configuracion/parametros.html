@@ -18,7 +18,7 @@
     <p>Define valores legales y de negocio vinculados a una etiqueta.</p>
 
     <form method="post"
-          action="{% if editar %}{{ url_for('configuracion.parametros_editar', id=editar['id']) }}{% else %}{{ url_for('configuracion.parametros_index') }}{% endif %}">
+          action="{% if editar %}{{ url_for('configuracion.parametros_editar', id_parametro=editar['id']) }}{% else %}{{ url_for('configuracion.parametros_index') }}{% endif %}">
         <input type="hidden" name="csrf" value="{{ csrf_token() }}">
 
         <div class="form-group">
@@ -80,8 +80,8 @@
                 <td>{{ p['descripcion'] or '—' }}</td>
                 <td>
                     <div class="acciones">
-                        <a href="{{ url_for('configuracion.parametros_editar', id=p['id']) }}" class="btn btn-sm btn-edit">Editar</a>
-                        <form method="post" action="{{ url_for('configuracion.parametros_eliminar', id=p['id']) }}"
+                        <a href="{{ url_for('configuracion.parametros_editar', id_parametro=p['id']) }}" class="btn btn-sm btn-edit">Editar</a>
+                        <form method="post" action="{{ url_for('configuracion.parametros_eliminar', id_parametro=p['id']) }}"
                               onsubmit="return confirm('¿Eliminar este parámetro?');">
                             <input type="hidden" name="csrf" value="{{ csrf_token() }}">
                             <button type="submit" class="btn btn-sm btn-delete">Eliminar</button>

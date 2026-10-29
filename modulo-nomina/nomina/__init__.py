@@ -14,11 +14,10 @@ deducciones, aportes, nomina, novedades) existan.
 El módulo comparte la base de datos MySQL `sistema_contable` con el resto de
 Modulo-contable (por eso `modelo.py` usa `database.connection.obtener_conexion`)
 y también comparte la sesión de usuarios (por eso `rutas.py` usa
-`routes.auth.login_requerido`).
+`routes.auth.requerir_roles`).
 
-La versión PHP original (api/, config/, public/, sql/) sigue en esta misma
-carpeta como referencia; la que corre dentro de la aplicación es esta versión
-en Python.
+Esta es la única versión del módulo: se ejecuta dentro de la aplicación
+principal y comparte su base de datos y su sesión de usuarios.
 """
 
 from .rutas import registrar_nomina

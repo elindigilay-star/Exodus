@@ -50,7 +50,9 @@ def crear_empleado(nombres, apellidos, documento, cargo, salario_base, fecha_ing
         with conexion.cursor() as cursor:
             cursor.execute(
                 """
-                INSERT INTO empleados (nombres, apellidos, documento, cargo, salario_base, fecha_ingreso)
+                INSERT INTO empleados
+                    (nombres, apellidos, documento, cargo,
+                     salario_base, fecha_ingreso)
                 VALUES (%s, %s, %s, %s, %s, %s)
                 """,
                 (nombres, apellidos, documento, cargo, salario_base, fecha_ingreso),
@@ -99,17 +101,20 @@ def listar_aportes_activos():
         conexion.close()
 
 
-def guardar_nomina(id_empleado, periodo, salario_base, total_deducciones, total_aportes, salario_neto):
+def guardar_nomina(id_empleado, periodo, salario_base, total_deducciones,
+                   total_aportes, salario_neto):
     conexion = obtener_conexion()
     try:
         with conexion.cursor() as cursor:
             cursor.execute(
                 """
                 INSERT INTO nomina
-                    (id_empleado, periodo, salario_base, total_deducciones, total_aportes, salario_neto)
+                    (id_empleado, periodo, salario_base,
+                     total_deducciones, total_aportes, salario_neto)
                 VALUES (%s, %s, %s, %s, %s, %s)
                 """,
-                (id_empleado, periodo, salario_base, total_deducciones, total_aportes, salario_neto),
+                (id_empleado, periodo, salario_base, total_deducciones,
+                 total_aportes, salario_neto),
             )
             conexion.commit()
             return cursor.lastrowid
@@ -218,7 +223,7 @@ def obtener_resumen_nomina(fecha_inicio=None, fecha_fin=None):
     try:
         with conexion.cursor() as cursor:
             sql = """
-                SELECT 
+                SELECT
                     COALESCE(SUM(total_devengado), 0) AS total_devengado,
                     COALESCE(SUM(total_deducciones), 0) AS total_deducciones,
                     COALESCE(SUM(costo_patronal), 0) AS costo_patronal
@@ -228,7 +233,7 @@ def obtener_resumen_nomina(fecha_inicio=None, fecha_fin=None):
             if fecha_inicio and fecha_fin:
                 sql += " WHERE fecha_pago BETWEEN %s AND %s"
                 params.extend([fecha_inicio, fecha_fin])
-                
+
             cursor.execute(sql, params)
             resultado = cursor.fetchone()
 
@@ -315,7 +320,8 @@ def crear_tablas_nomina():
                     fecha_inicio   DATE NOT NULL,
                     fecha_fin      DATE NOT NULL,
                     motivo         VARCHAR(255),
-                    estado         ENUM('PENDIENTE','APROBADA','RECHAZADA') NOT NULL DEFAULT 'PENDIENTE',
+                    estado         ENUM('PENDIENTE','APROBADA','RECHAZADA')
+                                   NOT NULL DEFAULT 'PENDIENTE',
                     creado_en      TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
                     CONSTRAINT fk_novedad_empleado FOREIGN KEY (id_empleado)
                         REFERENCES empleados(id_empleado)
@@ -341,7 +347,9 @@ def crear_tablas_nomina():
             if cursor.fetchone()["total"] == 0:
                 cursor.execute(
                     """
-                    INSERT INTO empleados (nombres, apellidos, documento, cargo, salario_base, fecha_ingreso, estado)
+                    INSERT INTO empleados
+                        (nombres, apellidos, documento, cargo,
+                         salario_base, fecha_ingreso, estado)
                     VALUES (%s, %s, %s, %s, %s, %s, 'ACTIVO')
                     """,
                     ("Laura", "Gómez", "1001234567", "Auxiliar contable", 1800000.00, "2025-03-01"),
