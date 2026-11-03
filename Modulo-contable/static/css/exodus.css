@@ -59,6 +59,20 @@ h1, h2 { line-height: 1.15; margin: 0; letter-spacing: -0.01em; }
   justify-content: center;
   gap: 1.5rem;
 }
+/* Video de fondo tenue detrás del texto de la izquierda */
+.login-brand { position: relative; overflow: hidden; }
+.login-bg-video {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  opacity: 0.6; /* sube o baja este valor para ver más o menos el video */
+  background: #0B1F33;
+  z-index: 0;
+  pointer-events: none;
+}
+.login-brand > :not(.login-bg-video) { position: relative; z-index: 1; }
 .login-brand h1 { font-size: clamp(2rem, 3.4vw, 3rem); max-width: 18ch; }
 .login-brand .lead { color: #BFD0DF; max-width: 40ch; margin: 0; font-size: 1.1rem; }
 
