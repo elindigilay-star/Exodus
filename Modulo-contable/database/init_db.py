@@ -10,6 +10,7 @@ verdad). Al arrancar, la aplicación:
      EXODUS_DEMO no es "0".
 """
 
+import csv
 import os
 import re
 
@@ -21,6 +22,9 @@ from database.connection import obtener_conexion
 
 RUTA_ESQUEMA = os.path.join(
     os.path.dirname(os.path.abspath(__file__)), "..", "sistema_contable.sql"
+)
+RUTA_PUC = os.path.join(
+    os.path.dirname(os.path.abspath(__file__)), "puc_colombia.csv"
 )
 
 CREDENCIALES_DEMO = {
@@ -119,6 +123,83 @@ def _migrar_columnas(cursor):
             "ADD KEY idx_producto_etiqueta (id_etiqueta)"
         )
 
+    columnas_empleados = _columnas(cursor, "empleados")
+    columnas_nuevas_empleados = (
+        ("tipo_documento", "VARCHAR(10) NOT NULL DEFAULT 'CC' AFTER documento"),
+        ("email", "VARCHAR(120) NULL AFTER cargo"),
+        ("telefono", "VARCHAR(30) NULL AFTER email"),
+        ("direccion", "VARCHAR(200) NULL AFTER telefono"),
+        ("ciudad", "VARCHAR(80) NULL AFTER direccion"),
+        ("fecha_nacimiento", "DATE NULL AFTER ciudad"),
+        ("sexo", "ENUM('M','F','OTRO') NULL AFTER fecha_nacimiento"),
+        ("estado_civil", "VARCHAR(30) NULL AFTER sexo"),
+        ("tipo_contrato", "ENUM('INDEFINIDO','FIJO','OBRA_LABOR','APRENDIZAJE','PRESTACION_SERVICIOS') NOT NULL DEFAULT 'INDEFINIDO' AFTER estado_civil"),
+        ("fecha_retiro", "DATE NULL AFTER fecha_ingreso"),
+        ("salario_integral", "TINYINT(1) NOT NULL DEFAULT 0 AFTER salario_base"),
+        ("auxilio_transporte", "DECIMAL(12,2) NULL AFTER salario_integral"),
+        ("riesgo_arl", "TINYINT(4) NOT NULL DEFAULT 1 AFTER auxilio_transporte"),
+        ("exonerado_salud", "TINYINT(1) NOT NULL DEFAULT 0 AFTER riesgo_arl"),
+        ("exonerado_parafiscales", "TINYINT(1) NOT NULL DEFAULT 0 AFTER exonerado_salud"),
+        ("centro_costo", "VARCHAR(80) NULL AFTER exonerado_parafiscales"),
+        ("banco", "VARCHAR(80) NULL AFTER centro_costo"),
+        ("cuenta_banco", "VARCHAR(50) NULL AFTER banco"),
+        ("dependientes", "INT(11) NOT NULL DEFAULT 0 AFTER cuenta_banco"),
+    )
+    for columna, definicion in columnas_nuevas_empleados:
+        if columna not in columnas_empleados:
+            cursor.execute(f"ALTER TABLE empleados ADD COLUMN {columna} {definicion}")
+
+
+def _cargar_puc(cursor):
+    """Carga o actualiza el Plan Único de Cuentas desde el CSV del proyecto.
+
+    Es idempotente: la clave única es el código de la cuenta. Si el CSV no
+    existe (por ejemplo, una instalación mínima), el sistema sigue funcionando
+    y el catálogo puede crearse manualmente.
+    """
+    if not os.path.exists(RUTA_PUC):
+        return
+
+    filas = []
+    with open(RUTA_PUC, encoding="utf-8", newline="") as archivo:
+        for fila in csv.DictReader(archivo):
+            codigo = (fila.get("codigo") or "").strip()
+            nombre = " ".join((fila.get("nombre") or "").split())
+            if not codigo or not nombre:
+                continue
+            try:
+                nivel = int(fila.get("nivel") or len(codigo))
+                es_movimiento = int(fila.get("es_movimiento") or 1)
+            except ValueError:
+                nivel = len(codigo)
+                es_movimiento = 1
+            grupo = " ".join((fila.get("grupo") or "").split()) or None
+            clase = (fila.get("clase") or codigo[:1]).strip()[:1] or "9"
+            naturaleza = (fila.get("naturaleza") or "DEBITO").strip().upper()
+            if naturaleza not in ("DEBITO", "CREDITO"):
+                naturaleza = "DEBITO"
+            filas.append((codigo, nombre, nivel, clase, grupo, naturaleza, es_movimiento))
+
+    if not filas:
+        return
+
+    cursor.executemany(
+        """
+        INSERT INTO puc_cuentas
+            (codigo, nombre, nivel, clase, grupo, naturaleza, es_movimiento)
+        VALUES (%s, %s, %s, %s, %s, %s, %s)
+        ON DUPLICATE KEY UPDATE
+            nombre = VALUES(nombre),
+            nivel = VALUES(nivel),
+            clase = VALUES(clase),
+            grupo = VALUES(grupo),
+            naturaleza = VALUES(naturaleza),
+            es_movimiento = VALUES(es_movimiento)
+        """,
+        filas,
+    )
+
+
 
 def _crear_usuarios_demo(cursor):
     """Crea usuarios de prueba solo en una base vacía y si EXODUS_DEMO=1."""
@@ -174,6 +255,7 @@ def iniciar_db():
             for sentencia in _leer_sentencias():
                 cursor.execute(sentencia)
             _migrar_columnas(cursor)
+            _cargar_puc(cursor)
             _crear_usuarios_demo(cursor)
         conexion.commit()
     finally:

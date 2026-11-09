@@ -1,0 +1,68 @@
+{% extends 'base.html' %}
+
+{% block title %}Balance de Prueba{% endblock %}
+{% block header_title %}Balance de Prueba{% endblock %}
+
+{% block content %}
+<div class="card">
+    <p>Sumas y saldos por cuenta. El balance cuadra cuando los débitos y los créditos totales son iguales.</p>
+
+    <form class="filtro-periodo" method="GET" action="{{ url_for('contabilidad.ver_balance_prueba_html') }}">
+        <label for="fecha_inicio">Desde:</label>
+        <input type="date" id="fecha_inicio" name="fecha_inicio" value="{{ fecha_inicio or '' }}">
+        <label for="fecha_fin">Hasta:</label>
+        <input type="date" id="fecha_fin" name="fecha_fin" value="{{ fecha_fin or '' }}">
+        <button type="submit" class="btn btn-primary">Filtrar</button>
+        <a href="{{ url_for('contabilidad.ver_balance_prueba_html') }}" class="btn btn-secondary">Limpiar</a>
+        <button type="button" class="btn btn-secondary" onclick="window.print()">Imprimir</button>
+    </form>
+
+    <div class="dash-kpis" style="margin-top: 16px;">
+        <div><span>Total débitos</span><strong>${{ "{:,.2f}".format(data.total_debitos) }}</strong></div>
+        <div><span>Total créditos</span><strong>${{ "{:,.2f}".format(data.total_creditos) }}</strong></div>
+        <div><span>Diferencia</span><strong>${{ "{:,.2f}".format(data.diferencia) }}</strong></div>
+        <div><span>Estado</span><strong style="color: {{ '#14532D' if data.cuadra else '#B42318' }};">{{ 'CUADRA' if data.cuadra else 'DESCUADRADO' }}</strong></div>
+    </div>
+
+    <table>
+        <thead>
+            <tr>
+                <th>Código</th>
+                <th>Cuenta</th>
+                <th>Clase</th>
+                <th>Naturaleza</th>
+                <th style="text-align:right;">Débitos</th>
+                <th style="text-align:right;">Créditos</th>
+                <th style="text-align:right;">Saldo débito</th>
+                <th style="text-align:right;">Saldo crédito</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% if data.cuentas %}
+                {% for c in data.cuentas %}
+                <tr>
+                    <td>{{ c.codigo }}</td>
+                    <td>{{ c.nombre }}</td>
+                    <td>{{ c.clase }}</td>
+                    <td>{{ c.naturaleza }}</td>
+                    <td style="text-align:right;">${{ "{:,.2f}".format(c.debitos) }}</td>
+                    <td style="text-align:right;">${{ "{:,.2f}".format(c.creditos) }}</td>
+                    <td style="text-align:right;">${{ "{:,.2f}".format(c.saldo_debito) }}</td>
+                    <td style="text-align:right;">${{ "{:,.2f}".format(c.saldo_credito) }}</td>
+                </tr>
+                {% endfor %}
+            {% else %}
+                <tr><td colspan="8" style="text-align:center;">No hay movimientos contables en el período.</td></tr>
+            {% endif %}
+        </tbody>
+        <tfoot>
+            <tr>
+                <th colspan="4">Totales</th>
+                <th style="text-align:right;">${{ "{:,.2f}".format(data.total_debitos) }}</th>
+                <th style="text-align:right;">${{ "{:,.2f}".format(data.total_creditos) }}</th>
+                <th colspan="2"></th>
+            </tr>
+        </tfoot>
+    </table>
+</div>
+{% endblock %}

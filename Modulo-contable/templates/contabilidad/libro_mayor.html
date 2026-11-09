@@ -1,0 +1,103 @@
+{% extends 'base.html' %}
+
+{% block title %}Libro Mayor{% endblock %}
+{% block header_title %}Libro Mayor y Auxiliar{% endblock %}
+
+{% block content %}
+<div class="card">
+    <p>Consulta los movimientos de una cuenta con su saldo corrido. Si eliges una cuenta de mayor (4 dígitos), se incluyen sus subcuentas.</p>
+
+    <form id="form-mayor" class="filtro-periodo">
+        <label for="mayor-cuenta">Cuenta PUC:</label>
+        <input type="text" id="mayor-cuenta" list="lista-cuentas-puc" placeholder="Ej.: 110505" required style="min-width: 220px;">
+        <label for="mayor-desde">Desde:</label>
+        <input type="date" id="mayor-desde">
+        <label for="mayor-hasta">Hasta:</label>
+        <input type="date" id="mayor-hasta">
+        <button type="submit" class="btn btn-primary">Consultar</button>
+    </form>
+
+    <div id="resumen-mayor" class="dash-kpis" style="margin-top: 16px;"></div>
+
+    <table id="tabla-mayor">
+        <thead>
+            <tr>
+                <th>Fecha</th>
+                <th>Comprobante</th>
+                <th>Cuenta</th>
+                <th>Detalle</th>
+                <th style="text-align:right;">Débito</th>
+                <th style="text-align:right;">Crédito</th>
+                <th style="text-align:right;">Saldo</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr><td colspan="7" style="text-align:center;">Selecciona una cuenta para consultar.</td></tr>
+        </tbody>
+    </table>
+</div>
+
+<datalist id="lista-cuentas-puc"></datalist>
+
+<script>
+const API_CONT = '/api/contabilidad';
+const fmt = new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 2 });
+const esc = (v) => String(v ?? '').replace(/[&<>"']/g, (c) => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const dinero = (v) => fmt.format(Number(v || 0));
+
+async function cargarCuentas() {
+    const respuesta = await fetch(`${API_CONT}/puc?solo_movimiento=0`);
+    const datos = await respuesta.json();
+    if (respuesta.ok && datos.estado === 'exito') {
+        document.getElementById('lista-cuentas-puc').innerHTML = datos.data
+            .map((c) => `<option value="${esc(c.codigo)}">${esc(c.codigo)} - ${esc(c.nombre)}</option>`)
+            .join('');
+    }
+}
+
+document.getElementById('form-mayor').addEventListener('submit', async (evento) => {
+    evento.preventDefault();
+    const qs = new URLSearchParams({ cuenta: document.getElementById('mayor-cuenta').value.trim() });
+    const desde = document.getElementById('mayor-desde').value;
+    const hasta = document.getElementById('mayor-hasta').value;
+    if (desde) qs.set('fecha_inicio', desde);
+    if (hasta) qs.set('fecha_fin', hasta);
+
+    const tbody = document.querySelector('#tabla-mayor tbody');
+    const resumen = document.getElementById('resumen-mayor');
+    tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;">Cargando…</td></tr>';
+
+    try {
+        const respuesta = await fetch(`${API_CONT}/libro-mayor?${qs}`);
+        const datos = await respuesta.json();
+        if (!respuesta.ok) throw new Error(datos.mensaje || 'No se pudo consultar.');
+        const d = datos.data;
+        resumen.innerHTML = `
+            <div><span>Cuenta</span><strong>${esc(d.cuenta.codigo)} · ${esc(d.cuenta.nombre)}</strong></div>
+            <div><span>Total débitos</span><strong>${dinero(d.total_debito)}</strong></div>
+            <div><span>Total créditos</span><strong>${dinero(d.total_credito)}</strong></div>
+            <div><span>Saldo final</span><strong>${dinero(d.saldo_final)}</strong></div>
+        `;
+        if (!d.movimientos.length) {
+            tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;">La cuenta no tiene movimientos en el período.</td></tr>';
+            return;
+        }
+        tbody.innerHTML = d.movimientos.map((m) => `
+            <tr>
+                <td>${esc(m.fecha)}</td>
+                <td>${esc(m.numero)}</td>
+                <td>${esc(m.codigo)}</td>
+                <td>${esc(m.descripcion || m.comprobante || '')}</td>
+                <td style="text-align:right;">${dinero(m.debito)}</td>
+                <td style="text-align:right;">${dinero(m.credito)}</td>
+                <td style="text-align:right;">${dinero(m.saldo)}</td>
+            </tr>
+        `).join('');
+    } catch (error) {
+        tbody.innerHTML = `<tr><td colspan="7" style="text-align:center;color:#B42318;">${esc(error.message)}</td></tr>`;
+    }
+});
+
+document.addEventListener('DOMContentLoaded', cargarCuentas);
+</script>
+{% endblock %}

@@ -15,6 +15,10 @@ from services.reporte_service import (
     obtener_estado_resultados_con_periodo, obtener_balance_con_periodo,
     obtener_consolidado_con_periodo
 )
+from services.comprobante_service import (
+    buscar_cuentas, crear_cuenta, crear_comprobante, listar_comprobantes,
+    obtener_comprobante, anular_comprobante, libro_mayor, balance_prueba
+)
 from routes.auth import api_requerir_roles, requerir_roles
 
 contabilidad_bp = Blueprint('contabilidad', __name__)
@@ -289,3 +293,187 @@ def ver_listar_gastos_html():
     f_fin = request.args.get('fecha_fin')
     return render_template('contabilidad/listar_gastos.html',
                            fecha_inicio=f_inicio, fecha_fin=f_fin)
+
+
+# ---------------------------------------------------------------------------
+# Núcleo contable: PUC, comprobantes, libro mayor y balance de prueba
+# ---------------------------------------------------------------------------
+
+def _error_contable(error):
+    """Respuesta JSON uniforme para errores del núcleo contable."""
+    if isinstance(error, pymysql.MySQLError):
+        print(f"AVISO: error de base de datos contable: {error}")
+        return jsonify({
+            "estado": "error",
+            "mensaje": "No se pudo consultar la base de datos.",
+        }), 500
+    return jsonify({"estado": "error", "mensaje": str(error)}), 400
+
+
+@contabilidad_bp.route('/puc', methods=['GET'])
+@api_requerir_roles('Administrador', 'Contador')
+def api_puc():
+    """Busca cuentas del Plan Único de Cuentas."""
+    try:
+        termino = request.args.get('q') or request.args.get('termino')
+        solo_movimiento = request.args.get('solo_movimiento', '1') != '0'
+        cuentas = buscar_cuentas(termino, solo_movimiento=solo_movimiento)
+        return jsonify({"estado": "exito", "data": cuentas}), 200
+    except (ValueError, pymysql.MySQLError) as error:
+        return _error_contable(error)
+
+
+@contabilidad_bp.route('/puc', methods=['POST'])
+@api_requerir_roles('Administrador', 'Contador')
+def api_crear_cuenta():
+    """Agrega una cuenta personalizada al PUC."""
+    try:
+        datos = request.get_json() or {}
+        id_cuenta = crear_cuenta(
+            codigo=datos.get('codigo'),
+            nombre=datos.get('nombre'),
+            naturaleza=datos.get('naturaleza'),
+            grupo=datos.get('grupo'),
+            clase=datos.get('clase'),
+        )
+        return jsonify({
+            "estado": "exito",
+            "data": {"id_cuenta": id_cuenta},
+            "mensaje": "Cuenta creada correctamente.",
+        }), 201
+    except (ValueError, pymysql.MySQLError) as error:
+        return _error_contable(error)
+
+
+@contabilidad_bp.route('/comprobantes', methods=['GET'])
+@api_requerir_roles('Administrador', 'Contador')
+def api_listar_comprobantes():
+    """Lista comprobantes con filtros de fecha, estado y tipo."""
+    try:
+        comprobantes = listar_comprobantes(
+            fecha_inicio=request.args.get('fecha_inicio'),
+            fecha_fin=request.args.get('fecha_fin'),
+            estado=request.args.get('estado'),
+            tipo=request.args.get('tipo'),
+        )
+        return jsonify({"estado": "exito", "data": comprobantes}), 200
+    except (ValueError, pymysql.MySQLError) as error:
+        return _error_contable(error)
+
+
+@contabilidad_bp.route('/comprobantes', methods=['POST'])
+@api_requerir_roles('Administrador', 'Contador')
+def api_crear_comprobante():
+    """Crea un comprobante contable balanceado."""
+    try:
+        datos = request.get_json() or {}
+        resultado = crear_comprobante(
+            tipo=datos.get('tipo'),
+            fecha=datos.get('fecha'),
+            descripcion=datos.get('descripcion'),
+            lineas=datos.get('lineas') or [],
+            id_usuario=session.get('usuario_id'),
+            id_tercero=datos.get('id_tercero'),
+            numero=datos.get('numero'),
+        )
+        return jsonify({
+            "estado": "exito",
+            "data": resultado,
+            "mensaje": "Comprobante registrado correctamente.",
+        }), 201
+    except (ValueError, pymysql.MySQLError) as error:
+        return _error_contable(error)
+
+
+@contabilidad_bp.route('/comprobantes/<int:id_comprobante>', methods=['GET'])
+@api_requerir_roles('Administrador', 'Contador')
+def api_obtener_comprobante(id_comprobante):
+    """Devuelve un comprobante con su detalle."""
+    try:
+        comprobante = obtener_comprobante(id_comprobante)
+        if not comprobante:
+            return jsonify({"estado": "error", "mensaje": "Comprobante no encontrado."}), 404
+        return jsonify({"estado": "exito", "data": comprobante}), 200
+    except pymysql.MySQLError as error:
+        return _error_contable(error)
+
+
+@contabilidad_bp.route('/comprobantes/<int:id_comprobante>/anular', methods=['POST'])
+@api_requerir_roles('Administrador', 'Contador')
+def api_anular_comprobante(id_comprobante):
+    """Anula lógicamente un comprobante."""
+    try:
+        anular_comprobante(id_comprobante)
+        return jsonify({"estado": "exito", "mensaje": "Comprobante anulado."}), 200
+    except (ValueError, pymysql.MySQLError) as error:
+        return _error_contable(error)
+
+
+@contabilidad_bp.route('/libro-mayor', methods=['GET'])
+@api_requerir_roles('Administrador', 'Contador')
+def api_libro_mayor():
+    """Libro mayor de una cuenta con saldo corrido."""
+    try:
+        datos = libro_mayor(
+            cuenta_codigo=request.args.get('cuenta') or request.args.get('codigo'),
+            fecha_inicio=request.args.get('fecha_inicio'),
+            fecha_fin=request.args.get('fecha_fin'),
+            id_tercero=request.args.get('id_tercero'),
+        )
+        return jsonify({"estado": "exito", "data": datos}), 200
+    except (ValueError, pymysql.MySQLError) as error:
+        return _error_contable(error)
+
+
+@contabilidad_bp.route('/balance-prueba', methods=['GET'])
+@api_requerir_roles('Administrador', 'Contador')
+def api_balance_prueba():
+    """Balance de prueba por cuenta."""
+    try:
+        datos = balance_prueba(
+            fecha_inicio=request.args.get('fecha_inicio'),
+            fecha_fin=request.args.get('fecha_fin'),
+        )
+        return jsonify({"estado": "exito", "data": datos}), 200
+    except (ValueError, pymysql.MySQLError) as error:
+        return _error_contable(error)
+
+
+@contabilidad_bp.route('/ver-comprobantes', methods=['GET'])
+@requerir_roles('Administrador', 'Contador')
+def ver_comprobantes_html():
+    """Página de comprobantes contables."""
+    return render_template('contabilidad/comprobantes.html')
+
+
+@contabilidad_bp.route('/ver-libro-mayor', methods=['GET'])
+@requerir_roles('Administrador', 'Contador')
+def ver_libro_mayor_html():
+    """Página del libro mayor."""
+    return render_template('contabilidad/libro_mayor.html')
+
+
+@contabilidad_bp.route('/ver-balance-prueba', methods=['GET'])
+@requerir_roles('Administrador', 'Contador')
+def ver_balance_prueba_html():
+    """Página del balance de prueba."""
+    f_inicio = request.args.get('fecha_inicio')
+    f_fin = request.args.get('fecha_fin')
+    try:
+        datos = balance_prueba(f_inicio, f_fin)
+    except (ValueError, pymysql.MySQLError) as error:
+        print(f"AVISO: no se pudo calcular el balance de prueba: {error}")
+        datos = {
+            "cuentas": [], "total_debitos": 0.0, "total_creditos": 0.0,
+            "diferencia": 0.0, "cuadra": True,
+        }
+    return render_template('contabilidad/balance_prueba.html', data=datos,
+                           fecha_inicio=f_inicio, fecha_fin=f_fin)
+
+
+@contabilidad_bp.route('/ver-puc', methods=['GET'])
+@requerir_roles('Administrador', 'Contador')
+def ver_puc_html():
+    """Página de consulta del Plan Único de Cuentas."""
+    return render_template('contabilidad/puc.html')
+

@@ -1,0 +1,118 @@
+{% extends 'base.html' %}
+
+{% block title %}Colilla de pago{% endblock %}
+{% block header_title %}Colilla de pago{% endblock %}
+
+{% block head %}
+<link rel="stylesheet" href="{{ url_for('nomina.static', filename='css/nomina.css') }}">
+<style>
+    .colilla { background: #fff; border: 1px solid #D9E0E8; border-radius: 10px; padding: 28px 32px; max-width: 860px; margin: 0 auto; }
+    .colilla-cabecera { display: flex; justify-content: space-between; align-items: flex-start; gap: 20px; border-bottom: 2px solid #0F1B2D; padding-bottom: 14px; margin-bottom: 18px; }
+    .colilla-cabecera h1 { font-size: 20px; margin: 0 0 4px; }
+    .colilla-cabecera p { margin: 0; font-size: 13px; color: #52627A; }
+    .colilla-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px 24px; font-size: 13.5px; margin-bottom: 20px; }
+    .colilla-grid div { display: flex; justify-content: space-between; border-bottom: 1px dotted #D9E0E8; padding: 4px 0; }
+    .colilla-grid span:first-child { color: #52627A; }
+    .colilla h2 { font-size: 13px; text-transform: uppercase; letter-spacing: .05em; color: #52627A; margin: 22px 0 8px; }
+    .colilla table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    .colilla th { text-align: left; font-size: 11px; text-transform: uppercase; color: #6B7A90; border-bottom: 1px solid #D9E0E8; padding: 6px 8px; }
+    .colilla td { padding: 6px 8px; border-bottom: 1px solid #EEF1F5; }
+    .colilla td.num, .colilla th.num { text-align: right; font-variant-numeric: tabular-nums; }
+    .colilla .total { font-weight: 700; font-size: 15px; background: #E8F0FA; }
+    .colilla-firmas { display: grid; grid-template-columns: 1fr 1fr; gap: 40px; margin-top: 56px; }
+    .colilla-firmas div { border-top: 1px solid #0F1B2D; padding-top: 6px; font-size: 12px; color: #52627A; text-align: center; }
+    @media print {
+        .sidebar, .topbar, .colilla-acciones { display: none !important; }
+        .colilla { border: none; max-width: none; padding: 0; }
+        body { background: #fff; }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="colilla-acciones" style="max-width:860px;margin:0 auto 16px;display:flex;gap:12px;">
+    <a class="btn btn-secondary" href="{{ url_for('nomina.modulo') }}">Volver a nómina</a>
+    <button class="btn btn-primary" type="button" onclick="window.print()">Imprimir / PDF</button>
+</div>
+
+<div class="colilla">
+    <div class="colilla-cabecera">
+        <div>
+            <h1>EXODUS Contable</h1>
+            <p>Comprobante de pago de nómina</p>
+        </div>
+        <div style="text-align:right;font-size:13px;">
+            <strong>{{ periodo.nombre }}</strong><br>
+            {{ periodo.fecha_inicio }} a {{ periodo.fecha_fin }}<br>
+            Estado: {{ periodo.estado }}
+        </div>
+    </div>
+
+    <div class="colilla-grid">
+        <div><span>Empleado</span><strong>{{ detalle.empleado }}</strong></div>
+        <div><span>Documento</span><strong>{{ detalle.documento }}</strong></div>
+        <div><span>Cargo</span><strong>{{ detalle.cargo or '—' }}</strong></div>
+        <div><span>Días laborados</span><strong>{{ detalle.dias_laborados }}</strong></div>
+        <div><span>Salario base</span><strong>${{ "{:,.2f}".format(detalle.salario_base) }}</strong></div>
+        <div><span>Auxilio de transporte</span><strong>${{ "{:,.2f}".format(detalle.auxilio_transporte) }}</strong></div>
+        <div><span>IBC</span><strong>${{ "{:,.2f}".format(detalle.ibc) }}</strong></div>
+        <div><span>Total horas extra</span><strong>${{ "{:,.2f}".format(detalle.total_horas_extra) }}</strong></div>
+    </div>
+
+    {% set devengados = detalle.conceptos | selectattr('tipo', 'equalto', 'DEVENGADO') | list %}
+    {% set deducciones = detalle.conceptos | selectattr('tipo', 'equalto', 'DEDUCCION') | list %}
+    {% set aportes = detalle.conceptos | selectattr('tipo', 'equalto', 'APORTE_PATRONAL') | list %}
+    {% set provisiones = detalle.conceptos | selectattr('tipo', 'equalto', 'PROVISION') | list %}
+
+    <h2>Devengado</h2>
+    <table>
+        <thead><tr><th>Concepto</th><th class="num">Valor</th></tr></thead>
+        <tbody>
+            {% for linea in devengados %}
+            <tr><td>{{ linea.nombre }}</td><td class="num">${{ "{:,.2f}".format(linea.valor) }}</td></tr>
+            {% endfor %}
+            <tr class="total"><td>Total devengado</td><td class="num">${{ "{:,.2f}".format(detalle.total_devengado) }}</td></tr>
+        </tbody>
+    </table>
+
+    <h2>Deducciones</h2>
+    <table>
+        <thead><tr><th>Concepto</th><th class="num">Valor</th></tr></thead>
+        <tbody>
+            {% for linea in deducciones %}
+            <tr><td>{{ linea.nombre }}</td><td class="num">${{ "{:,.2f}".format(linea.valor) }}</td></tr>
+            {% else %}
+            <tr><td colspan="2">Sin deducciones.</td></tr>
+            {% endfor %}
+            <tr class="total"><td>Total deducciones</td><td class="num">${{ "{:,.2f}".format(detalle.total_deducciones) }}</td></tr>
+        </tbody>
+    </table>
+
+    <table style="margin-top:16px;">
+        <tbody>
+            <tr class="total"><td>NETO A PAGAR</td><td class="num">${{ "{:,.2f}".format(detalle.neto_pagar) }}</td></tr>
+        </tbody>
+    </table>
+
+    {% if aportes or provisiones %}
+    <h2>Aportes del empleador y provisiones</h2>
+    <table>
+        <thead><tr><th>Concepto</th><th class="num">Valor</th></tr></thead>
+        <tbody>
+            {% for linea in aportes %}
+            <tr><td>{{ linea.nombre }}</td><td class="num">${{ "{:,.2f}".format(linea.valor) }}</td></tr>
+            {% endfor %}
+            {% for linea in provisiones %}
+            <tr><td>{{ linea.nombre }}</td><td class="num">${{ "{:,.2f}".format(linea.valor) }}</td></tr>
+            {% endfor %}
+            <tr class="total"><td>Total costo patronal</td><td class="num">${{ "{:,.2f}".format(detalle.total_aportes + detalle.total_provisiones) }}</td></tr>
+        </tbody>
+    </table>
+    {% endif %}
+
+    <div class="colilla-firmas">
+        <div>Firma del empleador</div>
+        <div>Firma del empleado</div>
+    </div>
+</div>
+{% endblock %}

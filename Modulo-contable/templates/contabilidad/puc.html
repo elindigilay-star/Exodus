@@ -1,0 +1,144 @@
+{% extends 'base.html' %}
+
+{% block title %}Plan Único de Cuentas{% endblock %}
+{% block header_title %}Plan Único de Cuentas{% endblock %}
+
+{% block content %}
+<div class="card">
+    <p>Catálogo PUC cargado desde el libro de trabajo. Puedes buscar por código o nombre y agregar cuentas personalizadas.</p>
+
+    <form id="form-buscar-puc" class="filtro-periodo">
+        <label for="puc-q">Buscar:</label>
+        <input type="text" id="puc-q" placeholder="Código o nombre" style="min-width: 220px;">
+        <label for="puc-solo-movimiento">Tipo:</label>
+        <select id="puc-solo-movimiento">
+            <option value="1">Solo cuentas de movimiento</option>
+            <option value="0">Todas las cuentas</option>
+        </select>
+        <button type="submit" class="btn btn-primary">Buscar</button>
+    </form>
+
+    <details style="margin: 16px 0;">
+        <summary><strong>Agregar cuenta personalizada</strong></summary>
+        <form id="form-cuenta" class="form-row" style="margin-top: 12px;">
+            <div class="form-group">
+                <label for="cuenta-codigo">Código</label>
+                <input type="text" id="cuenta-codigo" required placeholder="Ej.: 11050501">
+            </div>
+            <div class="form-group">
+                <label for="cuenta-nombre">Nombre</label>
+                <input type="text" id="cuenta-nombre" required>
+            </div>
+            <div class="form-group">
+                <label for="cuenta-naturaleza">Naturaleza</label>
+                <select id="cuenta-naturaleza">
+                    <option value="DEBITO">Débito</option>
+                    <option value="CREDITO">Crédito</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="cuenta-grupo">Grupo (opcional)</label>
+                <input type="text" id="cuenta-grupo" placeholder="Ej.: Activo - Disponible">
+            </div>
+            <div class="form-group" style="align-self: end;">
+                <button type="submit" class="btn btn-primary">Agregar</button>
+            </div>
+            <div id="msg-cuenta" class="mensaje-inline" style="align-self: center;"></div>
+        </form>
+    </details>
+
+    <table id="tabla-puc">
+        <thead>
+            <tr>
+                <th>Código</th>
+                <th>Nombre</th>
+                <th>Clase</th>
+                <th>Grupo</th>
+                <th>Naturaleza</th>
+                <th>Movimiento</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr><td colspan="6" style="text-align:center;">Cargando…</td></tr>
+        </tbody>
+    </table>
+</div>
+
+<style>
+    .mensaje-inline { font-size: 14px; }
+    .mensaje-inline.ok { color: #14532D; }
+    .mensaje-inline.error { color: #7A1A12; }
+</style>
+
+<script>
+const API_CONT = '/api/contabilidad';
+const esc = (v) => String(v ?? '').replace(/[&<>"']/g, (c) => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+
+async function cargarPuc() {
+    const tbody = document.querySelector('#tabla-puc tbody');
+    const qs = new URLSearchParams({
+        q: document.getElementById('puc-q').value.trim(),
+        solo_movimiento: document.getElementById('puc-solo-movimiento').value,
+    });
+    tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;">Cargando…</td></tr>';
+    try {
+        const respuesta = await fetch(`${API_CONT}/puc?${qs}`);
+        const datos = await respuesta.json();
+        if (!respuesta.ok) throw new Error(datos.mensaje || 'Error al consultar.');
+        const cuentas = datos.data || [];
+        if (!cuentas.length) {
+            tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;">No se encontraron cuentas.</td></tr>';
+            return;
+        }
+        tbody.innerHTML = cuentas.map((c) => `
+            <tr>
+                <td>${esc(c.codigo)}</td>
+                <td>${esc(c.nombre)}</td>
+                <td>${esc(c.clase)}</td>
+                <td>${esc(c.grupo || '')}</td>
+                <td>${esc(c.naturaleza)}</td>
+                <td>${c.es_movimiento ? 'Sí' : 'No'}</td>
+            </tr>
+        `).join('');
+    } catch (error) {
+        tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;color:#B42318;">${esc(error.message)}</td></tr>`;
+    }
+}
+
+document.getElementById('form-buscar-puc').addEventListener('submit', (evento) => {
+    evento.preventDefault();
+    cargarPuc();
+});
+
+document.getElementById('form-cuenta').addEventListener('submit', async (evento) => {
+    evento.preventDefault();
+    const msg = document.getElementById('msg-cuenta');
+    msg.textContent = '';
+    msg.className = 'mensaje-inline';
+    const cuerpo = {
+        codigo: document.getElementById('cuenta-codigo').value.trim(),
+        nombre: document.getElementById('cuenta-nombre').value.trim(),
+        naturaleza: document.getElementById('cuenta-naturaleza').value,
+        grupo: document.getElementById('cuenta-grupo').value.trim() || null,
+    };
+    try {
+        const respuesta = await fetch(`${API_CONT}/puc`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(cuerpo),
+        });
+        const datos = await respuesta.json();
+        if (!respuesta.ok) throw new Error(datos.mensaje || 'No se pudo crear la cuenta.');
+        msg.textContent = datos.mensaje || 'Cuenta creada.';
+        msg.className = 'mensaje-inline ok';
+        document.getElementById('form-cuenta').reset();
+        cargarPuc();
+    } catch (error) {
+        msg.textContent = error.message;
+        msg.className = 'mensaje-inline error';
+    }
+});
+
+document.addEventListener('DOMContentLoaded', cargarPuc);
+</script>
+{% endblock %}

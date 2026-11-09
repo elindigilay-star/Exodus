@@ -1,0 +1,357 @@
+{% extends 'base.html' %}
+
+{% block title %}Comprobantes Contables{% endblock %}
+{% block header_title %}Comprobantes Contables{% endblock %}
+
+{% block content %}
+<div class="card">
+    <p>Registra la partida doble del día. Un comprobante solo se guarda si sus débitos y créditos son iguales. También puedes consultar y anular comprobantes.</p>
+
+    <details class="panel-desplegable" open>
+        <summary><strong>Nuevo comprobante</strong></summary>
+        <form id="form-comprobante" style="margin-top: 16px;">
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="comp-tipo">Tipo</label>
+                    <select id="comp-tipo" name="tipo">
+                        <option value="DIARIO">Diario</option>
+                        <option value="INGRESO">Ingreso</option>
+                        <option value="EGRESO">Egreso</option>
+                        <option value="AJUSTE">Ajuste</option>
+                        <option value="NOMINA">Nómina</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="comp-fecha">Fecha</label>
+                    <input type="date" id="comp-fecha" name="fecha" required>
+                </div>
+                <div class="form-group">
+                    <label for="comp-numero">Número (opcional)</label>
+                    <input type="text" id="comp-numero" name="numero" placeholder="Se genera automáticamente">
+                </div>
+            </div>
+            <div class="form-group">
+                <label for="comp-descripcion">Descripción</label>
+                <input type="text" id="comp-descripcion" name="descripcion" required
+                       placeholder="Ej.: Compra de mercancía a crédito">
+            </div>
+
+            <table class="tabla-lineas">
+                <thead>
+                    <tr>
+                        <th style="width: 30%;">Cuenta PUC</th>
+                        <th>Detalle</th>
+                        <th style="width: 15%;">Débito</th>
+                        <th style="width: 15%;">Crédito</th>
+                        <th style="width: 50px;"></th>
+                    </tr>
+                </thead>
+                <tbody id="lineas-comprobante"></tbody>
+            </table>
+            <div class="acciones-lineas">
+                <button type="button" class="btn btn-secondary" id="btn-agregar-linea">+ Agregar línea</button>
+                <div class="totales-lineas">
+                    <span>Débitos: <strong id="total-debito">$0</strong></span>
+                    <span>Créditos: <strong id="total-credito">$0</strong></span>
+                    <span>Diferencia: <strong id="total-diferencia">$0</strong></span>
+                </div>
+            </div>
+
+            <div class="actions" style="margin-top: 16px;">
+                <button type="submit" class="btn btn-primary">Guardar comprobante</button>
+                <span id="msg-comprobante" class="mensaje-inline"></span>
+            </div>
+        </form>
+    </details>
+
+    <hr>
+
+    <h3>Comprobantes registrados</h3>
+    <form class="filtro-periodo" id="filtro-comprobantes">
+        <label for="filtro-desde">Desde:</label>
+        <input type="date" id="filtro-desde" name="fecha_inicio">
+        <label for="filtro-hasta">Hasta:</label>
+        <input type="date" id="filtro-hasta" name="fecha_fin">
+        <label for="filtro-estado">Estado:</label>
+        <select id="filtro-estado" name="estado">
+            <option value="">Todos</option>
+            <option value="CONTABILIZADO">Contabilizado</option>
+            <option value="ANULADO">Anulado</option>
+        </select>
+        <button type="submit" class="btn btn-primary">Filtrar</button>
+        <a href="{{ url_for('contabilidad.ver_comprobantes_html') }}" class="btn btn-secondary">Limpiar</a>
+    </form>
+
+    <table id="tabla-comprobantes">
+        <thead>
+            <tr>
+                <th>Número</th>
+                <th>Fecha</th>
+                <th>Tipo</th>
+                <th>Descripción</th>
+                <th style="text-align:right;">Débito</th>
+                <th style="text-align:right;">Crédito</th>
+                <th>Estado</th>
+                <th>Acciones</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr><td colspan="8" style="text-align:center;">Cargando…</td></tr>
+        </tbody>
+    </table>
+</div>
+
+<datalist id="lista-cuentas-puc"></datalist>
+
+<div id="modal-comprobante" class="modal-fondo" style="display:none;">
+    <div class="card modal-contenido">
+        <div class="modal-cabecera">
+            <h3 id="modal-titulo">Comprobante</h3>
+            <button type="button" class="btn btn-secondary" onclick="cerrarDetalle()">Cerrar</button>
+        </div>
+        <div id="modal-detalle"></div>
+    </div>
+</div>
+
+<style>
+    .panel-desplegable summary { cursor: pointer; padding: 8px 0; }
+    .tabla-lineas { margin-top: 14px; }
+    .tabla-lineas input { width: 100%; box-sizing: border-box; }
+    .tabla-lineas td { padding: 6px; }
+    .acciones-lineas { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-top: 10px; flex-wrap: wrap; }
+    .totales-lineas { display: flex; gap: 16px; font-size: 14px; flex-wrap: wrap; }
+    .mensaje-inline { font-size: 14px; }
+    .mensaje-inline.ok { color: #14532D; }
+    .mensaje-inline.error { color: #7A1A12; }
+    .modal-fondo { position: fixed; inset: 0; background: rgba(15,27,45,.55); z-index: 1000; overflow: auto; }
+    .modal-contenido { max-width: 900px; margin: 40px auto; }
+    .modal-cabecera { display: flex; justify-content: space-between; align-items: center; gap: 12px; }
+    .modal-contenido table { margin-top: 12px; }
+    .estado-anulado { color: #B42318; font-weight: 600; }
+</style>
+
+<script>
+const API_CONT = '/api/contabilidad';
+const fmt = new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 2 });
+
+function esc(valor) {
+    return String(valor ?? '').replace(/[&<>"']/g, (c) => ({
+        '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+    }[c]));
+}
+function dinero(valor) { return fmt.format(Number(valor || 0)); }
+
+async function cargarCuentasPuc(termino = '') {
+    const qs = new URLSearchParams({ solo_movimiento: '1', q: termino });
+    const respuesta = await fetch(`${API_CONT}/puc?${qs}`);
+    const datos = await respuesta.json();
+    if (!respuesta.ok || datos.estado !== 'exito') return [];
+    return datos.data || [];
+}
+
+async function llenarDatalist() {
+    const cuentas = await cargarCuentasPuc();
+    document.getElementById('lista-cuentas-puc').innerHTML = cuentas
+        .map((c) => `<option value="${esc(c.codigo)}">${esc(c.codigo)} - ${esc(c.nombre)}</option>`)
+        .join('');
+}
+
+function agregarLinea(codigo = '', descripcion = '', debito = '', credito = '') {
+    const tbody = document.getElementById('lineas-comprobante');
+    const fila = document.createElement('tr');
+    fila.innerHTML = `
+        <td><input type="text" list="lista-cuentas-puc" class="linea-codigo" placeholder="Código PUC" value="${esc(codigo)}"></td>
+        <td><input type="text" class="linea-descripcion" placeholder="Detalle" value="${esc(descripcion)}"></td>
+        <td><input type="number" step="0.01" min="0" class="linea-debito" value="${esc(debito)}"></td>
+        <td><input type="number" step="0.01" min="0" class="linea-credito" value="${esc(credito)}"></td>
+        <td><button type="button" class="btn btn-small btn-danger btn-quitar-linea">×</button></td>
+    `;
+    tbody.appendChild(fila);
+    fila.querySelectorAll('input[type="number"]').forEach((input) => input.addEventListener('input', recalcularTotales));
+    actualizarTotales();
+}
+
+function actualizarTotales() {
+    let debito = 0;
+    let credito = 0;
+    document.querySelectorAll('#lineas-comprobante tr').forEach((fila) => {
+        debito += Number(fila.querySelector('.linea-debito')?.value || 0);
+        credito += Number(fila.querySelector('.linea-credito')?.value || 0);
+    });
+    document.getElementById('total-debito').textContent = dinero(debito);
+    document.getElementById('total-credito').textContent = dinero(credito);
+    document.getElementById('total-diferencia').textContent = dinero(debito - credito);
+}
+
+function recalcularTotales() { actualizarTotales(); }
+
+document.getElementById('btn-agregar-linea').addEventListener('click', () => agregarLinea());
+document.getElementById('lineas-comprobante').addEventListener('click', (evento) => {
+    if (evento.target.classList.contains('btn-quitar-linea')) {
+        evento.target.closest('tr').remove();
+        actualizarTotales();
+    }
+});
+
+document.getElementById('form-comprobante').addEventListener('submit', async (evento) => {
+    evento.preventDefault();
+    const msg = document.getElementById('msg-comprobante');
+    msg.textContent = '';
+    msg.className = 'mensaje-inline';
+
+    const lineas = [];
+    document.querySelectorAll('#lineas-comprobante tr').forEach((fila) => {
+        const codigo = fila.querySelector('.linea-codigo').value.trim();
+        const debito = Number(fila.querySelector('.linea-debito').value || 0);
+        const credito = Number(fila.querySelector('.linea-credito').value || 0);
+        if (!codigo && !debito && !credito) return;
+        lineas.push({
+            codigo,
+            descripcion: fila.querySelector('.linea-descripcion').value.trim(),
+            debito,
+            credito,
+        });
+    });
+
+    const cuerpo = {
+        tipo: document.getElementById('comp-tipo').value,
+        fecha: document.getElementById('comp-fecha').value,
+        descripcion: document.getElementById('comp-descripcion').value.trim(),
+        numero: document.getElementById('comp-numero').value.trim() || null,
+        lineas,
+    };
+
+    try {
+        const respuesta = await fetch(`${API_CONT}/comprobantes`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(cuerpo),
+        });
+        const datos = await respuesta.json();
+        if (!respuesta.ok) throw new Error(datos.mensaje || 'No se pudo guardar el comprobante.');
+        msg.textContent = datos.mensaje || 'Comprobante guardado.';
+        msg.className = 'mensaje-inline ok';
+        document.getElementById('form-comprobante').reset();
+        document.getElementById('lineas-comprobante').innerHTML = '';
+        agregarLinea();
+        agregarLinea();
+        cargarComprobantes();
+    } catch (error) {
+        msg.textContent = error.message;
+        msg.className = 'mensaje-inline error';
+    }
+});
+
+async function cargarComprobantes() {
+    const tbody = document.querySelector('#tabla-comprobantes tbody');
+    const qs = new URLSearchParams();
+    const desde = document.getElementById('filtro-desde').value;
+    const hasta = document.getElementById('filtro-hasta').value;
+    const estado = document.getElementById('filtro-estado').value;
+    if (desde) qs.set('fecha_inicio', desde);
+    if (hasta) qs.set('fecha_fin', hasta);
+    if (estado) qs.set('estado', estado);
+
+    try {
+        const respuesta = await fetch(`${API_CONT}/comprobantes?${qs}`);
+        const datos = await respuesta.json();
+        if (!respuesta.ok) throw new Error(datos.mensaje || 'Error al cargar.');
+        const comprobantes = datos.data || [];
+        if (!comprobantes.length) {
+            tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;">No hay comprobantes en este período.</td></tr>';
+            return;
+        }
+        tbody.innerHTML = comprobantes.map((c) => `
+            <tr>
+                <td>${esc(c.numero)}</td>
+                <td>${esc(c.fecha)}</td>
+                <td>${esc(c.tipo)}</td>
+                <td>${esc(c.descripcion)}</td>
+                <td style="text-align:right;">${dinero(c.total_debito)}</td>
+                <td style="text-align:right;">${dinero(c.total_credito)}</td>
+                <td class="${c.estado === 'ANULADO' ? 'estado-anulado' : ''}">${esc(c.estado)}</td>
+                <td>
+                    <button class="btn btn-small btn-secondary" onclick="verDetalle(${c.id_comprobante})">Ver</button>
+                    ${c.estado !== 'ANULADO' ? `<button class="btn btn-small btn-danger" onclick="anularComprobante(${c.id_comprobante})">Anular</button>` : ''}
+                </td>
+            </tr>
+        `).join('');
+    } catch (error) {
+        tbody.innerHTML = `<tr><td colspan="8" style="text-align:center;color:#B42318;">${esc(error.message)}</td></tr>`;
+    }
+}
+
+async function verDetalle(id) {
+    const modal = document.getElementById('modal-comprobante');
+    const contenido = document.getElementById('modal-detalle');
+    contenido.innerHTML = 'Cargando…';
+    modal.style.display = 'block';
+    try {
+        const respuesta = await fetch(`${API_CONT}/comprobantes/${id}`);
+        const datos = await respuesta.json();
+        if (!respuesta.ok) throw new Error(datos.mensaje || 'No encontrado.');
+        const c = datos.data;
+        document.getElementById('modal-titulo').textContent = `${c.numero} · ${c.fecha}`;
+        contenido.innerHTML = `
+            <p><strong>Tipo:</strong> ${esc(c.tipo)} · <strong>Estado:</strong> ${esc(c.estado)}<br>
+            <strong>Descripción:</strong> ${esc(c.descripcion)}</p>
+            <table>
+                <thead><tr><th>Cuenta</th><th>Detalle</th><th style="text-align:right;">Débito</th><th style="text-align:right;">Crédito</th></tr></thead>
+                <tbody>
+                    ${c.detalle.map((d) => `
+                        <tr>
+                            <td>${esc(d.codigo)} - ${esc(d.cuenta)}</td>
+                            <td>${esc(d.descripcion || '')}</td>
+                            <td style="text-align:right;">${dinero(d.debito)}</td>
+                            <td style="text-align:right;">${dinero(d.credito)}</td>
+                        </tr>
+                    `).join('')}
+                </tbody>
+                <tfoot>
+                    <tr>
+                        <th colspan="2">Totales</th>
+                        <th style="text-align:right;">${dinero(c.total_debito)}</th>
+                        <th style="text-align:right;">${dinero(c.total_credito)}</th>
+                    </tr>
+                </tfoot>
+            </table>
+        `;
+    } catch (error) {
+        contenido.innerHTML = `<p style="color:#B42318;">${esc(error.message)}</p>`;
+    }
+}
+
+function cerrarDetalle() {
+    document.getElementById('modal-comprobante').style.display = 'none';
+}
+
+async function anularComprobante(id) {
+    if (!confirm('¿Anular este comprobante? Sus movimientos dejarán de aparecer en los reportes.')) return;
+    try {
+        const respuesta = await fetch(`${API_CONT}/comprobantes/${id}/anular`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: '{}',
+        });
+        const datos = await respuesta.json();
+        if (!respuesta.ok) throw new Error(datos.mensaje || 'No se pudo anular.');
+        cargarComprobantes();
+    } catch (error) {
+        alert(error.message);
+    }
+}
+
+document.getElementById('filtro-comprobantes').addEventListener('submit', (evento) => {
+    evento.preventDefault();
+    cargarComprobantes();
+});
+
+document.addEventListener('DOMContentLoaded', () => {
+    document.getElementById('comp-fecha').value = new Date().toISOString().slice(0, 10);
+    llenarDatalist();
+    agregarLinea();
+    agregarLinea();
+    cargarComprobantes();
+});
+</script>
+{% endblock %}

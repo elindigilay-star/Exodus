@@ -1,0 +1,701 @@
+codigo,nombre,nivel,clase,grupo,naturaleza,es_movimiento
+1105,CAJA,4,1,Activo - Disponible,DEBITO,0
+110505,Caja General,6,1,Activo - Disponible,DEBITO,1
+110510,Cajas Menores,6,1,Activo - Disponible,DEBITO,1
+110515,Moneda Extranjera,6,1,Activo - Disponible,DEBITO,1
+1110,BANCOS,4,1,Activo - Disponible,DEBITO,0
+111005,Bancos Nacionales,6,1,Activo - Disponible,DEBITO,0
+11100501,Bancolombia,8,1,Activo - Disponible,DEBITO,1
+111010,Bancos del Exterior,6,1,Activo - Disponible,DEBITO,1
+1115,REMESAS EN TRÁNSITO,4,1,Activo - Disponible,DEBITO,0
+111505,Remesas Nacionales,6,1,Activo - Disponible,DEBITO,1
+111510,Remesas Exterior,6,1,Activo - Disponible,DEBITO,1
+1120,CUENTAS DE AHORRO,4,1,Activo - Disponible,DEBITO,0
+112005,Bancos Cuentas de Ahorros,6,1,Activo - Disponible,DEBITO,1
+112010,Corporaciones de Ahorro y Vivienda,6,1,Activo - Disponible,DEBITO,1
+1125,FONDOS,4,1,Activo - Disponible,DEBITO,0
+112505,Fondos Rotatorios Moneda Nacional,6,1,Activo - Disponible,DEBITO,1
+112510,Fondos Especiales,6,1,Activo - Disponible,DEBITO,1
+1205,ACCIONES,4,1,Activo - Inversiones,DEBITO,0
+120505,"Agricultura, Ganadería, Caza y Silvicultura",6,1,Activo - Inversiones,DEBITO,1
+120510,Pesca,6,1,Activo - Inversiones,DEBITO,1
+120515,Explotación de Minas y Canteras,6,1,Activo - Inversiones,DEBITO,1
+120520,Industria Manufacturera,6,1,Activo - Inversiones,DEBITO,1
+120525,"Suministro de Electricidad, Gas y Agua",6,1,Activo - Inversiones,DEBITO,1
+120530,Construcción,6,1,Activo - Inversiones,DEBITO,1
+120535,Comercio al por Mayor y al por Menor,6,1,Activo - Inversiones,DEBITO,1
+120540,Hoteles y Restaurantes,6,1,Activo - Inversiones,DEBITO,1
+120545,"Transporte, Almacenamiento y Comunicaciones",6,1,Activo - Inversiones,DEBITO,1
+120550,Actividad Financiera,6,1,Activo - Inversiones,DEBITO,1
+120555,Actividades Inmobiliarias y Empresariales,6,1,Activo - Inversiones,DEBITO,1
+120560,Enseñanza,6,1,Activo - Inversiones,DEBITO,1
+120565,Servicios Sociales y de Salud,6,1,Activo - Inversiones,DEBITO,1
+1210,CUOTAS O PARTES DE INTERÉS SOCIAL,4,1,Activo - Inversiones,DEBITO,0
+121005,Cuotas en Sociedades de Resp. Limitada,6,1,Activo - Inversiones,DEBITO,1
+1215,BONOS,4,1,Activo - Inversiones,DEBITO,0
+121505,Bonos Públicos Moneda Nacional,6,1,Activo - Inversiones,DEBITO,1
+121515,Bonos Ordinarios,6,1,Activo - Inversiones,DEBITO,1
+121520,Bonos Convertibles en Acciones,6,1,Activo - Inversiones,DEBITO,1
+1220,CÉDULAS,4,1,Activo - Inversiones,DEBITO,0
+122005,Cédulas Hipotecarias,6,1,Activo - Inversiones,DEBITO,1
+1225,CERTIFICADOS,4,1,Activo - Inversiones,DEBITO,0
+122505,Certificados de Depósito a Término (C.D.T.),6,1,Activo - Inversiones,DEBITO,1
+122510,Certificados de Depósito de Ahorro,6,1,Activo - Inversiones,DEBITO,1
+122535,Certificados de Reembolso Tributario (C.E.R.T.),6,1,Activo - Inversiones,DEBITO,1
+1230,PAPELES COMERCIALES,4,1,Activo - Inversiones,DEBITO,0
+123005,Papeles Comerciales Empresas Comerciales,6,1,Activo - Inversiones,DEBITO,1
+1235,TÍTULOS,4,1,Activo - Inversiones,DEBITO,0
+123515,Títulos de Tesorería (T.E.S.),6,1,Activo - Inversiones,DEBITO,1
+123520,Títulos de Participación,6,1,Activo - Inversiones,DEBITO,1
+123565,Títulos de Devolución de Impuestos (TIDIS),6,1,Activo - Inversiones,DEBITO,1
+1240,ACEPTACIONES BANCARIAS O FINANCIERAS,4,1,Activo - Inversiones,DEBITO,0
+124005,Aceptaciones Bancos Comerciales,6,1,Activo - Inversiones,DEBITO,1
+1245,DERECHOS FIDUCIARIOS,4,1,Activo - Inversiones,DEBITO,0
+124505,Fideicomisos de Inversión Moneda Nacional,6,1,Activo - Inversiones,DEBITO,1
+1250,DERECHOS DE RECOMPRA DE INVERSIONES (REPOS),4,1,Activo - Inversiones,DEBITO,0
+125005,Repos en Acciones,6,1,Activo - Inversiones,DEBITO,1
+1255,INVERSIONES OBLIGATORIAS,4,1,Activo - Inversiones,DEBITO,0
+125505,Bonos de Financiamiento Especial,6,1,Activo - Inversiones,DEBITO,1
+1295,OTRAS INVERSIONES,4,1,Activo - Inversiones,DEBITO,0
+129505,Aportes en Cooperativas,6,1,Activo - Inversiones,DEBITO,1
+129510,Derechos en Clubes Sociales,6,1,Activo - Inversiones,DEBITO,1
+1299,PROVISIONES INVERSIONES (CR),4,1,Activo - Inversiones,CREDITO,0
+129905,Provisión Acciones,6,1,Activo - Inversiones,CREDITO,1
+129910,Provisión Cuotas o Partes de Interés,6,1,Activo - Inversiones,CREDITO,1
+1305,CLIENTES,4,1,Activo - Deudores,DEBITO,0
+130505,Clientes Nacionales,6,1,Activo - Deudores,DEBITO,1
+130510,Clientes del Exterior,6,1,Activo - Deudores,DEBITO,1
+130515,Deudores del Sistema,6,1,Activo - Deudores,DEBITO,1
+1310,CUENTAS CORRIENTES COMERCIALES,4,1,Activo - Deudores,DEBITO,0
+131005,Cuentas Corrientes Casa Matriz,6,1,Activo - Deudores,DEBITO,1
+131010,Cuentas Corrientes Compañías Vinculadas,6,1,Activo - Deudores,DEBITO,1
+131015,Cuentas Corrientes Accionistas o Socios,6,1,Activo - Deudores,DEBITO,1
+1315,CUENTAS POR COBRAR A CASA MATRIZ,4,1,Activo - Deudores,DEBITO,0
+131505,Ventas a Casa Matriz,6,1,Activo - Deudores,DEBITO,1
+1320,CUENTAS POR COBRAR A VINCULADOS ECONÓMICOS,4,1,Activo - Deudores,DEBITO,0
+132005,Cuentas por Cobrar Filiales,6,1,Activo - Deudores,DEBITO,1
+132010,Cuentas por Cobrar Subsidiarias,6,1,Activo - Deudores,DEBITO,1
+1323,CUENTAS POR COBRAR A DIRECTORES,4,1,Activo - Deudores,DEBITO,0
+132305,Préstamos a Directores,6,1,Activo - Deudores,DEBITO,1
+1325,CUENTAS POR COBRAR A SOCIOS Y ACCIONISTAS,4,1,Activo - Deudores,DEBITO,0
+132505,Préstamos a Socios,6,1,Activo - Deudores,DEBITO,1
+132510,Préstamos a Accionistas,6,1,Activo - Deudores,DEBITO,1
+1330,ANTICIPOS Y AVANCES,4,1,Activo - Deudores,DEBITO,0
+133005,Anticipos a Proveedores,6,1,Activo - Deudores,DEBITO,1
+133010,Anticipos a Contratistas,6,1,Activo - Deudores,DEBITO,1
+133015,Anticipos a Trabajadores,6,1,Activo - Deudores,DEBITO,1
+133020,Anticipos a Agentes de Aduana,6,1,Activo - Deudores,DEBITO,1
+1335,DEPÓSITOS,4,1,Activo - Deudores,DEBITO,0
+133505,Depósitos para Importaciones,6,1,Activo - Deudores,DEBITO,1
+133510,Depósitos para Servicios Publicos,6,1,Activo - Deudores,DEBITO,1
+133515,Depósitos para Contratos y Arrendamientos,6,1,Activo - Deudores,DEBITO,1
+133535,Depósitos en Garantía,6,1,Activo - Deudores,DEBITO,1
+1340,PROMESAS DE COMPRAVENTA,4,1,Activo - Deudores,DEBITO,0
+134005,Promesas Compraventa Bienes Raíces,6,1,Activo - Deudores,DEBITO,1
+134010,Promesas Compraventa Maquinaria y Equipo,6,1,Activo - Deudores,DEBITO,1
+1345,INGRESOS POR COBRAR,4,1,Activo - Deudores,DEBITO,0
+134505,Dividendo y Participaciones por Cobrar,6,1,Activo - Deudores,DEBITO,1
+134510,Intereses por Cobrar,6,1,Activo - Deudores,DEBITO,1
+134515,Comisiones por Cobrar,6,1,Activo - Deudores,DEBITO,1
+134520,Honorarios por Cobrar,6,1,Activo - Deudores,DEBITO,1
+134530,Arrendamientos por Cobrar,6,1,Activo - Deudores,DEBITO,1
+1350,RETENCIÓN SOBRE CONTRATOS,4,1,Activo - Deudores,DEBITO,0
+135005,Retención Contratos de Construcción,6,1,Activo - Deudores,DEBITO,1
+135010,Retención Contratos de Prestación de Servicios,6,1,Activo - Deudores,DEBITO,1
+1355,ANTICIPO DE IMPUESTOS Y CONTRIBUCIONES,4,1,Activo - Deudores,DEBITO,0
+135505,Anticipo Impuesto de Renta,6,1,Activo - Deudores,DEBITO,1
+135510,Anticipo Impuesto de Industria y Comercio (ICA),6,1,Activo - Deudores,DEBITO,1
+13551501,"Anticipo Retefuente COMPRA 2,5%",8,1,Activo - Deudores,DEBITO,1
+135517,Anticipo Rete iva 15%,6,1,Activo - Deudores,DEBITO,1
+135518,"Anticipo Autorretención ICA 0,004815",6,1,Activo - Deudores,DEBITO,1
+135520,Saldos a Favor en Declaraciones Tributarias,6,1,Activo - Deudores,DEBITO,1
+135595,Autorretencion especial,6,1,Activo - Deudores,DEBITO,1
+1360,RECLAMACIONES,4,1,Activo - Deudores,DEBITO,0
+136005,Reclamaciones a Compañías Aseguradoras,6,1,Activo - Deudores,DEBITO,1
+136010,Reclamaciones a Transportadores,6,1,Activo - Deudores,DEBITO,1
+1365,CUENTAS POR COBRAR A TRABAJADORES,4,1,Activo - Deudores,DEBITO,0
+136505,Préstamos de Vivienda a Trabajadores,6,1,Activo - Deudores,DEBITO,1
+136510,Préstamos de Vehículos a Trabajadores,6,1,Activo - Deudores,DEBITO,1
+136515,Préstamos de Educación a Trabajadores,6,1,Activo - Deudores,DEBITO,1
+136525,Calamidad Doméstica Trabajadores,6,1,Activo - Deudores,DEBITO,1
+136530,Faltantes y Responsabilidades Trabajadores,6,1,Activo - Deudores,DEBITO,1
+136590,otras cuentas po cobrar a trabajadores,6,1,Activo - Deudores,DEBITO,1
+1370,PRÉSTAMOS A PARTICULARES,4,1,Activo - Deudores,DEBITO,0
+137005,Préstamos Particulares Garantía Real,6,1,Activo - Deudores,DEBITO,1
+137010,Préstamos Particulares Garantía Personal,6,1,Activo - Deudores,DEBITO,1
+1380,DEUDORES VARIOS,4,1,Activo - Deudores,DEBITO,0
+138020,Cuentas por Cobrar de Terceros,6,1,Activo - Deudores,DEBITO,1
+138025,Pagos por Cuenta de Terceros,6,1,Activo - Deudores,DEBITO,1
+1390,DEUDAS DE DIFÍCIL COBRO,4,1,Activo - Deudores,DEBITO,0
+139005,Clientes de Difícil Cobro,6,1,Activo - Deudores,DEBITO,1
+1399,PROVISIONES DEUDORES (CR),4,1,Activo - Deudores,CREDITO,0
+139905,Provisión Clientes,6,1,Activo - Deudores,CREDITO,1
+139975,Provisión Deudores Varios,6,1,Activo - Deudores,CREDITO,1
+1405,MATERIAS PRIMAS,4,1,Activo - Inventarios,DEBITO,0
+140505,Materias Primas Nacionales,6,1,Activo - Inventarios,DEBITO,1
+140510,Materias Primas Importadas,6,1,Activo - Inventarios,DEBITO,1
+1410,PRODUCTOS EN PROCESO,4,1,Activo - Inventarios,DEBITO,0
+141005,Productos en Proceso Manufactura,6,1,Activo - Inventarios,DEBITO,1
+1415,OBRAS DE CONSTRUCCIÓN EN CURSO,4,1,Activo - Inventarios,DEBITO,0
+141505,Obras de Construcción Edificaciones,6,1,Activo - Inventarios,DEBITO,1
+1420,CONTRATOS EN EJECUCIÓN,4,1,Activo - Inventarios,DEBITO,0
+142005,Contratos de Servicios en Ejecución,6,1,Activo - Inventarios,DEBITO,1
+1425,CULTIVOS EN DESARROLLO,4,1,Activo - Inventarios,DEBITO,0
+142505,Cultivos Agrícolas en Desarrollo,6,1,Activo - Inventarios,DEBITO,1
+1430,PRODUCTOS TERMINADOS,4,1,Activo - Inventarios,DEBITO,0
+143005,Productos Manufacturados Terminados,6,1,Activo - Inventarios,DEBITO,1
+143010,Productos Extraídos o Procesados,6,1,Activo - Inventarios,DEBITO,1
+1435,MERCANCÍAS NO FABRICADAS POR LA EMPRESA,4,1,Activo - Inventarios,DEBITO,0
+143505,Mercancías no Fabricadas por la Empresa,6,1,Activo - Inventarios,DEBITO,0
+14350501,Mercancías no Fabricadas por la Empresa producto alimentisios,8,1,Activo - Inventarios,DEBITO,1
+143510,Mercancías en Consignación,6,1,Activo - Inventarios,DEBITO,1
+1440,BIENES RAÍCES PARA LA VENTA,4,1,Activo - Inventarios,DEBITO,0
+144005,Inmuebles Construidos para la Venta,6,1,Activo - Inventarios,DEBITO,1
+1445,SEMOVIENTES INVENTARIO,4,1,Activo - Inventarios,DEBITO,0
+144505,Especies Mayores para la Venta,6,1,Activo - Inventarios,DEBITO,1
+144510,Especies Menores para la Venta,6,1,Activo - Inventarios,DEBITO,1
+1450,TERRENOS INVENTARIO,4,1,Activo - Inventarios,DEBITO,0
+145005,Terrenos por Urbanizar,6,1,Activo - Inventarios,DEBITO,1
+145010,Terrenos Urbanizados por Construir,6,1,Activo - Inventarios,DEBITO,1
+1455,"MATERIALES, REPUESTOS Y ACCESORIOS",4,1,Activo - Inventarios,DEBITO,0
+145505,Combustibles y Lubricantes,6,1,Activo - Inventarios,DEBITO,1
+145510,Abonos y Fertilizantes,6,1,Activo - Inventarios,DEBITO,1
+145525,Materiales y Repuestos de Mantenimiento,6,1,Activo - Inventarios,DEBITO,0
+14552501,Materiales y Repuestos para maquinaria,8,1,Activo - Inventarios,DEBITO,1
+145535,Herramientas de Trabajo,6,1,Activo - Inventarios,DEBITO,1
+145555,Dotación y Suministro a Trabajadores,6,1,Activo - Inventarios,DEBITO,1
+1460,ENVASES Y EMPAQUES,4,1,Activo - Inventarios,DEBITO,0
+146005,Envases Retornables,6,1,Activo - Inventarios,DEBITO,1
+1465,INVENTARIOS EN TRÁNSITO,4,1,Activo - Inventarios,DEBITO,0
+146505,Importaciones de Inventario en Tránsito,6,1,Activo - Inventarios,DEBITO,1
+1499,PROVISIONES INVENTARIOS (CR),4,1,Activo - Inventarios,CREDITO,0
+149905,Provisión Obsolescencia Inventarios,6,1,Activo - Inventarios,CREDITO,1
+149910,Provisión Diferencia Inventario Físico,6,1,Activo - Inventarios,CREDITO,1
+1504,TERRENOS PPE,4,1,Activo - Propiedades Planta y Equipo,DEBITO,0
+150405,Terrenos Urbanos PPE,6,1,Activo - Propiedades Planta y Equipo,DEBITO,1
+150410,Terrenos Rurales PPE,6,1,Activo - Propiedades Planta y Equipo,DEBITO,1
+1508,CONSTRUCCIONES EN CURSO PPE,4,1,Activo - Propiedades Planta y Equipo,DEBITO,0
+150805,Construcciones de Edificaciones PPE,6,1,Activo - Propiedades Planta y Equipo,DEBITO,1
+1512,MAQUINARIA Y EQUIPOS EN MONTAJE,4,1,Activo - Propiedades Planta y Equipo,DEBITO,0
+151205,Maquinaria en Montaje PPE,6,1,Activo - Propiedades Planta y Equipo,DEBITO,1
+1516,CONSTRUCCIONES Y EDIFICACIONES,4,1,Activo - Propiedades Planta y Equipo,DEBITO,0
+151605,Edificios y Oficinas PPE,6,1,Activo - Propiedades Planta y Equipo,DEBITO,1
+151610,Almacenes y Locales PPE,6,1,Activo - Propiedades Planta y Equipo,DEBITO,1
+151615,Fábricas y Plantas Industrial PPE,6,1,Activo - Propiedades Planta y Equipo,DEBITO,1
+151680,Bodegas PPE,6,1,Activo - Propiedades Planta y Equipo,DEBITO,1
+1520,MAQUINARIA Y EQUIPO,4,1,Activo - Propiedades Planta y Equipo,DEBITO,0
+152005,Maquinaria Industrial y de Planta,6,1,Activo - Propiedades Planta y Equipo,DEBITO,1
+1524,EQUIPO DE OFICINA,4,1,Activo - Propiedades Planta y Equipo,DEBITO,0
+15240501,Muebles y Enseres de Oficina,8,1,Activo - Propiedades Planta y Equipo,DEBITO,1
+15240502,Muebles y Enseres de Oficina (Escritorio),8,1,Activo - Propiedades Planta y Equipo,DEBITO,1
+152410,Equipos de Oficina Mecánicos y Eléctricos,6,1,Activo - Propiedades Planta y Equipo,DEBITO,0
+15241001,Equipos de Oficina Mecánicos y Eléctricos - Aire acondicionado,8,1,Activo - Propiedades Planta y Equipo,DEBITO,1
+15241002,Equipos de Oficina Mecánicos y Eléctricos - Aire acondicionado CENTRAL,8,1,Activo - Propiedades Planta y Equipo,DEBITO,1
+1528,EQUIPO DE COMPUTACIÓN Y COMUNICACIÓN,4,1,Activo - Propiedades Planta y Equipo,DEBITO,0
+152805,Equipos de Procesamiento de Datos,6,1,Activo - Propiedades Planta y Equipo,DEBITO,0
+15280501,Equipos de Procesamiento de Datos (Computadores),8,1,Activo - Propiedades Planta y Equipo,DEBITO,1
+15280502,Equipos de Procesamiento de Datos (impresora),8,1,Activo - Propiedades Planta y Equipo,DEBITO,1
+152810,Equipos de Telecomunicaciones y Redes,6,1,Activo - Propiedades Planta y Equipo,DEBITO,1
+1532,EQUIPO MÉDICO-CIENTÍFICO,4,1,Activo - Propiedades Planta y Equipo,DEBITO,0
+153205,Equipos Médicos de Diagnóstico y Laboratorio,6,1,Activo - Propiedades Planta y Equipo,DEBITO,1
+1536,EQUIPO DE HOTELES Y RESTAURANTES,4,1,Activo - Propiedades Planta y Equipo,DEBITO,0
+153605,Mobiliario y Equipos de Habitaciones,6,1,Activo - Propiedades Planta y Equipo,DEBITO,1
+1540,FLOTA Y EQUIPO DE TRANSPORTE,4,1,Activo - Propiedades Planta y Equipo,DEBITO,0
+154005,"Autos, Camionetas y Camperos",6,1,Activo - Propiedades Planta y Equipo,DEBITO,1
+154008,"Camiones, Volquetas y Furgones",6,1,Activo - Propiedades Planta y Equipo,DEBITO,1
+154015,Buses y Busetas,6,1,Activo - Propiedades Planta y Equipo,DEBITO,1
+154030,Motocicletas de Reparto,6,1,Activo - Propiedades Planta y Equipo,DEBITO,1
+1592,DEPRECIACIÓN ACUMULADA (CR),4,1,Activo - Propiedades Planta y Equipo,CREDITO,0
+159205,Depreciación Construcciones y Edificaciones,6,1,Activo - Propiedades Planta y Equipo,CREDITO,1
+159210,Depreciación Maquinaria y Equipo,6,1,Activo - Propiedades Planta y Equipo,CREDITO,1
+15921501,Depreciación Equipo de Oficina (Muebles y enseres),8,1,Activo - Propiedades Planta y Equipo,CREDITO,1
+15921502,Depreciación Equipo de Oficina (equipos de oficina),8,1,Activo - Propiedades Planta y Equipo,CREDITO,1
+15922001,Depreciación Equipo de Computación,8,1,Activo - Propiedades Planta y Equipo,CREDITO,1
+159235,Depreciación Flota y Equipo de Transporte,6,1,Activo - Propiedades Planta y Equipo,CREDITO,0
+15923505,Depreciación Flota y Equipo de Transporte,8,1,Activo - Propiedades Planta y Equipo,CREDITO,1
+1605,CRÉDITO MERCANTIL,4,1,Activo - Intangibles,DEBITO,0
+160505,Crédito Mercantil Formado o Estimado,6,1,Activo - Intangibles,DEBITO,1
+160510,Crédito Mercantil Adquirido,6,1,Activo - Intangibles,DEBITO,1
+1610,MARCAS,4,1,Activo - Intangibles,DEBITO,0
+161005,Marcas Adquiridas,6,1,Activo - Intangibles,DEBITO,1
+1615,PATENTES,4,1,Activo - Intangibles,DEBITO,0
+161505,Patentes de Invención Adquiridas,6,1,Activo - Intangibles,DEBITO,1
+1620,CONCESIONES Y FRANQUICIAS,4,1,Activo - Intangibles,DEBITO,0
+162005,Concesiones Estatales o Privadas,6,1,Activo - Intangibles,DEBITO,1
+162010,Franquicias Comerciales,6,1,Activo - Intangibles,DEBITO,1
+1625,DERECHOS INTANGIBLES,4,1,Activo - Intangibles,DEBITO,0
+162505,Derechos de Autor y Propiedad Intelectual,6,1,Activo - Intangibles,DEBITO,1
+162535,Derechos en Bienes Leasing Financiero,6,1,Activo - Intangibles,DEBITO,1
+1630,KNOW HOW,4,1,Activo - Intangibles,DEBITO,0
+163005,Know How Tecnológico Formado o Comprado,6,1,Activo - Intangibles,DEBITO,1
+1635,LICENCIAS INTANGIBLES,4,1,Activo - Intangibles,DEBITO,0
+163505,Licencias de Explotación y Software,6,1,Activo - Intangibles,DEBITO,1
+1698,AMORTIZACIÓN ACUMULADA INTANGIBLES (CR),4,1,Activo - Intangibles,CREDITO,0
+169805,Amortización Acumulada Crédito Mercantil,6,1,Activo - Intangibles,CREDITO,1
+169810,Amortización Acumulada Marcas y Patentes,6,1,Activo - Intangibles,CREDITO,1
+1705,GASTOS PAGADOS POR ANTICIPADO,4,1,Activo - Diferidos,DEBITO,0
+170505,Intereses Pagados por Anticipado,6,1,Activo - Diferidos,DEBITO,1
+170510,papeleria pagada por anticipo,6,1,Activo - Diferidos,DEBITO,1
+170515,Honorarios Pagados por Anticipado,6,1,Activo - Diferidos,DEBITO,1
+170520,Seguros y Fianzas Pagados por Anticipado,6,1,Activo - Diferidos,DEBITO,1
+170525,Arrendamientos Pagados por Anticipado,6,1,Activo - Diferidos,DEBITO,1
+170540,Servicios Pagados por Anticipado,6,1,Activo - Diferidos,DEBITO,1
+1710,CARGOS DIFERIDOS,4,1,Activo - Diferidos,DEBITO,0
+171004,Gastos de Organización y Preoperativos,6,1,Activo - Diferidos,DEBITO,1
+171008,Gastos de Remodelaciones y Adecuaciones,6,1,Activo - Diferidos,DEBITO,1
+171012,"Estudios, Investigaciones y Proyectos",6,1,Activo - Diferidos,DEBITO,1
+171016,Programas para Computador (Software),6,1,Activo - Diferidos,DEBITO,1
+171020,Útiles y Papelería Diferidos,6,1,Activo - Diferidos,DEBITO,1
+171024,Mejoras a Propiedades Ajenas,6,1,Activo - Diferidos,DEBITO,1
+171044,"Publicidad, Propaganda y Promoción",6,1,Activo - Diferidos,DEBITO,1
+1798,AMORTIZACIÓN ACUMULADA DIFERIDOS (CR),4,1,Activo - Diferidos,CREDITO,0
+179805,Amortización Acumulada Cargos Diferidos,6,1,Activo - Diferidos,CREDITO,1
+1805,BIENES DE ARTE Y CULTURA,4,1,Activo - Otros Activos,DEBITO,0
+180505,Obras de Arte y Pinturas,6,1,Activo - Otros Activos,DEBITO,1
+180510,Bibliotecas Especializadas,6,1,Activo - Otros Activos,DEBITO,1
+1895,DIVERSOS OTROS ACTIVOS,4,1,Activo - Otros Activos,DEBITO,0
+189505,Bienes Entregados en Comodato,6,1,Activo - Otros Activos,DEBITO,1
+189520,Bienes Recibidos en Pago,6,1,Activo - Otros Activos,DEBITO,1
+189530,Estampillas y Especies Postales,6,1,Activo - Otros Activos,DEBITO,1
+1905,VALORIZACIÓN DE INVERSIONES,4,1,Activo - Valorizaciones,DEBITO,0
+190505,Valorización de Acciones,6,1,Activo - Valorizaciones,DEBITO,1
+1910,VALORIZACIÓN PROPIEDADES PLANTA Y EQUIPO,4,1,Activo - Valorizaciones,DEBITO,0
+191004,Valorización Terrenos,6,1,Activo - Valorizaciones,DEBITO,1
+191008,Valorización Construcciones y Edificaciones,6,1,Activo - Valorizaciones,DEBITO,1
+191012,Valorización Maquinaria y Equipo,6,1,Activo - Valorizaciones,DEBITO,1
+2105,BANCOS NACIONALES OBLIGACIONES,4,2,Pasivo - Obligaciones Financieras,CREDITO,0
+210505,Sobregiros Bancarios,6,2,Pasivo - Obligaciones Financieras,CREDITO,1
+210510,Pagarés Bancarios Nacionales,6,2,Pasivo - Obligaciones Financieras,CREDITO,0
+21051001,OBLIGACION BANCOLOMBIA 01,8,2,Pasivo - Obligaciones Financieras,CREDITO,1
+210515,Cartas de Crédito Bancarias,6,2,Pasivo - Obligaciones Financieras,CREDITO,1
+210520,Aceptaciones Bancarias por Pagar,6,2,Pasivo - Obligaciones Financieras,CREDITO,1
+2110,BANCOS DEL EXTERIOR OBLIGACIONES,4,2,Pasivo - Obligaciones Financieras,CREDITO,0
+211005,Sobregiros Bancos del Exterior,6,2,Pasivo - Obligaciones Financieras,CREDITO,1
+211010,Pagarés Bancos del Exterior,6,2,Pasivo - Obligaciones Financieras,CREDITO,1
+2115,CORPORACIONES FINANCIERAS,4,2,Pasivo - Obligaciones Financieras,CREDITO,0
+211505,Pagarés Corporaciones Financieras,6,2,Pasivo - Obligaciones Financieras,CREDITO,1
+211520,Contratos de Arrendamiento Financiero (Leasing),6,2,Pasivo - Obligaciones Financieras,CREDITO,1
+2120,COMPAÑÍAS DE FINANCIAMIENTO COMERCIAL,4,2,Pasivo - Obligaciones Financieras,CREDITO,0
+212005,Pagarés Compañías de Financiamiento,6,2,Pasivo - Obligaciones Financieras,CREDITO,1
+2125,CORPORACIONES DE AHORRO Y VIVIENDA,4,2,Pasivo - Obligaciones Financieras,CREDITO,0
+212505,Obligaciones Hipotecarias CAV,6,2,Pasivo - Obligaciones Financieras,CREDITO,1
+2135,COMPROMISOS DE RECOMPRA DE INVERSIONES,4,2,Pasivo - Obligaciones Financieras,CREDITO,0
+213505,Repos Pasivos Acciones,6,2,Pasivo - Obligaciones Financieras,CREDITO,1
+2195,OTRAS OBLIGACIONES FINANCIERAS,4,2,Pasivo - Obligaciones Financieras,CREDITO,0
+219505,Préstamos de Particulares,6,2,Pasivo - Obligaciones Financieras,CREDITO,1
+219510,Préstamos de Compañías Vinculadas,6,2,Pasivo - Obligaciones Financieras,CREDITO,1
+219520,Préstamos de Socios o Accionistas,6,2,Pasivo - Obligaciones Financieras,CREDITO,1
+2205,PROVEEDORES NACIONALES,4,2,Pasivo - Proveedores,CREDITO,0
+220505,Proveedores Nacionales,6,2,Pasivo - Proveedores,CREDITO,1
+2210,PROVEEDORES DEL EXTERIOR,4,2,Pasivo - Proveedores,CREDITO,0
+221005,Proveedores del Exterior,6,2,Pasivo - Proveedores,CREDITO,1
+2215,CUENTAS CORRIENTES COMERCIALES PROVEEDORES,4,2,Pasivo - Proveedores,CREDITO,0
+221505,Proveedores Cuentas Corrientes,6,2,Pasivo - Proveedores,CREDITO,1
+2220,PROVEEDORES CASA MATRIZ,4,2,Pasivo - Proveedores,CREDITO,0
+222005,Proveedores Casa Matriz,6,2,Pasivo - Proveedores,CREDITO,1
+2225,PROVEEDORES COMPAÑÍAS VINCULADAS,4,2,Pasivo - Proveedores,CREDITO,0
+222505,Proveedores Compañías Vinculadas,6,2,Pasivo - Proveedores,CREDITO,1
+2305,CUENTAS CORRIENTES COMERCIALES CXP,4,2,Pasivo - Cuentas por Pagar,CREDITO,0
+230505,Cuentas Corrientes Comerciales Terceros,6,2,Pasivo - Cuentas por Pagar,CREDITO,0
+23050501,Cuentas Corrientes Comerciales Terceros,8,2,Pasivo - Cuentas por Pagar,CREDITO,1
+2310,CUENTAS POR PAGAR A CASA MATRIZ,4,2,Pasivo - Cuentas por Pagar,CREDITO,0
+231005,Cuentas por Pagar Casa Matriz,6,2,Pasivo - Cuentas por Pagar,CREDITO,1
+2315,CUENTAS POR PAGAR A COMPAÑÍAS VINCULADAS,4,2,Pasivo - Cuentas por Pagar,CREDITO,0
+231505,Cuentas por Pagar Compañías Vinculadas,6,2,Pasivo - Cuentas por Pagar,CREDITO,1
+2320,CUENTAS POR PAGAR A CONTRATISTAS,4,2,Pasivo - Cuentas por Pagar,CREDITO,0
+232005,Contratistas de Obra por Pagar,6,2,Pasivo - Cuentas por Pagar,CREDITO,1
+2335,COSTOS Y GASTOS POR PAGAR,4,2,Pasivo - Cuentas por Pagar,CREDITO,0
+233505,Gastos Financieros por Pagar,6,2,Pasivo - Cuentas por Pagar,CREDITO,1
+233510,Gastos Legales por Pagar,6,2,Pasivo - Cuentas por Pagar,CREDITO,1
+233515,"Libros, Suscripciones y Periódicos por Pagar",6,2,Pasivo - Cuentas por Pagar,CREDITO,1
+233520,Comisiones por Pagar,6,2,Pasivo - Cuentas por Pagar,CREDITO,1
+233525,Honorarios por Pagar,6,2,Pasivo - Cuentas por Pagar,CREDITO,1
+233530,Servicios Técnicos por Pagar,6,2,Pasivo - Cuentas por Pagar,CREDITO,1
+233535,Servicios de Mantenimiento por Pagar,6,2,Pasivo - Cuentas por Pagar,CREDITO,1
+233540,Arrendamientos por Pagar,6,2,Pasivo - Cuentas por Pagar,CREDITO,1
+233545,"Transportes, Fletes y Acarreos por Pagar",6,2,Pasivo - Cuentas por Pagar,CREDITO,1
+233550,Servicios Públicos por Pagar,6,2,Pasivo - Cuentas por Pagar,CREDITO,1
+233555,Seguros por Pagar,6,2,Pasivo - Cuentas por Pagar,CREDITO,1
+233560,equipo de computo y de oficina por pagar,6,2,Pasivo - Cuentas por Pagar,CREDITO,1
+233575,papeleria por pagar,6,2,Pasivo - Cuentas por Pagar,CREDITO,1
+233580,Gasolina por pagar,6,2,Pasivo - Cuentas por Pagar,CREDITO,1
+233585,Repuesto por pagar,6,2,Pasivo - Cuentas por Pagar,CREDITO,1
+233590,casino y restaurante por pagar,6,2,Pasivo - Cuentas por Pagar,CREDITO,1
+233595,Cuentas por Pagar Diversas,6,2,Pasivo - Cuentas por Pagar,CREDITO,1
+2355,DEUDAS CON ACCIONISTAS O SOCIOS,4,2,Pasivo - Cuentas por Pagar,CREDITO,0
+235505,Deudas con Accionistas,6,2,Pasivo - Cuentas por Pagar,CREDITO,1
+235510,Deudas con Socios,6,2,Pasivo - Cuentas por Pagar,CREDITO,1
+2360,DIVIDENDOS O PARTICIPACIONES POR PAGAR,4,2,Pasivo - Cuentas por Pagar,CREDITO,0
+236005,Dividendos por Pagar Accionistas,6,2,Pasivo - Cuentas por Pagar,CREDITO,1
+236010,Participaciones por Pagar Socios,6,2,Pasivo - Cuentas por Pagar,CREDITO,1
+2365,RETENCIÓN EN LA FUENTE POR PAGAR,4,2,Pasivo - Cuentas por Pagar,CREDITO,0
+236505,Retención en la Fuente Salarios y Pagos Laborales,6,2,Pasivo - Cuentas por Pagar,CREDITO,1
+23651501,Retención en la Fuente Honorarios PN,8,2,Pasivo - Cuentas por Pagar,CREDITO,1
+23651502,Retención en la Fuente Honorarios PJ,8,2,Pasivo - Cuentas por Pagar,CREDITO,1
+236520,Retención en la Fuente Comisiones,6,2,Pasivo - Cuentas por Pagar,CREDITO,1
+23652501,Retención en la Fuente Servicios 4% PJ,8,2,Pasivo - Cuentas por Pagar,CREDITO,1
+23652502,Retención en la Fuente Servicios 6% PN,8,2,Pasivo - Cuentas por Pagar,CREDITO,1
+236530,Retención en la Fuente Arrendamientos,6,2,Pasivo - Cuentas por Pagar,CREDITO,0
+23653001,Retención en la Fuente Arrendamientos (Comerciales),8,2,Pasivo - Cuentas por Pagar,CREDITO,1
+236535,Retención en la Fuente Rendimientos Financieros,6,2,Pasivo - Cuentas por Pagar,CREDITO,1
+23654001,"Retención en la Fuente Compras 3,5% PN",8,2,Pasivo - Cuentas por Pagar,CREDITO,1
+23654002,Retención en la Fuente Compras 2.5% PJ,8,2,Pasivo - Cuentas por Pagar,CREDITO,1
+23654003,"Retención en la Fuente Compras combustible 0,1%",8,2,Pasivo - Cuentas por Pagar,CREDITO,1
+23657501,Autorretención Especial Renta por Pagar 1.2%,8,2,Pasivo - Cuentas por Pagar,CREDITO,1
+23657502,"Autorretención ICA 0,004815",8,2,Pasivo - Cuentas por Pagar,CREDITO,1
+2367,IMPUESTO A LAS VENTAS RETENIDO (RETEIVA),4,2,Pasivo - Cuentas por Pagar,CREDITO,0
+236701,ReteIVA Practicado 15% sobre IVA,6,2,Pasivo - Cuentas por Pagar,CREDITO,1
+2368,IMPUESTO DE INDUSTRIA Y COMERCIO RETENIDO (RETEICA),4,2,Pasivo - Cuentas por Pagar,CREDITO,0
+23680501,"ReteICA servicio 3,21*10000",8,2,Pasivo - Cuentas por Pagar,CREDITO,1
+23680502,"Rete ICA Por pagar 0,00856",8,2,Pasivo - Cuentas por Pagar,CREDITO,1
+23680503,"Retencion ICA por Pagar 0,004815",8,2,Pasivo - Cuentas por Pagar,CREDITO,1
+2370,RETENCIONES Y APORTES DE NÓMINA,4,2,Pasivo - Cuentas por Pagar,CREDITO,0
+237005,Aportes a Entidades Promotoras de Salud (EPS),6,2,Pasivo - Cuentas por Pagar,CREDITO,1
+237006,Aportes a Administradoras de Riesgos Laborales (ARL),6,2,Pasivo - Cuentas por Pagar,CREDITO,1
+237010,"Aportes Parafiscales (SENA, ICBF, Caja Compensación)",6,2,Pasivo - Cuentas por Pagar,CREDITO,1
+237025,Embargos Judiciales Nómina,6,2,Pasivo - Cuentas por Pagar,CREDITO,1
+237030,Libranzas por Pagar,6,2,Pasivo - Cuentas por Pagar,CREDITO,1
+237035,Aportes Sindicatos por Pagar,6,2,Pasivo - Cuentas por Pagar,CREDITO,1
+237045,Fondos de Empleados por Pagar,6,2,Pasivo - Cuentas por Pagar,CREDITO,1
+2380,ACREEDORES VARIOS,4,2,Pasivo - Cuentas por Pagar,CREDITO,0
+238030,Fondos de Pensiones y Cesantías por Pagar,6,2,Pasivo - Cuentas por Pagar,CREDITO,1
+238095,Otros Acreedores Varios,6,2,Pasivo - Cuentas por Pagar,CREDITO,1
+2404,IMPUESTO DE RENTA Y COMPLEMENTARIOS POR PAGAR,4,2,Pasivo - Impuestos y Tasas,CREDITO,0
+240405,Provision impuesto de renta,6,2,Pasivo - Impuestos y Tasas,CREDITO,1
+2408,IMPUESTO SOBRE LAS VENTAS POR PAGAR (IVA),4,2,Pasivo - Impuestos y Tasas,CREDITO,0
+240805,IVA Generado en Ventas 19%,6,2,Pasivo - Impuestos y Tasas,CREDITO,1
+240810,IVA Descontable en Compras 19%,6,2,Activo - Impuestos,DEBITO,1
+2412,IMPUESTO DE INDUSTRIA Y COMERCIO POR PAGAR (ICA),4,2,Pasivo - Impuestos y Tasas,CREDITO,0
+241205,Impuesto ICA Vigencia Fiscal Corriente,6,2,Pasivo - Impuestos y Tasas,CREDITO,1
+2416,IMPUESTO A LA PROPIEDAD RAÍZ (PREDIAL),4,2,Pasivo - Impuestos y Tasas,CREDITO,0
+241605,Impuesto Predial Unificado por Pagar,6,2,Pasivo - Impuestos y Tasas,CREDITO,1
+2436,IMPUESTO DE VEHÍCULOS POR PAGAR,4,2,Pasivo - Impuestos y Tasas,CREDITO,0
+243605,Impuesto Vehículos Vigencia Corriente,6,2,Pasivo - Impuestos y Tasas,CREDITO,1
+2505,SALARIOS POR PAGAR,4,2,Pasivo - Obligaciones Laborales,CREDITO,0
+250505,Nómina por Pagar Salarios,6,2,Pasivo - Obligaciones Laborales,CREDITO,1
+2510,CESANTÍAS CONSOLIDADAS POR PAGAR,4,2,Pasivo - Obligaciones Laborales,CREDITO,0
+251005,Cesantías Consolidadas Régimen Anterior,6,2,Pasivo - Obligaciones Laborales,CREDITO,1
+251010,Cesantías Ley 50 de 1990 y Fondos,6,2,Pasivo - Obligaciones Laborales,CREDITO,1
+2515,INTERESES SOBRE CESANTÍAS POR PAGAR,4,2,Pasivo - Obligaciones Laborales,CREDITO,0
+251505,Intereses sobre Cesantías por Pagar,6,2,Pasivo - Obligaciones Laborales,CREDITO,1
+2520,PRIMA DE SERVICIOS POR PAGAR,4,2,Pasivo - Obligaciones Laborales,CREDITO,0
+252005,Prima de Servicios por Pagar,6,2,Pasivo - Obligaciones Laborales,CREDITO,1
+2525,VACACIONES CONSOLIDADAS POR PAGAR,4,2,Pasivo - Obligaciones Laborales,CREDITO,0
+252505,Vacaciones Consolidadas por Pagar,6,2,Pasivo - Obligaciones Laborales,CREDITO,1
+2530,PRESTACIONES EXTRALEGALES POR PAGAR,4,2,Pasivo - Obligaciones Laborales,CREDITO,0
+253005,Primas Extralegales por Pagar,6,2,Pasivo - Obligaciones Laborales,CREDITO,1
+253010,Auxilios Extralegales Trabajadores,6,2,Pasivo - Obligaciones Laborales,CREDITO,1
+2540,INDEMNIZACIONES LABORALES POR PAGAR,4,2,Pasivo - Obligaciones Laborales,CREDITO,0
+254005,Indemnizaciones por Despido por Pagar,6,2,Pasivo - Obligaciones Laborales,CREDITO,1
+2605,PASIVOS ESTIMADOS PARA COSTOS Y GASTOS,4,2,Pasivo - Pasivos Estimados y Provisiones,CREDITO,0
+260505,Provisión Costos y Gastos Financieros,6,2,Pasivo - Pasivos Estimados y Provisiones,CREDITO,1
+260535,Provisión Servicios Públicos,6,2,Pasivo - Pasivos Estimados y Provisiones,CREDITO,1
+2610,PROVISIÓN PARA OBLIGACIONES LABORALES,4,2,Pasivo - Pasivos Estimados y Provisiones,CREDITO,0
+261005,Provisión Cesantías,6,2,Pasivo - Pasivos Estimados y Provisiones,CREDITO,1
+261010,Provisión Intereses sobre Cesantías,6,2,Pasivo - Pasivos Estimados y Provisiones,CREDITO,1
+261015,Provisión Vacaciones,6,2,Pasivo - Pasivos Estimados y Provisiones,CREDITO,1
+261020,Provisión Prima de Servicios,6,2,Pasivo - Pasivos Estimados y Provisiones,CREDITO,1
+2615,PROVISIÓN PARA OBLIGACIONES FISCALES,4,2,Pasivo - Pasivos Estimados y Provisiones,CREDITO,0
+261505,Provisión Impuesto de Renta,6,2,Pasivo - Pasivos Estimados y Provisiones,CREDITO,1
+261510,Provisión Impuesto de Industria y Comercio,6,2,Pasivo - Pasivos Estimados y Provisiones,CREDITO,1
+2635,PROVISIÓN PARA CONTINGENCIAS,4,2,Pasivo - Pasivos Estimados y Provisiones,CREDITO,0
+263505,Provisión Multas y Sanciones Administrativas,6,2,Pasivo - Pasivos Estimados y Provisiones,CREDITO,1
+263520,Provisión Demandas Laborales,6,2,Pasivo - Pasivos Estimados y Provisiones,CREDITO,1
+2705,INGRESOS RECIBIDOS POR ANTICIPADO,4,2,Pasivo - Diferidos,CREDITO,0
+270505,Intereses Recibidos por Anticipado,6,2,Pasivo - Diferidos,CREDITO,1
+270515,Arrendamientos Recibidos por Anticipado,6,2,Pasivo - Diferidos,CREDITO,1
+270520,Honorarios Recibidos por Anticipado,6,2,Pasivo - Diferidos,CREDITO,1
+2805,ANTICIPOS Y AVANCES RECIBIDOS DE CLIENTES,4,2,Pasivo - Otros Pasivos,CREDITO,0
+280505,Anticipos Recibidos de Clientes,6,2,Pasivo - Otros Pasivos,CREDITO,1
+2810,DEPÓSITOS RECIBIDOS EN GARANTÍA,4,2,Pasivo - Otros Pasivos,CREDITO,0
+281005,Depósitos Recibidos para Futura Suscripción,6,2,Pasivo - Otros Pasivos,CREDITO,1
+2815,INGRESOS RECIBIDOS PARA TERCEROS,4,2,Pasivo - Otros Pasivos,CREDITO,0
+281505,Valores Recibidos para Terceros,6,2,Pasivo - Otros Pasivos,CREDITO,1
+281510,Venta por Cuenta de Terceros,6,2,Pasivo - Otros Pasivos,CREDITO,1
+2905,BONOS EN CIRCULACIÓN,4,2,Pasivo - Bonos y Papeles,CREDITO,0
+290505,Bonos Ordinarios en Circulación,6,2,Pasivo - Bonos y Papeles,CREDITO,1
+2915,PAPELES COMERCIALES EN CIRCULACIÓN,4,2,Pasivo - Bonos y Papeles,CREDITO,0
+291505,Papeles Comerciales Emitidos,6,2,Pasivo - Bonos y Papeles,CREDITO,1
+3105,CAPITAL SUSCRITO Y PAGADO,4,3,Patrimonio - Capital Social,CREDITO,0
+310505,Capital Autorizado,6,3,Patrimonio - Capital Social,CREDITO,1
+310510,Capital por Suscribir (DB),6,3,Patrimonio - Capital Social,DEBITO,1
+310515,Capital Suscrito por Cobrar (DB),6,3,Patrimonio - Capital Social,DEBITO,1
+3115,APORTES SOCIALES,4,3,Patrimonio - Capital Social,CREDITO,0
+311505,Cuotas o Partes de Interés Social,6,3,Patrimonio - Capital Social,CREDITO,1
+311510,aportes de socios,6,3,Patrimonio - Capital Social,CREDITO,1
+3130,CAPITAL DE PERSONAS NATURALES,4,3,Patrimonio - Capital Social,CREDITO,0
+313005,Capital Asignado Persona Natural,6,3,Patrimonio - Capital Social,CREDITO,1
+3205,PRIMA EN COLOCACIÓN DE ACCIONES,4,3,Patrimonio - Superávit de Capital,CREDITO,0
+320505,Prima en Colocación de Acciones,6,3,Patrimonio - Superávit de Capital,CREDITO,1
+3210,DONACIONES PATRIMONIALES,4,3,Patrimonio - Superávit de Capital,CREDITO,0
+321005,Donaciones en Dinero,6,3,Patrimonio - Superávit de Capital,CREDITO,1
+321015,Donaciones en Muebles y Equipos,6,3,Patrimonio - Superávit de Capital,CREDITO,1
+3305,RESERVAS OBLIGATORIAS,4,3,Patrimonio - Reservas,CREDITO,0
+330505,Reserva Legal 10%,6,3,Patrimonio - Reservas,CREDITO,1
+330510,Reservas por Disposiciones Fiscales,6,3,Patrimonio - Reservas,CREDITO,1
+3310,RESERVAS ESTATUTARIAS,4,3,Patrimonio - Reservas,CREDITO,0
+331005,Reserva Estatutaria para Futuros Ensanches,6,3,Patrimonio - Reservas,CREDITO,1
+3315,RESERVAS OCASIONALES,4,3,Patrimonio - Reservas,CREDITO,0
+331505,Reserva Ocasional para Capital de Trabajo,6,3,Patrimonio - Reservas,CREDITO,1
+331510,Reserva para Futuras Capitalizaciones,6,3,Patrimonio - Reservas,CREDITO,1
+3405,AJUSTES POR INFLACIÓN PATRIMONIO,4,3,Patrimonio - Revalorización,CREDITO,0
+340505,Revalorización del Capital Social,6,3,Patrimonio - Revalorización,CREDITO,1
+3605,UTILIDAD DEL EJERCICIO,4,3,Patrimonio - Resultados,CREDITO,0
+360505,Utilidad del Ejercicio Corriente,6,3,Patrimonio - Resultados,CREDITO,1
+3610,PÉRDIDA DEL EJERCICIO (DB),4,3,Patrimonio - Resultados,DEBITO,0
+361005,Pérdida del Ejercicio Corriente,6,3,Patrimonio - Resultados,DEBITO,1
+3705,UTILIDADES ACUMULADAS,4,3,Patrimonio - Resultados Anteriores,CREDITO,0
+370505,Utilidades Acumuladas Ejercicios Anteriores,6,3,Patrimonio - Resultados Anteriores,CREDITO,1
+3710,PÉRDIDAS ACUMULADAS (DB),4,3,Patrimonio - Resultados Anteriores,DEBITO,0
+371005,Pérdidas Acumuladas Ejercicios Anteriores,6,3,Patrimonio - Resultados Anteriores,DEBITO,1
+3805,SUPERÁVIT POR VALORIZACIÓN INVERSIONES,4,3,Patrimonio - Valorizaciones,CREDITO,0
+380505,Superávit Valorización Acciones,6,3,Patrimonio - Valorizaciones,CREDITO,1
+3810,SUPERÁVIT POR VALORIZACIÓN PPE,4,3,Patrimonio - Valorizaciones,CREDITO,0
+381004,Superávit Valorización Terrenos,6,3,Patrimonio - Valorizaciones,CREDITO,1
+381008,Superávit Valorización Edificaciones,6,3,Patrimonio - Valorizaciones,CREDITO,1
+4105,INGRESOS AGRICULTURA Y GANADERÍA,4,4,Ingresos - Operacionales,CREDITO,0
+410505,Venta Cultivos de Cereales,6,4,Ingresos - Operacionales,CREDITO,1
+410520,Venta Cultivo de Café,6,4,Ingresos - Operacionales,CREDITO,1
+410525,Venta Cultivo de Flores,6,4,Ingresos - Operacionales,CREDITO,1
+410555,Venta Ganado Vacuno y Porcino,6,4,Ingresos - Operacionales,CREDITO,1
+4120,INGRESOS INDUSTRIAS MANUFACTURERAS,4,4,Ingresos - Operacionales,CREDITO,0
+412001,Venta Productos Cárnicos y Lácteos,6,4,Ingresos - Operacionales,CREDITO,1
+412009,Venta Productos de Panadería,6,4,Ingresos - Operacionales,CREDITO,1
+412027,Venta Confecciones y Prendas de Vestir,6,4,Ingresos - Operacionales,CREDITO,1
+412050,Venta Productos de Plástico y Vidrio,6,4,Ingresos - Operacionales,CREDITO,1
+4130,INGRESOS CONSTRUCCIÓN,4,4,Ingresos - Operacionales,CREDITO,0
+413005,Venta Obras de Ingeniería y Edificaciones,6,4,Ingresos - Operacionales,CREDITO,1
+4135,COMERCIO AL POR MAYOR Y AL POR MENOR,4,4,Ingresos - Operacionales,CREDITO,0
+413502,Venta de Vehículos Automotores,6,4,Ingresos - Operacionales,CREDITO,1
+413505,Comercio al por Mayor y al por Menor (General),6,4,Ingresos - Operacionales,CREDITO,1
+413520,Venta de Productos Almacenes no Especializados,6,4,Ingresos - Operacionales,CREDITO,1
+413524,"Venta de Productos Textiles, Cuero y Calzado",6,4,Ingresos - Operacionales,CREDITO,1
+413528,"Venta de Libros, Papelería y Útiles Escolares",6,4,Ingresos - Operacionales,CREDITO,1
+413536,Venta de Electrodomésticos y Muebles,6,4,Ingresos - Operacionales,CREDITO,1
+413538,Venta de Medicamentos y Artículos de Tocador,6,4,Ingresos - Operacionales,CREDITO,1
+413548,Venta de Herramientas y Ferretería,6,4,Ingresos - Operacionales,CREDITO,1
+413554,Venta de Equipos de Cómputo y Software,6,4,Ingresos - Operacionales,CREDITO,1
+4140,INGRESOS HOTELES Y RESTAURANTES,4,4,Ingresos - Operacionales,CREDITO,0
+414005,Servicios de Hotelería y Hospedaje,6,4,Ingresos - Operacionales,CREDITO,1
+414015,Servicios de Restaurante y Bar,6,4,Ingresos - Operacionales,CREDITO,1
+4145,INGRESOS TRANSPORTE Y COMUNICACIONES,4,4,Ingresos - Operacionales,CREDITO,0
+414505,Servicio Transporte Terrestre de Carga,6,4,Ingresos - Operacionales,CREDITO,1
+414560,Servicios de Telecomunicaciones e Internet,6,4,Ingresos - Operacionales,CREDITO,1
+4155,ACTIVIDADES INMOBILIARIAS Y EMPRESARIALES,4,4,Ingresos - Operacionales,CREDITO,0
+415505,Arrendamiento Bienes Inmuebles Operacionales,6,4,Ingresos - Operacionales,CREDITO,1
+415535,Servicios de Procesamiento de Datos,6,4,Ingresos - Operacionales,CREDITO,1
+415550,Servicios de Consultoría Empresarial,6,4,Ingresos - Operacionales,CREDITO,1
+415555,Servicios de Publicidad y Mercadeo,6,4,Ingresos - Operacionales,CREDITO,1
+4160,INGRESOS ENSEÑANZA Y EDUCACIÓN,4,4,Ingresos - Operacionales,CREDITO,0
+416005,Matrículas y Pensiones Educativas,6,4,Ingresos - Operacionales,CREDITO,1
+4165,INGRESOS SERVICIOS DE SALUD,4,4,Ingresos - Operacionales,CREDITO,0
+416505,Servicios Hospitalarios y Clínicos,6,4,Ingresos - Operacionales,CREDITO,1
+416510,Servicios Médicos Especializados,6,4,Ingresos - Operacionales,CREDITO,1
+4175,DEVOLUCIONES EN VENTAS (DB),4,4,Ingresos - Operacionales,DEBITO,0
+417505,Devoluciones en Ventas Mercancías (DB),6,4,Ingresos - Operacionales,DEBITO,1
+4210,FINANCIEROS NO OPERACIONALES,4,4,Ingresos - No Operacionales,CREDITO,0
+421005,Intereses de Depósitos y Préstamos,6,4,Ingresos - No Operacionales,CREDITO,1
+421020,Diferencia en Cambio A Favor,6,4,Ingresos - No Operacionales,CREDITO,1
+421040,Descuentos Comerciales Condicionados Tomados,6,4,Ingresos - No Operacionales,CREDITO,1
+4215,DIVIDENDOS Y PARTICIPACIONES NO OPERACIONALES,4,4,Ingresos - No Operacionales,CREDITO,0
+421505,Dividendos Sociedades Anónimas,6,4,Ingresos - No Operacionales,CREDITO,1
+421510,Participaciones Sociedades Limitadas,6,4,Ingresos - No Operacionales,CREDITO,1
+4220,ARRENDAMIENTOS NO OPERACIONALES,4,4,Ingresos - No Operacionales,CREDITO,0
+422005,Arrendamiento de Terrenos y Bienes,6,4,Ingresos - No Operacionales,CREDITO,1
+422010,Arrendamiento de Edificios y Locales,6,4,Ingresos - No Operacionales,CREDITO,1
+4225,COMISIONES NO OPERACIONALES,4,4,Ingresos - No Operacionales,CREDITO,0
+422505,Comisiones por Venta de Seguros y Servicios,6,4,Ingresos - No Operacionales,CREDITO,1
+4230,HONORARIOS NO OPERACIONALES,4,4,Ingresos - No Operacionales,CREDITO,0
+423005,Honorarios Asesorías Ocasionales,6,4,Ingresos - No Operacionales,CREDITO,1
+4235,SERVICIOS NO OPERACIONALES,4,4,Ingresos - No Operacionales,CREDITO,0
+423520,Servicios Administrativos Ocasionales,6,4,Ingresos - No Operacionales,CREDITO,1
+4245,UTILIDAD EN VENTA DE PROPIEDADES PLANTA Y EQUIPO,4,4,Ingresos - No Operacionales,CREDITO,0
+424504,Utilidad Venta Terrenos,6,4,Ingresos - No Operacionales,CREDITO,1
+424516,Utilidad Venta Construcciones y Edificaciones,6,4,Ingresos - No Operacionales,CREDITO,1
+424540,Utilidad Venta Vehículos,6,4,Ingresos - No Operacionales,CREDITO,1
+4250,RECUPERACIONES Y REINTEGROS,4,4,Ingresos - No Operacionales,CREDITO,0
+425005,Recuperación Deudas Malas Castigadas,6,4,Ingresos - No Operacionales,CREDITO,1
+425035,Reintegro de Provisiones Ejercicios Anteriores,6,4,Ingresos - No Operacionales,CREDITO,1
+4255,INDEMNIZACIONES NO OPERACIONALES,4,4,Ingresos - No Operacionales,CREDITO,0
+425505,Indemnizaciones Seguros por Siniestro,6,4,Ingresos - No Operacionales,CREDITO,1
+5105,GASTOS DE PERSONAL ADMINISTRACIÓN,4,5,Gastos - Operacionales Administración,DEBITO,0
+510503,Salario Integral Administración,6,5,Gastos - Operacionales Administración,DEBITO,1
+510506,Sueldos y Salarios Personal Administración,6,5,Gastos - Operacionales Administración,DEBITO,1
+510515,Horas Extras y Recargos Administración,6,5,Gastos - Operacionales Administración,DEBITO,1
+510527,Auxilio de Transporte Administración,6,5,Gastos - Operacionales Administración,DEBITO,1
+510530,Cesantías Administración,6,5,Gastos - Operacionales Administración,DEBITO,1
+510533,Intereses sobre Cesantías Administración,6,5,Gastos - Operacionales Administración,DEBITO,1
+510536,Prima de Servicios Administración,6,5,Gastos - Operacionales Administración,DEBITO,1
+510539,Vacaciones Administración,6,5,Gastos - Operacionales Administración,DEBITO,1
+510568,Aportes ARL Administración,6,5,Gastos - Operacionales Administración,DEBITO,1
+510569,Aportes EPS Administración,6,5,Gastos - Operacionales Administración,DEBITO,1
+510570,Aportes Fondo de Pensiones Administración,6,5,Gastos - Operacionales Administración,DEBITO,1
+510572,Aportes Caja de Compensación Familiar Administración,6,5,Gastos - Operacionales Administración,DEBITO,1
+510575,Aportes ICBF Administración,6,5,Gastos - Operacionales Administración,DEBITO,1
+510578,Aportes SENA Administración,6,5,Gastos - Operacionales Administración,DEBITO,1
+5110,HONORARIOS ADMINISTRACIÓN,4,5,Gastos - Operacionales Administración,DEBITO,0
+511005,Honorarios Junta Directiva,6,5,Gastos - Operacionales Administración,DEBITO,1
+511010,Honorarios Revisoría Fiscal,6,5,Gastos - Operacionales Administración,DEBITO,1
+511015,Honorarios Auditoría Externa,6,5,Gastos - Operacionales Administración,DEBITO,1
+511025,Honorarios Asesoría Jurídica y Legal,6,5,Gastos - Operacionales Administración,DEBITO,1
+511030,Honorarios Asesoría Financiera y Contable,6,5,Gastos - Operacionales Administración,DEBITO,1
+5115,IMPUESTOS ADMINISTRACIÓN,4,5,Gastos - Operacionales Administración,DEBITO,0
+511505,Impuesto de Industria y Comercio (ICA),6,5,Gastos - Operacionales Administración,DEBITO,1
+511510,Impuesto de Timbres y Registro,6,5,Gastos - Operacionales Administración,DEBITO,1
+511515,Impuesto Predial Unificado,6,5,Gastos - Operacionales Administración,DEBITO,1
+511540,Impuesto de Vehículos,6,5,Gastos - Operacionales Administración,DEBITO,1
+511580,GMF (4X1000),6,5,Gastos - Operacionales Administración,DEBITO,1
+511595,Otros Impuestos y Tasas Administración,6,5,Gastos - Operacionales Administración,DEBITO,1
+5120,ARRENDAMIENTOS ADMINISTRACIÓN,4,5,Gastos - Operacionales Administración,DEBITO,0
+512010,Arrendamiento Construcciones y Edificaciones,6,5,Gastos - Operacionales Administración,DEBITO,1
+512020,Arrendamiento Equipo de Oficina,6,5,Gastos - Operacionales Administración,DEBITO,1
+512025,Arrendamiento Equipo de Cómputo,6,5,Gastos - Operacionales Administración,DEBITO,1
+5125,CONTRIBUCIONES Y AFILIACIONES,4,5,Gastos - Operacionales Administración,DEBITO,0
+512505,Contribuciones a Superintendencias,6,5,Gastos - Operacionales Administración,DEBITO,1
+512510,Afiliaciones y Cuotas de Sostenimiento Gremios,6,5,Gastos - Operacionales Administración,DEBITO,1
+5130,SEGUROS ADMINISTRACIÓN,4,5,Gastos - Operacionales Administración,DEBITO,0
+513005,Seguros de Manejo y Cumplimiento,6,5,Gastos - Operacionales Administración,DEBITO,1
+513010,Seguros de Incendio y Terremoto,6,5,Gastos - Operacionales Administración,DEBITO,1
+513025,Seguros de Sustracción y Hurto,6,5,Gastos - Operacionales Administración,DEBITO,1
+513060,Seguros Responsabilidad Civil Extra,6,5,Gastos - Operacionales Administración,DEBITO,1
+5135,SERVICIOS ADMINISTRACIÓN,4,5,Gastos - Operacionales Administración,DEBITO,0
+513505,Aseo y Vigilancia,6,5,Gastos - Operacionales Administración,DEBITO,1
+513525,Servicio Acueducto y Alcantarillado,6,5,Gastos - Operacionales Administración,DEBITO,1
+513530,Servicio Energía Eléctrica,6,5,Gastos - Operacionales Administración,DEBITO,1
+513535,Gastos de Aseo y Vigilancia,6,5,Gastos - Operacionales Administración,DEBITO,1
+513540,Servicios Telefónicos y Celular,6,5,Gastos - Operacionales Administración,DEBITO,1
+513545,Servicios De internet,6,5,Gastos - Operacionales Administración,DEBITO,1
+513550,"Transportes, Fletes y Acarreos Administración",6,5,Gastos - Operacionales Administración,DEBITO,1
+513555,servicio de gas,6,5,Gastos - Operacionales Administración,DEBITO,1
+5140,GASTOS LEGALES ADMINISTRACIÓN,4,5,Gastos - Operacionales Administración,DEBITO,0
+514005,Gastos Notariales y Auténticas,6,5,Gastos - Operacionales Administración,DEBITO,1
+514010,Renovación Registro Mercantil Cámara Comercio,6,5,Gastos - Operacionales Administración,DEBITO,1
+514015,"Trámites, Licencias y Permisos",6,5,Gastos - Operacionales Administración,DEBITO,1
+5145,MANTENIMIENTO Y REPARACIONES ADMINISTRACIÓN,4,5,Gastos - Operacionales Administración,DEBITO,0
+514510,Mantenimiento Construcciones y Edificaciones,6,5,Gastos - Operacionales Administración,DEBITO,1
+514515,Mantenimiento Maquinaria y Equipo,6,5,Gastos - Operacionales Administración,DEBITO,1
+514520,Mantenimiento Equipo de Oficina,6,5,Gastos - Operacionales Administración,DEBITO,0
+51452001,Mantenimiento Equipo de Oficina - AIRE ACONDICIONADO,8,5,Gastos - Operacionales Administración,DEBITO,1
+514525,Mantenimiento Equipo de Cómputo,6,5,Gastos - Operacionales Administración,DEBITO,1
+514540,Mantenimiento Flota y Equipo Transporte,6,5,Gastos - Operacionales Administración,DEBITO,1
+5150,ADECUACIÓN E INSTALACIÓN,4,5,Gastos - Operacionales Administración,DEBITO,0
+515005,Adecuación Instalaciones Eléctricas,6,5,Gastos - Operacionales Administración,DEBITO,1
+515015,Reparaciones Locativas Oficinas,6,5,Gastos - Operacionales Administración,DEBITO,1
+5155,GASTOS DE VIAJE ADMINISTRACIÓN,4,5,Gastos - Operacionales Administración,DEBITO,0
+515505,Alojamiento y Manutención Viajes,6,5,Gastos - Operacionales Administración,DEBITO,1
+515515,Pasajes Aéreos Administración,6,5,Gastos - Operacionales Administración,DEBITO,1
+515520,Pasajes Terrestres y Viáticos,6,5,Gastos - Operacionales Administración,DEBITO,1
+5160,DEPRECIACIONES ADMINISTRACIÓN,4,5,Gastos - Operacionales Administración,DEBITO,0
+516005,Depreciación Construcciones y Edificaciones,6,5,Gastos - Operacionales Administración,DEBITO,1
+516010,Depreciación Maquinaria y Equipo,6,5,Gastos - Operacionales Administración,DEBITO,1
+51601501,Depreciación Equipo de Oficina (Muebles y enseres),8,5,Gastos - Operacionales Administración,DEBITO,1
+51601502,Depreciación Equipo de Oficina (equipo),8,5,Gastos - Operacionales Administración,DEBITO,1
+51602001,Depreciación Equipo de Cómputo (equipos),8,5,Gastos - Operacionales Administración,DEBITO,1
+516035,Depreciación Flota y Equipo de Transporte,6,5,Gastos - Operacionales Administración,DEBITO,0
+51603505,Depreciación Flota y Equipo de Transporte (automovil),8,5,Gastos - Operacionales Administración,DEBITO,1
+5165,AMORTIZACIONES ADMINISTRACIÓN,4,5,Gastos - Operacionales Administración,DEBITO,0
+516510,Amortización Intangibles Administración,6,5,Gastos - Operacionales Administración,DEBITO,1
+516515,Amortización Cargos Diferidos,6,5,Gastos - Operacionales Administración,DEBITO,1
+5195,DIVERSOS GASTOS ADMINISTRACIÓN,4,5,Gastos - Operacionales Administración,DEBITO,0
+519505,Comisiones Bancarias y Gastos Diversos,6,5,Gastos - Operacionales Administración,DEBITO,1
+519510,"Libros, Suscripciones y Revistas",6,5,Gastos - Operacionales Administración,DEBITO,1
+519520,Gastos de Representación y Relaciones Públicas,6,5,Gastos - Operacionales Administración,DEBITO,1
+519525,Elementos de Aseo y Cafetería,6,5,Gastos - Operacionales Administración,DEBITO,1
+519530,"Útiles, Papelería y Fotocopias",6,5,Gastos - Operacionales Administración,DEBITO,1
+519535,Combustibles y Lubricantes Vehículos Oficinas,6,5,Gastos - Operacionales Administración,DEBITO,1
+519545,Taxis y Buses Administración,6,5,Gastos - Operacionales Administración,DEBITO,1
+519560,Casino y Restaurante Trabajadores,6,5,Gastos - Operacionales Administración,DEBITO,1
+519580,gastos bancarios,6,5,Gastos - Operacionales Administración,DEBITO,1
+5199,PROVISIONES GASTOS ADMINISTRACIÓN,4,5,Gastos - Operacionales Administración,DEBITO,0
+519905,INVERSIONES,6,5,Gastos - Operacionales Administración,DEBITO,1
+519910,Provisión Deudores,6,5,Gastos - Operacionales Administración,DEBITO,1
+5205,GASTOS DE PERSONAL VENTAS,4,5,Gastos - Operacionales Ventas,DEBITO,0
+520506,Sueldos Personal de Ventas,6,5,Gastos - Operacionales Ventas,DEBITO,1
+520518,Comisiones de Ventas a Vendedores,6,5,Gastos - Operacionales Ventas,DEBITO,1
+520527,Auxilio de Transporte Ventas,6,5,Gastos - Operacionales Ventas,DEBITO,1
+520530,Prestaciones Sociales Personal Ventas,6,5,Gastos - Operacionales Ventas,DEBITO,1
+520568,Aportes Seguridad Social Personal Ventas,6,5,Gastos - Operacionales Ventas,DEBITO,1
+5210,HONORARIOS VENTAS,4,5,Gastos - Operacionales Ventas,DEBITO,0
+521035,Honorarios Asesoría Comercial y Ventas,6,5,Gastos - Operacionales Ventas,DEBITO,1
+5220,ARRENDAMIENTOS VENTAS,4,5,Gastos - Operacionales Ventas,DEBITO,0
+522010,Arrendamiento Salones de Exhibición y Locales,6,5,Gastos - Operacionales Ventas,DEBITO,1
+5235,SERVICIOS VENTAS,4,5,Gastos - Operacionales Ventas,DEBITO,0
+523550,"Transportes, Fletes y Fletes sobre Ventas",6,5,Gastos - Operacionales Ventas,DEBITO,1
+523560,"Publicidad, Propaganda, Pauta y Promoción",6,5,Gastos - Operacionales Ventas,DEBITO,1
+5255,GASTOS DE VIAJE VENTAS,4,5,Gastos - Operacionales Ventas,DEBITO,0
+525505,Viáticos y Alojamientos Agentes de Ventas,6,5,Gastos - Operacionales Ventas,DEBITO,1
+5295,DIVERSOS VENTAS,4,5,Gastos - Operacionales Ventas,DEBITO,0
+529540,Empaques y Envoltorios de Ventas,6,5,Gastos - Operacionales Ventas,DEBITO,1
+5305,GASTOS FINANCIEROS NO OPERACIONALES,4,5,Gastos - No Operacionales,DEBITO,0
+530505,"Gastos Bancarios, Chequeras y Comisiones",6,5,Gastos - No Operacionales,DEBITO,1
+530515,Comisiones por Operaciones Crédito,6,5,Gastos - No Operacionales,DEBITO,1
+530520,Intereses de Créditos y Sobregiros Bancarios,6,5,Gastos - No Operacionales,DEBITO,1
+530525,Diferencia en Cambio En Contra,6,5,Gastos - No Operacionales,DEBITO,1
+530535,Descuentos Comerciales Condicionados Concedidos,6,5,Gastos - No Operacionales,DEBITO,1
+530595,Gravamen a los Movimientos Financieros (GMF 4x1000),6,5,Gastos - No Operacionales,DEBITO,1
+5310,PÉRDIDA EN VENTA Y RETIRO DE BIENES,4,5,Gastos - No Operacionales,DEBITO,0
+531005,Pérdida en Venta de Inversiones,6,5,Gastos - No Operacionales,DEBITO,1
+531015,Pérdida en Venta Propiedades Planta y Equipo,6,5,Gastos - No Operacionales,DEBITO,1
+531040,Pérdidas por Siniestros y Robos,6,5,Gastos - No Operacionales,DEBITO,1
+5315,GASTOS EXTRAORDINARIOS,4,5,Gastos - No Operacionales,DEBITO,0
+531505,Costas Procesos Judiciales y Multas,6,5,Gastos - No Operacionales,DEBITO,1
+531520,Sanciones e Intereses de Mora Tributaria,6,5,Gastos - No Operacionales,DEBITO,1
+539540,Casino y restaurante,6,5,Gastos - No Operacionales,DEBITO,1
+5405,IMPUESTO DE RENTA Y COMPLEMENTARIOS GASTO,4,5,Gastos - Impuesto Renta,DEBITO,0
+540505,Gasto Impuesto de Renta del Ejercicio,6,5,Gastos - Impuesto Renta,DEBITO,1
+5905,GANANCIAS Y PÉRDIDAS,4,5,Gastos - Cierre de Resultados,DEBITO,0
+590505,Ganancias y Pérdidas,6,5,Gastos - Cierre de Resultados,DEBITO,1
+6105,COSTO DE VENTAS AGRICULTURA Y GANADERÍA,4,6,Costos de Ventas,DEBITO,0
+610505,Costo Ventas Cultivo de Cereales,6,6,Costos de Ventas,DEBITO,1
+6120,COSTO DE VENTAS INDUSTRIAS MANUFACTURERAS,4,6,Costos de Ventas,DEBITO,0
+612001,Costo Producción Vendida Productos Cárnicos,6,6,Costos de Ventas,DEBITO,1
+612027,Costo Producción Vendida Confecciones,6,6,Costos de Ventas,DEBITO,1
+6130,COSTO DE VENTAS CONSTRUCCIÓN,4,6,Costos de Ventas,DEBITO,0
+613005,Costo Predios y Obras Vendidas,6,6,Costos de Ventas,DEBITO,1
+6135,COSTO DE VENTAS COMERCIO AL POR MAYOR Y MENOR,4,6,Costos de Ventas,DEBITO,0
+613505,Costo de Ventas Mercancías No Fabricadas,6,6,Costos de Ventas,DEBITO,1
+613520,Costo de Ventas Almacenes no Especializados,6,6,Costos de Ventas,DEBITO,1
+613536,Costo de Ventas Electrodomésticos y Muebles,6,6,Costos de Ventas,DEBITO,1
+613548,Costo de Ventas Ferretería y Herramientas,6,6,Costos de Ventas,DEBITO,1
+6140,COSTO DE VENTAS HOTELES Y RESTAURANTES,4,6,Costos de Ventas,DEBITO,0
+614005,Costo Insumos y Servicios Hotelería,6,6,Costos de Ventas,DEBITO,1
+614015,Costo Insumos y Alimentos Restaurante,6,6,Costos de Ventas,DEBITO,1
+6205,COMPRAS DE MERCANCÍAS,4,6,Costos de Ventas - Compras,DEBITO,0
+620505,Compras de Mercancías Nacionales,6,6,Costos de Ventas - Compras,DEBITO,1
+620510,Compras de Mercancías Importadas,6,6,Costos de Ventas - Compras,DEBITO,1
+6210,COMPRAS DE MATERIAS PRIMAS,4,6,Costos de Ventas - Compras,DEBITO,0
+621005,Compras de Materias Primas Nacionales,6,6,Costos de Ventas - Compras,DEBITO,1
+6225,DEVOLUCIONES EN COMPRAS (CR),4,6,Costos de Ventas - Compras,CREDITO,0
+622505,Devoluciones y Rebajas en Compras Mercancías (CR),6,6,Costos de Ventas - Compras,CREDITO,1
+7105,MATERIA PRIMA DIRECTA PRODUCCIÓN,4,7,Costos de Producción,DEBITO,0
+710505,Consumo Materias Primas Directas Nacionales,6,7,Costos de Producción,DEBITO,1
+7205,MANO DE OBRA DIRECTA PRODUCCIÓN,4,7,Costos de Producción,DEBITO,0
+720506,Sueldos y Salarios Operarios Directos,6,7,Costos de Producción,DEBITO,1
+720530,Prestaciones Sociales Mano de Obra Directa,6,7,Costos de Producción,DEBITO,1
+7305,COSTOS INDIRECTOS DE FABRICACIÓN,4,7,Costos de Producción,DEBITO,0
+730505,Materiales e Insumos Indirectos,6,7,Costos de Producción,DEBITO,1
+730510,Mano de Obra Indirecta y Supervisión,6,7,Costos de Producción,DEBITO,1
+730525,Servicios Públicos Planta de Producción,6,7,Costos de Producción,DEBITO,1
+730530,Mantenimiento Maquinaria de Producción,6,7,Costos de Producción,DEBITO,1
+7405,CONTRATOS DE SERVICIOS EN PRODUCCIÓN,4,7,Costos de Producción,DEBITO,0
+740505,Contratos Maquila y Procesos Externos,6,7,Costos de Producción,DEBITO,1
+8105,BIENES Y VALORES ENTREGADOS EN CUSTODIA,4,8,Cuentas de Orden Deudoras,DEBITO,0
+810505,Valores Mobiliarios en Custodia,6,8,Cuentas de Orden Deudoras,DEBITO,1
+8110,BIENES Y VALORES ENTREGADOS EN GARANTÍA,4,8,Cuentas de Orden Deudoras,DEBITO,0
+811005,Bienes Inmuebles en Garantía,6,8,Cuentas de Orden Deudoras,DEBITO,1
+8120,LITIGIOS Y DEMANDAS A FAVOR,4,8,Cuentas de Orden Deudoras,DEBITO,0
+812005,Litigios Comerciales a Favor,6,8,Cuentas de Orden Deudoras,DEBITO,1
+8315,PROPIEDADES PLANTA Y EQUIPO TOTALMENTE DEPRECIADOS,4,8,Cuentas de Orden Deudoras,DEBITO,0
+831520,Maquinaria Totalmente Depreciada en Uso,6,8,Cuentas de Orden Deudoras,DEBITO,1
+831540,Vehículos Totalmente Depreciados en Uso,6,8,Cuentas de Orden Deudoras,DEBITO,1
+8405,DERECHOS CONTINGENTES POR CONTRA (CR),4,8,Cuentas de Orden Deudoras,CREDITO,0
+840505,Derechos Contingentes por Contra,6,8,Cuentas de Orden Deudoras,CREDITO,1
+9105,BIENES Y VALORES RECIBIDOS EN CUSTODIA,4,9,Cuentas de Orden AcreedorAS,CREDITO,0
+910505,Valores Mobiliarios Recibidos en Custodia,6,9,Cuentas de Orden AcreedorAS,CREDITO,1
+9110,BIENES Y VALORES RECIBIDOS EN GARANTÍA,4,9,Cuentas de Orden AcreedorAS,CREDITO,0
+911005,Inmuebles Recibidos en Garantía,6,9,Cuentas de Orden AcreedorAS,CREDITO,1
+9120,LITIGIOS Y DEMANDAS EN CONTRA,4,9,Cuentas de Orden AcreedorAS,CREDITO,0
+912005,Demandas Laborales en Contra,6,9,Cuentas de Orden AcreedorAS,CREDITO,1
+912010,Demandas Civiles y Comerciales en Contra,6,9,Cuentas de Orden AcreedorAS,CREDITO,1
+9405,RESPONSABILIDADES CONTINGENTES POR CONTRA (DB),4,9,Cuentas de Orden AcreedorAS,DEBITO,0
+940505,Responsabilidades Contingentes por Contra,6,9,Cuentas de Orden AcreedorAS,DEBITO,1

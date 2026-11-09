@@ -44,21 +44,71 @@ def obtener_empleado_por_documento(documento):
         conexion.close()
 
 
-def crear_empleado(nombres, apellidos, documento, cargo, salario_base, fecha_ingreso):
+def crear_empleado(nombres, apellidos, documento, cargo, salario_base, fecha_ingreso,
+                   **extras):
+    """Registra un empleado con los campos opcionales del motor de nómina.
+
+    Los campos extra (tipo de contrato, auxilio de transporte, riesgo ARL,
+    exoneraciones, etc.) se guardan solo si la columna existe, para mantener
+    compatibilidad con bases creadas antes de ampliar la tabla.
+    """
+    columnas_validas = {
+        'tipo_documento', 'email', 'telefono', 'direccion', 'ciudad',
+        'fecha_nacimiento', 'sexo', 'estado_civil', 'tipo_contrato',
+        'fecha_retiro', 'salario_integral', 'auxilio_transporte', 'riesgo_arl',
+        'exonerado_salud', 'exonerado_parafiscales', 'centro_costo', 'banco',
+        'cuenta_banco', 'dependientes',
+    }
+    campos = ['nombres', 'apellidos', 'documento', 'cargo', 'salario_base',
+              'fecha_ingreso']
+    valores = [nombres, apellidos, documento, cargo, salario_base, fecha_ingreso]
+    for clave, valor in extras.items():
+        if clave in columnas_validas and valor not in (None, ''):
+            campos.append(clave)
+            valores.append(valor)
+
+    marcadores = ', '.join(['%s'] * len(campos))
     conexion = obtener_conexion()
     try:
         with conexion.cursor() as cursor:
             cursor.execute(
-                """
-                INSERT INTO empleados
-                    (nombres, apellidos, documento, cargo,
-                     salario_base, fecha_ingreso)
-                VALUES (%s, %s, %s, %s, %s, %s)
-                """,
-                (nombres, apellidos, documento, cargo, salario_base, fecha_ingreso),
+                f"INSERT INTO empleados ({', '.join(campos)}) VALUES ({marcadores})",
+                valores,
             )
             conexion.commit()
             return cursor.lastrowid
+    finally:
+        conexion.close()
+
+
+def actualizar_empleado(id_empleado, **campos):
+    """Actualiza solo los campos permitidos de un empleado."""
+    permitidos = {
+        'nombres', 'apellidos', 'documento', 'tipo_documento', 'cargo', 'email',
+        'telefono', 'direccion', 'ciudad', 'fecha_nacimiento', 'sexo',
+        'estado_civil', 'tipo_contrato', 'fecha_ingreso', 'fecha_retiro',
+        'salario_base', 'salario_integral', 'auxilio_transporte', 'riesgo_arl',
+        'exonerado_salud', 'exonerado_parafiscales', 'centro_costo', 'banco',
+        'cuenta_banco', 'dependientes', 'estado',
+    }
+    asignaciones = []
+    valores = []
+    for clave, valor in campos.items():
+        if clave in permitidos:
+            asignaciones.append(f"{clave} = %s")
+            valores.append(valor)
+    if not asignaciones:
+        return 0
+    valores.append(id_empleado)
+    conexion = obtener_conexion()
+    try:
+        with conexion.cursor() as cursor:
+            cursor.execute(
+                f"UPDATE empleados SET {', '.join(asignaciones)} WHERE id_empleado = %s",
+                valores,
+            )
+            conexion.commit()
+            return cursor.rowcount
     finally:
         conexion.close()
 
@@ -217,35 +267,81 @@ def actualizar_estado_novedad(id_novedad, estado):
         conexion.close()
 
 
+def _resumen_desde_periodos(cursor, fecha_inicio=None, fecha_fin=None):
+    """Resumen de nómina a partir de los periodos liquidados (modelo nuevo)."""
+    sql = """
+        SELECT
+            COALESCE(SUM(total_devengado), 0) AS total_devengado,
+            COALESCE(SUM(total_deducciones), 0) AS total_deducciones,
+            COALESCE(SUM(total_aportes + total_provisiones), 0) AS costo_patronal
+        FROM nomina_periodos
+        WHERE estado IN ('CALCULADO','CONTABILIZADO','PAGADO')
+    """
+    params = []
+    if fecha_inicio:
+        sql += " AND fecha_fin >= %s"
+        params.append(fecha_inicio)
+    if fecha_fin:
+        sql += " AND fecha_inicio <= %s"
+        params.append(fecha_fin)
+    cursor.execute(sql, params)
+    return cursor.fetchone()
+
+
+def _resumen_legado(cursor, fecha_inicio=None, fecha_fin=None):
+    """Resumen de nómina del modelo anterior (tabla ``nomina``).
+
+    Se conserva como respaldo para instalaciones que todavía no han liquidado
+    periodos con el motor nuevo.
+    """
+    sql = """
+        SELECT
+            COALESCE(SUM(salario_base), 0) AS total_devengado,
+            COALESCE(SUM(total_deducciones), 0) AS total_deducciones,
+            COALESCE(SUM(total_aportes), 0) AS costo_patronal
+        FROM nomina
+        WHERE 1 = 1
+    """
+    params = []
+    if fecha_inicio and fecha_fin:
+        sql += " AND STR_TO_DATE(CONCAT(periodo, '-01'), '%%Y-%%m-%%d') BETWEEN %s AND %s"
+        params.extend([fecha_inicio, fecha_fin])
+    cursor.execute(sql, params)
+    return cursor.fetchone()
+
+
 def obtener_resumen_nomina(fecha_inicio=None, fecha_fin=None):
-    """Retorna la suma total de devengados, deducciones y costos patronales."""
+    """Retorna la suma total de devengados, deducciones y costos patronales.
+
+    Da prioridad a los periodos liquidados con el motor nuevo
+    (``nomina_periodos``). Si aún no existen, usa el historial anterior
+    (``nomina``) como respaldo. Ya no depende de ``pagos_nomina``, que el
+    cálculo anterior nunca llenaba.
+    """
     conexion = obtener_conexion()
     try:
         with conexion.cursor() as cursor:
-            sql = """
-                SELECT
-                    COALESCE(SUM(total_devengado), 0) AS total_devengado,
-                    COALESCE(SUM(total_deducciones), 0) AS total_deducciones,
-                    COALESCE(SUM(costo_patronal), 0) AS costo_patronal
-                FROM pagos_nomina
-            """
-            params = []
-            if fecha_inicio and fecha_fin:
-                sql += " WHERE fecha_pago BETWEEN %s AND %s"
-                params.extend([fecha_inicio, fecha_fin])
+            try:
+                resultado = _resumen_desde_periodos(cursor, fecha_inicio, fecha_fin)
+                if resultado and float(resultado['total_devengado'] or 0) > 0:
+                    origen = 'periodos'
+                else:
+                    resultado = _resumen_legado(cursor, fecha_inicio, fecha_fin)
+                    origen = 'legado'
+            except Exception:
+                # La tabla nueva puede no existir en una base antigua.
+                resultado = _resumen_legado(cursor, fecha_inicio, fecha_fin)
+                origen = 'legado'
 
-            cursor.execute(sql, params)
-            resultado = cursor.fetchone()
-
-            total_devengado = float(resultado['total_devengado'])
-            total_deducciones = float(resultado['total_deducciones'])
-            costo_patronal = float(resultado['costo_patronal'])
-            costo_total_nomina = total_devengado + costo_patronal
+            total_devengado = float(resultado['total_devengado'] or 0)
+            total_deducciones = float(resultado['total_deducciones'] or 0)
+            costo_patronal = float(resultado['costo_patronal'] or 0)
             return {
-                'costo_nomina': costo_total_nomina,
+                'costo_nomina': total_devengado + costo_patronal,
                 'deducciones': total_deducciones,
                 'total_devengado': total_devengado,
-                'costo_patronal': costo_patronal
+                'costo_patronal': costo_patronal,
+                'origen': origen,
             }
     finally:
         conexion.close()
@@ -343,17 +439,8 @@ def crear_tablas_nomina():
                     [("Salud (empleador)", 8.500), ("Pensión (empleador)", 12.000), ("ARL", 0.522)],
                 )
 
-            cursor.execute("SELECT COUNT(*) AS total FROM empleados")
-            if cursor.fetchone()["total"] == 0:
-                cursor.execute(
-                    """
-                    INSERT INTO empleados
-                        (nombres, apellidos, documento, cargo,
-                         salario_base, fecha_ingreso, estado)
-                    VALUES (%s, %s, %s, %s, %s, %s, 'ACTIVO')
-                    """,
-                    ("Laura", "Gómez", "1001234567", "Auxiliar contable", 1800000.00, "2025-03-01"),
-                )
+            # No se crean empleados de ejemplo: el motor de nómina solo debe
+            # liquidar personas reales registradas por el usuario.
 
         conexion.commit()
     finally:
