@@ -226,8 +226,22 @@
 .nomina .badge.activo,
 .nomina .badge.aprobada { background: var(--success-tint); color: var(--success); }
 .nomina .badge.inactivo,
-.nomina .badge.rechazada { background: var(--danger-tint); color: var(--danger); }
-.nomina .badge.pendiente { background: var(--warn-tint); color: var(--warn); }
+.nomina .badge.rechazada,
+.nomina .badge.anulado { background: var(--danger-tint); color: var(--danger); }
+.nomina .badge.pendiente,
+.nomina .badge.calculado { background: var(--warn-tint); color: var(--warn); }
+.nomina .badge.contabilizado,
+.nomina .badge.pagado { background: var(--accent-tint); color: var(--accent-strong); }
+
+.nomina .table-scroll {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.nomina input[data-parametro] {
+  width: 150px;
+  padding: 6px 9px;
+}
 
 .nomina .empty-row td {
   text-align: center;

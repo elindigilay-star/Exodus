@@ -12,15 +12,18 @@
 
     <div class="nomina-tabs">
         <button class="tab active" data-view="empleados">Empleados</button>
-        <button class="tab" data-view="nomina">Calcular nómina</button>
-        <button class="tab" data-view="novedades">Ausencias y permisos</button>
+        <button class="tab" data-view="periodo">Liquidar periodo</button>
+        <button class="tab" data-view="extras">Horas extras y deducciones</button>
+        <button class="tab" data-view="historial">Historial</button>
+        <button class="tab" data-view="parametros">Parámetros</button>
+        <button class="tab" data-view="novedades">Solicitudes</button>
     </div>
 
     <!-- ===================== EMPLEADOS (RF-6 / RF-7) ===================== -->
     <section class="view active" id="view-empleados">
         <div class="view-header">
             <h1>Empleados</h1>
-            <p>Registra empleados nuevos o retíralos del sistema.</p>
+            <p>Registra empleados con sus datos laborales. El tipo de contrato, el riesgo ARL y las exoneraciones afectan el cálculo.</p>
         </div>
 
         <div class="panel">
@@ -51,6 +54,46 @@
                         <label for="emp-fecha">Fecha de ingreso</label>
                         <input id="emp-fecha" name="fecha_ingreso" type="date" required>
                     </div>
+                    <div class="field">
+                        <label for="emp-contrato">Tipo de contrato</label>
+                        <select id="emp-contrato" name="tipo_contrato">
+                            <option value="INDEFINIDO">Indefinido</option>
+                            <option value="FIJO">Término fijo</option>
+                            <option value="OBRA_LABOR">Obra o labor</option>
+                            <option value="APRENDIZAJE">Aprendizaje</option>
+                            <option value="PRESTACION_SERVICIOS">Prestación de servicios</option>
+                        </select>
+                    </div>
+                    <div class="field">
+                        <label for="emp-arl">Nivel de riesgo ARL</label>
+                        <select id="emp-arl" name="riesgo_arl">
+                            <option value="1">I (0,522%)</option>
+                            <option value="2">II (1,044%)</option>
+                            <option value="3">III (2,436%)</option>
+                            <option value="4">IV (4,350%)</option>
+                            <option value="5">V (6,960%)</option>
+                        </select>
+                    </div>
+                    <div class="field">
+                        <label for="emp-auxilio">Auxilio de transporte (opcional)</label>
+                        <input id="emp-auxilio" name="auxilio_transporte" type="number" min="0" step="1000"
+                               placeholder="Se calcula automático si está vacío">
+                    </div>
+                    <div class="field">
+                        <label for="emp-dependientes">Dependientes económicos</label>
+                        <input id="emp-dependientes" name="dependientes" type="number" min="0" step="1" value="0">
+                    </div>
+                    <div class="field">
+                        <label for="emp-centro">Centro de costo</label>
+                        <input id="emp-centro" name="centro_costo" type="text" placeholder="Administración, Ventas…">
+                    </div>
+                    <div class="field full">
+                        <label style="display:flex;gap:18px;flex-wrap:wrap;font-weight:500;">
+                            <span><input type="checkbox" name="salario_integral" value="1"> Salario integral</span>
+                            <span><input type="checkbox" name="exonerado_salud" value="1"> Exonerado de salud</span>
+                            <span><input type="checkbox" name="exonerado_parafiscales" value="1"> Exonerado de parafiscales</span>
+                        </label>
+                    </div>
                     <div class="form-actions">
                         <button type="submit" class="primary">Registrar empleado</button>
                         <div class="msg" id="msg-empleado"></div>
@@ -61,78 +104,220 @@
 
         <div class="panel">
             <h2>Empleados registrados</h2>
-            <table>
-                <thead>
-                    <tr>
-                        <th>Nombre</th>
-                        <th>Documento</th>
-                        <th>Cargo</th>
-                        <th class="num">Salario base</th>
-                        <th>Ingreso</th>
-                        <th>Estado</th>
-                        <th></th>
-                    </tr>
-                </thead>
-                <tbody id="tabla-empleados">
-                    <tr class="empty-row"><td colspan="7">Cargando…</td></tr>
-                </tbody>
-            </table>
+            <div class="table-scroll">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Nombre</th>
+                            <th>Documento</th>
+                            <th>Cargo</th>
+                            <th class="num">Salario base</th>
+                            <th>Contrato</th>
+                            <th>ARL</th>
+                            <th>Ingreso</th>
+                            <th>Estado</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody id="tabla-empleados">
+                        <tr class="empty-row"><td colspan="9">Cargando…</td></tr>
+                    </tbody>
+                </table>
+            </div>
         </div>
     </section>
 
-    <!-- ===================== NÓMINA (RF-8) ===================== -->
-    <section class="view" id="view-nomina">
+    <!-- ===================== LIQUIDAR PERIODO (RF-8) ===================== -->
+    <section class="view" id="view-periodo">
         <div class="view-header">
-            <h1>Calcular salario neto</h1>
-            <p>Aplica las deducciones y aportes configurados y genera el reporte del periodo.</p>
+            <h1>Liquidar periodo de nómina</h1>
+            <p>Calcula devengados, IBC, deducciones, retención, aportes patronales y provisiones para todos los empleados activos.</p>
         </div>
 
         <div class="panel">
-            <h2>Calcular</h2>
-            <form id="form-nomina">
+            <h2>Nuevo cálculo</h2>
+            <form id="form-periodo">
                 <div class="form-grid">
                     <div class="field">
-                        <label for="nom-empleado">Empleado</label>
-                        <select id="nom-empleado" name="id_empleado" required></select>
+                        <label for="per-inicio">Fecha inicial</label>
+                        <input id="per-inicio" name="fecha_inicio" type="date" required>
                     </div>
                     <div class="field">
-                        <label for="nom-periodo">Periodo</label>
-                        <input id="nom-periodo" name="periodo" type="month" required>
+                        <label for="per-fin">Fecha final</label>
+                        <input id="per-fin" name="fecha_fin" type="date" required>
+                    </div>
+                    <div class="field">
+                        <label for="per-tipo">Tipo de periodo</label>
+                        <select id="per-tipo" name="tipo">
+                            <option value="MENSUAL">Mensual</option>
+                            <option value="QUINCENAL">Quincenal</option>
+                            <option value="SEMANAL">Semanal</option>
+                            <option value="PRIMA">Prima</option>
+                            <option value="CESANTIAS">Cesantías</option>
+                            <option value="VACACIONES">Vacaciones</option>
+                            <option value="OTRO">Otro</option>
+                        </select>
+                    </div>
+                    <div class="field">
+                        <label for="per-nombre">Nombre (opcional)</label>
+                        <input id="per-nombre" name="nombre" type="text" placeholder="Nómina mensual julio">
                     </div>
                     <div class="form-actions">
-                        <button type="submit" class="primary">Calcular salario neto</button>
-                        <div class="msg" id="msg-nomina"></div>
+                        <button type="submit" class="primary">Liquidar nómina</button>
+                        <div class="msg" id="msg-periodo"></div>
                     </div>
                 </div>
             </form>
 
-            <div class="report-card" id="reporte-nomina">
-                <h3>Reporte generado</h3>
-                <div class="report-line"><span>Empleado</span><span id="rep-empleado">—</span></div>
-                <div class="report-line"><span>Periodo</span><span id="rep-periodo">—</span></div>
-                <div class="report-line"><span>Salario base</span><span id="rep-base">—</span></div>
-                <div class="report-line"><span>Total deducciones</span><span id="rep-deducciones">—</span></div>
-                <div class="report-line"><span>Aportes del empleador</span><span id="rep-aportes">—</span></div>
-                <div class="report-line total"><span>Salario neto</span><span id="rep-neto">—</span></div>
+            <div class="report-card" id="reporte-periodo">
+                <h3>Periodo liquidado</h3>
+                <div class="report-line"><span>Empleados</span><span id="per-rep-empleados">—</span></div>
+                <div class="report-line"><span>Total devengado</span><span id="per-rep-devengado">—</span></div>
+                <div class="report-line"><span>Deducciones</span><span id="per-rep-deducciones">—</span></div>
+                <div class="report-line"><span>Aportes patronales</span><span id="per-rep-aportes">—</span></div>
+                <div class="report-line"><span>Provisiones</span><span id="per-rep-provisiones">—</span></div>
+                <div class="report-line total"><span>Neto a pagar</span><span id="per-rep-neto">—</span></div>
+                <div class="report-line"><span>Costo total nómina</span><span id="per-rep-costo">—</span></div>
             </div>
+        </div>
+    </section>
+
+    <!-- ===================== HORAS EXTRAS / DEDUCCIONES ===================== -->
+    <section class="view" id="view-extras">
+        <div class="view-header">
+            <h1>Horas extras y deducciones</h1>
+            <p>Registra horas extras, recargos, bonificaciones, embargos, libranzas y demás novedades antes de liquidar el periodo.</p>
         </div>
 
         <div class="panel">
-            <h2>Historial de nómina</h2>
-            <table>
-                <thead>
-                    <tr>
-                        <th>Empleado</th>
-                        <th>Periodo</th>
-                        <th class="num">Deducciones</th>
-                        <th class="num">Aportes</th>
-                        <th class="num">Salario neto</th>
-                    </tr>
-                </thead>
-                <tbody id="tabla-nomina">
-                    <tr class="empty-row"><td colspan="5">Cargando…</td></tr>
-                </tbody>
-            </table>
+            <h2>Registrar novedad</h2>
+            <form id="form-extra">
+                <div class="form-grid">
+                    <div class="field">
+                        <label for="ext-empleado">Empleado</label>
+                        <select id="ext-empleado" name="id_empleado" required></select>
+                    </div>
+                    <div class="field">
+                        <label for="ext-concepto">Concepto</label>
+                        <select id="ext-concepto" name="concepto_codigo" required></select>
+                    </div>
+                    <div class="field">
+                        <label for="ext-fecha">Fecha</label>
+                        <input id="ext-fecha" name="fecha" type="date" required>
+                    </div>
+                    <div class="field">
+                        <label for="ext-cantidad">Cantidad / porcentaje</label>
+                        <input id="ext-cantidad" name="cantidad" type="number" min="0" step="0.01"
+                               placeholder="Horas o % según el concepto">
+                    </div>
+                    <div class="field">
+                        <label for="ext-unitario">Valor unitario (opcional)</label>
+                        <input id="ext-unitario" name="valor_unitario" type="number" min="0" step="0.01">
+                    </div>
+                    <div class="field">
+                        <label for="ext-total">Valor total (opcional)</label>
+                        <input id="ext-total" name="valor_total" type="number" min="0" step="0.01"
+                               placeholder="Si se deja vacío se calcula automático">
+                    </div>
+                    <div class="field full">
+                        <label for="ext-descripcion">Descripción</label>
+                        <input id="ext-descripcion" name="descripcion" type="text">
+                    </div>
+                    <div class="form-actions">
+                        <button type="submit" class="primary">Registrar novedad</button>
+                        <div class="msg" id="msg-extra"></div>
+                    </div>
+                </div>
+            </form>
+        </div>
+
+        <div class="panel">
+            <h2>Novedades activas</h2>
+            <div class="table-scroll">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Empleado</th>
+                            <th>Concepto</th>
+                            <th>Fecha</th>
+                            <th class="num">Cantidad</th>
+                            <th class="num">Valor</th>
+                            <th>Descripción</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody id="tabla-extras">
+                        <tr class="empty-row"><td colspan="7">Cargando…</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </section>
+
+    <!-- ===================== HISTORIAL ===================== -->
+    <section class="view" id="view-historial">
+        <div class="view-header">
+            <h1>Historial de periodos</h1>
+            <p>Consulta el detalle por empleado, imprime colillas y genera el comprobante contable de nómina.</p>
+        </div>
+
+        <div class="panel">
+            <h2>Periodos liquidados</h2>
+            <div class="table-scroll">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Periodo</th>
+                            <th>Tipo</th>
+                            <th>Desde</th>
+                            <th>Hasta</th>
+                            <th class="num">Devengado</th>
+                            <th class="num">Neto</th>
+                            <th>Estado</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody id="tabla-periodos">
+                        <tr class="empty-row"><td colspan="8">Cargando…</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="panel" id="panel-detalle-periodo" style="display:none;">
+            <h2 id="detalle-titulo">Detalle del periodo</h2>
+            <div id="detalle-periodo"></div>
+        </div>
+    </section>
+
+    <!-- ===================== PARÁMETROS ===================== -->
+    <section class="view" id="view-parametros">
+        <div class="view-header">
+            <h1>Parámetros legales</h1>
+            <p>Valores usados por el motor de nómina: salario mínimo, auxilio de transporte, UVT, tasas y topes.</p>
+        </div>
+
+        <div class="panel">
+            <h2>Parámetros</h2>
+            <div class="table-scroll">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Clave</th>
+                            <th>Descripción</th>
+                            <th class="num">Valor</th>
+                            <th>Unidad</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tabla-parametros">
+                        <tr class="empty-row"><td colspan="4">Cargando…</td></tr>
+                    </tbody>
+                </table>
+            </div>
+            <div class="form-actions" style="margin-top:16px;">
+                <button type="button" class="primary" id="btn-guardar-parametros">Guardar parámetros</button>
+                <div class="msg" id="msg-parametros"></div>
+            </div>
         </div>
     </section>
 
@@ -181,21 +366,23 @@
 
         <div class="panel">
             <h2>Bandeja de solicitudes</h2>
-            <table>
-                <thead>
-                    <tr>
-                        <th>Empleado</th>
-                        <th>Tipo</th>
-                        <th>Desde</th>
-                        <th>Hasta</th>
-                        <th>Estado</th>
-                        <th></th>
-                    </tr>
-                </thead>
-                <tbody id="tabla-novedades">
-                    <tr class="empty-row"><td colspan="6">Cargando…</td></tr>
-                </tbody>
-            </table>
+            <div class="table-scroll">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Empleado</th>
+                            <th>Tipo</th>
+                            <th>Desde</th>
+                            <th>Hasta</th>
+                            <th>Estado</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody id="tabla-novedades">
+                        <tr class="empty-row"><td colspan="6">Cargando…</td></tr>
+                    </tbody>
+                </table>
+            </div>
         </div>
     </section>
 

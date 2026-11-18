@@ -108,12 +108,18 @@ Desarrollar una **aplicación web** que permita a las PYMES gestionar de manera 
 | RF-07 | Eliminar empleados | Permite eliminar empleados del sistema | OB-11 |
 | RF-08 | Calcular nómina | Calcula salario neto con deducciones y aportes | OB-12, OB-06 |
 | RF-09 | Registrar novedades laborales | Permite registrar permisos, ausencias y vacaciones | OB-13 |
+| RF-24 | Liquidar periodos de nómina | Calcula el periodo completo con IBC, horas extras, deducciones, aportes y provisiones | OB-11, OB-12, OB-06 |
+| RF-25 | Generar colilla y comprobante de nómina | Genera la colilla de pago y el comprobante contable del periodo | OB-12, OB-14, OB-15 |
+| RF-26 | Gestionar parámetros legales de nómina | Permite administrar SMMLV, auxilio, UVT, tasas y topes usados en el cálculo | OB-04, OB-06, OB-12 |
 | **Módulo de Contabilidad** | | | |
 | RF-10 | Generar estado de resultados | Consolida datos financieros del sistema | OB-15, OB-14 |
 | RF-11 | Registrar gastos deducibles | Permite registrar egresos manuales | OB-14 |
 | RF-12 | Consolidar información contable | Integra los datos de inventario y de nómina | OB-14, OB-15 |
 | RF-13 | Calcular balance general | Calcula activos, pasivos y patrimonio, y estado de resultados | OB-15 |
 | RF-14 | Generar reportes contables | Genera y exporta reportes financieros | OB-14, OB-15 |
+| RF-21 | Gestionar plan único de cuentas | Consulta, busca y crea cuentas del PUC con su naturaleza y nivel | OB-05, OB-15 |
+| RF-22 | Registrar comprobantes contables | Registra partidas dobles balanceadas, las consulta y las anula | OB-14, OB-15 |
+| RF-23 | Consultar libro mayor y balance de prueba | Genera movimientos por cuenta, saldos corridos y verificación de la partida doble | OB-14, OB-15 |
 | **Módulo de Configuración** | | | |
 | RF-15 | Gestionar etiquetas | Permite crear, editar y eliminar etiquetas | OB-04, OB-05 |
 | RF-16 | Ajustar parámetros | Permite modificar valores legales y contables a través de etiquetas. | OB-04, OB-06 |
@@ -143,6 +149,8 @@ Desarrollar una **aplicación web** que permita a las PYMES gestionar de manera 
 | RNF-14 | Escalabilidad | Manejo de datos | Debe soportar incremento en volumen de información |
 | RNF-15 | Legalidad | Cumplimiento normativo | Debe cumplir con la normativa legal vigente |
 | RNF-16 | Legalidad | Actualización legal | Debe permitir modificar parámetros legales fácilmente |
+| RNF-17 | Integridad | Trazabilidad contable | Todo comprobante debe conservar fecha, usuario, detalle y estado, y solo puede anularse dejando rastro |
+| RNF-18 | Legalidad | Cumplimiento laboral | El cálculo de nómina debe usar parámetros legales vigentes y registrar por separado aportes y provisiones |
 
 ---
 
@@ -909,7 +917,7 @@ Los requisitos asociados fueron redefinidos como requisitos de información (RI)
 | **Urgencia** | Inmediata |
 | **Comentarios** | Este proceso es fundamental para garantizar la seguridad, control y segmentación de accesos dentro del sistema. |
 
-#### RF-17 — Registrar Usuario
+#### RF-17.1 — Registrar Usuario
 
 | Campo | Valor |
 | --- | --- |
@@ -924,19 +932,24 @@ Los requisitos asociados fueron redefinidos como requisitos de información (RI)
 
 | Paso | Acción |
 | --- | --- |
-| 1 | El usuario activa la opción "Recordar usuario". |
-| 2 | El sistema guarda las credenciales. |
-| 3 | En el siguiente inicio, el sistema carga los datos automáticamente. |
-| 4 | Confirmar registro. |
-| 5 | El sistema valida los datos y los guarda |
+| 1 | El administrador accede al módulo de configuración. |
+| 2 | El sistema muestra las opciones de gestión. |
+| 3 | El administrador selecciona "Usuarios". |
+| 4 | El sistema muestra la lista de usuarios registrados. |
+| 5 | El administrador selecciona "Agregar usuario". |
+| 6 | El sistema muestra el formulario de registro. |
+| 7 | El administrador ingresa usuario, contraseña y rol. |
+| 8 | El administrador confirma el registro. |
+| 9 | El sistema valida los datos y guarda el nuevo usuario. |
 
 **Excepción**
 
 | Paso | Acción |
 | --- | --- |
-| 5 | Si el usuario existe, el sistema muestra error. |
-| 5 | Si hay campos vacíos, se solicita completar. |
-| 5 | Si el formato es inválido, se muestra error. |
+| 9 | Si el usuario existe, el sistema muestra error. |
+| 9 | Si hay campos vacíos, se solicita completar. |
+| 9 | Si el formato es inválido, se muestra error. |
+| 9 | Si no se selecciona un rol, el sistema solicita configurarlo. |
 
 | Campo | Valor |
 | --- | --- |
@@ -945,39 +958,7 @@ Los requisitos asociados fueron redefinidos como requisitos de información (RI)
 | **Urgencia** | Inmediata |
 | **Comentarios** | Proceso para la gestión de usuarios. |
 
-#### RF-19 — Recordar Usuario
-
-| Campo | Valor |
-| --- | --- |
-| **Versión** | Versión 1.0 |
-| **Autores** | Jesús Daniel Pérez Berrocal |
-| **Objetivos asociados** | OB-02 Mejora de usabilidad |
-| **Requisitos asociados** | RI-02 Persistencia de configuración |
-| **Descripción** | El sistema permite recordar las credenciales del último usuario que inició sesión. |
-| **Precondición** | El usuario ha iniciado sesión previamente. |
-
-**Secuencia normal**
-
-| Paso | Acción |
-| --- | --- |
-| 1 | El usuario activa la opción "Recordar usuario". |
-| 2 | El sistema guarda las credenciales. |
-| 3 | En el siguiente inicio, el sistema carga los datos automáticamente. |
-
-**Excepción**
-
-| Paso | Acción |
-| --- | --- |
-| 2 | Si ocurre un error al guardar, el sistema no almacena los datos. |
-
-| Campo | Valor |
-| --- | --- |
-| **Postcondición** | Las credenciales quedan almacenadas para futuros accesos. |
-| **Importancia** | Media |
-| **Urgencia** | Media |
-| **Comentarios** | Mejora la experiencia de usuario. |
-
-#### RF-20 — Inicio de Sesión
+#### RF-19 — Inicio de Sesión
 
 | Campo | Valor |
 | --- | --- |
@@ -1012,6 +993,262 @@ Los requisitos asociados fueron redefinidos como requisitos de información (RI)
 | **Importancia** | Alta |
 | **Urgencia** | Inmediata |
 | **Comentarios** | Proceso crítico para la seguridad del sistema. |
+
+#### RF-20 — Recordar Usuario
+
+| Campo | Valor |
+| --- | --- |
+| **Versión** | Versión 1.0 |
+| **Autores** | Jesús Daniel Pérez Berrocal |
+| **Objetivos asociados** | OB-02 Mejora de usabilidad |
+| **Requisitos asociados** | RI-02 Persistencia de configuración |
+| **Descripción** | El sistema permite recordar las credenciales del último usuario que inició sesión. |
+| **Precondición** | El usuario ha iniciado sesión previamente. |
+
+**Secuencia normal**
+
+| Paso | Acción |
+| --- | --- |
+| 1 | El usuario activa la opción "Recordar usuario". |
+| 2 | El sistema guarda las credenciales. |
+| 3 | En el siguiente inicio, el sistema carga los datos automáticamente. |
+
+**Excepción**
+
+| Paso | Acción |
+| --- | --- |
+| 2 | Si ocurre un error al guardar, el sistema no almacena los datos. |
+
+| Campo | Valor |
+| --- | --- |
+| **Postcondición** | Las credenciales quedan almacenadas para futuros accesos. |
+| **Importancia** | Media |
+| **Urgencia** | Media |
+| **Comentarios** | Mejora la experiencia de usuario. |
+
+#### RF-21 — Gestionar Plan Único de Cuentas
+
+| Campo | Valor |
+| --- | --- |
+| **Versión** | Versión 1.0 |
+| **Autores** | Jesús Daniel Pérez Berrocal |
+| **Objetivos asociados** | OB-05 Organización de la información; OB-15 Generar reportes financieros |
+| **Requisitos asociados** | RF-12 Consolidar información contable; RNF-17 Trazabilidad contable |
+| **Descripción** | El sistema permitirá consultar el catálogo PUC, buscar cuentas por código o nombre y crear cuentas personalizadas con su naturaleza (débito o crédito) y nivel. |
+| **Precondición** | El usuario debe haber iniciado sesión con rol Administrador o Contador. |
+
+**Secuencia normal**
+
+| Paso | Acción |
+| --- | --- |
+| 1 | El usuario accede al módulo contable y selecciona "Plan de cuentas". |
+| 2 | El sistema muestra el catálogo PUC cargado. |
+| 3 | El usuario busca por código o nombre. |
+| 4 | El sistema filtra y muestra las cuentas coincidentes. |
+| 5 | El usuario selecciona "Nueva cuenta". |
+| 6 | El sistema solicita código, nombre, naturaleza y cuenta padre. |
+| 7 | El usuario confirma la creación. |
+| 8 | El sistema valida el código único y guarda la cuenta. |
+
+**Excepción**
+
+| Paso | Acción |
+| --- | --- |
+| 8 | Si el código ya existe, el sistema muestra error. |
+| 8 | Si la cuenta padre no existe, el sistema impide la creación. |
+| 8 | Si el código no respeta la jerarquía del PUC, el sistema muestra error. |
+
+| Campo | Valor |
+| --- | --- |
+| **Postcondición** | La cuenta queda disponible para registrar comprobantes y reportes. |
+| **Importancia** | Alta |
+| **Urgencia** | Inmediata |
+| **Comentarios** | El catálogo base se carga automáticamente desde el archivo PUC del sistema. |
+
+#### RF-22 — Registrar Comprobantes Contables
+
+| Campo | Valor |
+| --- | --- |
+| **Versión** | Versión 1.0 |
+| **Autores** | Jesús Daniel Pérez Berrocal |
+| **Objetivos asociados** | OB-14 Consolidar información contable; OB-15 Generar reportes financieros |
+| **Requisitos asociados** | RF-12 Consolidar información contable; RNF-17 Trazabilidad contable |
+| **Descripción** | El sistema permitirá registrar comprobantes de partida doble con fecha, descripción, tercero y detalle de cuentas débito/crédito, garantizando que el comprobante esté balanceado. |
+| **Precondición** | El usuario debe tener rol Administrador o Contador y las cuentas PUC deben existir. |
+
+**Secuencia normal**
+
+| Paso | Acción |
+| --- | --- |
+| 1 | El usuario accede a "Comprobantes". |
+| 2 | El sistema muestra el historial de comprobantes. |
+| 3 | El usuario selecciona "Nuevo comprobante". |
+| 4 | El sistema solicita fecha, tipo, descripción y tercero. |
+| 5 | El usuario agrega las líneas de débito y crédito. |
+| 6 | El sistema calcula los totales y valida que débitos y créditos sean iguales. |
+| 7 | El usuario confirma el registro. |
+| 8 | El sistema guarda el comprobante y su detalle. |
+
+**Excepción**
+
+| Paso | Acción |
+| --- | --- |
+| 6 | Si débitos y créditos no coinciden, el sistema impide guardar. |
+| 6 | Si una línea no tiene cuenta o valor, el sistema muestra error. |
+| 6 | Si la cuenta no admite movimiento, el sistema muestra error. |
+| 8 | Si ocurre un error de base de datos, el sistema no guarda parcialmente el comprobante. |
+
+| Campo | Valor |
+| --- | --- |
+| **Postcondición** | El comprobante queda registrado y afecta el libro mayor y el balance de prueba. |
+| **Importancia** | Alta |
+| **Urgencia** | Inmediata |
+| **Comentarios** | La anulación conserva el registro original y deja rastro del cambio de estado. |
+
+#### RF-23 — Consultar Libro Mayor y Balance de Prueba
+
+| Campo | Valor |
+| --- | --- |
+| **Versión** | Versión 1.0 |
+| **Autores** | Jesús Daniel Pérez Berrocal |
+| **Objetivos asociados** | OB-14 Consolidar información contable; OB-15 Generar reportes financieros |
+| **Requisitos asociados** | RF-12 Consolidar información contable; RF-22 Registrar comprobantes contables |
+| **Descripción** | El sistema permitirá consultar los movimientos y saldos por cuenta en el libro mayor, y verificar el cuadre de débitos y créditos en el balance de prueba. |
+| **Precondición** | Deben existir comprobantes registrados. |
+
+**Secuencia normal**
+
+| Paso | Acción |
+| --- | --- |
+| 1 | El usuario accede a "Libro mayor" o "Balance de prueba". |
+| 2 | El sistema solicita el rango de fechas y, si aplica, la cuenta. |
+| 3 | El usuario confirma la consulta. |
+| 4 | El sistema muestra movimientos, saldo corrido y totales. |
+| 5 | El usuario puede exportar o imprimir el reporte. |
+
+**Excepción**
+
+| Paso | Acción |
+| --- | --- |
+| 4 | Si no hay movimientos, el sistema muestra el reporte vacío sin errores. |
+| 4 | Si el rango de fechas es inválido, el sistema muestra error. |
+
+| Campo | Valor |
+| --- | --- |
+| **Postcondición** | El usuario obtiene la información contable solicitada. |
+| **Importancia** | Alta |
+| **Urgencia** | Inmediata |
+| **Comentarios** | El balance de prueba debe reflejar la igualdad entre débitos y créditos. |
+
+#### RF-24 — Liquidar Periodos de Nómina
+
+| Campo | Valor |
+| --- | --- |
+| **Versión** | Versión 1.0 |
+| **Autores** | Jesús Daniel Pérez Berrocal |
+| **Objetivos asociados** | OB-11 Gestión de empleados; OB-12 Cálculo de nómina; OB-06 Cumplimiento legal |
+| **Requisitos asociados** | RF-06 Registrar empleados; RF-08 Calcular nómina; RF-09 Registrar novedades laborales |
+| **Descripción** | El sistema permitirá liquidar un periodo de nómina para todos los empleados activos, calculando devengados, IBC, horas extras, deducciones, retención en la fuente, aportes patronales y provisiones. |
+| **Precondición** | Deben existir empleados activos y parámetros legales configurados. |
+
+**Secuencia normal**
+
+| Paso | Acción |
+| --- | --- |
+| 1 | El usuario accede a "Liquidar periodo". |
+| 2 | El sistema solicita fecha inicial, fecha final, tipo y nombre del periodo. |
+| 3 | El usuario confirma la liquidación. |
+| 4 | El sistema calcula la nómina de cada empleado activo. |
+| 5 | El sistema guarda el periodo, el detalle y los conceptos calculados. |
+| 6 | El sistema muestra totales de devengado, deducciones, aportes, provisiones y neto. |
+
+**Excepción**
+
+| Paso | Acción |
+| --- | --- |
+| 4 | Si un empleado no tiene salario válido, el sistema omite el cálculo y reporta el caso. |
+| 4 | Si las fechas son inválidas o el periodo ya existe, el sistema impide liquidar. |
+| 5 | Si falla el guardado, el sistema no deja periodos incompletos. |
+
+| Campo | Valor |
+| --- | --- |
+| **Postcondición** | El periodo queda en estado calculado y disponible para consulta y contabilización. |
+| **Importancia** | Alta |
+| **Urgencia** | Inmediata |
+| **Comentarios** | El cálculo usa los parámetros legales vigentes y las novedades activas del periodo. |
+
+#### RF-25 — Generar Colilla y Comprobante de Nómina
+
+| Campo | Valor |
+| --- | --- |
+| **Versión** | Versión 1.0 |
+| **Autores** | Jesús Daniel Pérez Berrocal |
+| **Objetivos asociados** | OB-12 Cálculo de nómina; OB-14 Consolidar información contable; OB-15 Generar reportes financieros |
+| **Requisitos asociados** | RF-22 Registrar comprobantes contables; RF-24 Liquidar periodos de nómina |
+| **Descripción** | El sistema permitirá generar la colilla de pago imprimible de cada empleado y el comprobante contable del periodo de nómina, separando devengados, deducciones, aportes y provisiones. |
+| **Precondición** | El periodo debe estar liquidado. |
+
+**Secuencia normal**
+
+| Paso | Acción |
+| --- | --- |
+| 1 | El usuario consulta el historial de periodos. |
+| 2 | El sistema muestra el detalle por empleado. |
+| 3 | El usuario selecciona "Colilla" para imprimir o guardar en PDF. |
+| 4 | El usuario selecciona "Contabilizar" para generar el comprobante. |
+| 5 | El sistema crea el comprobante balanceado y marca el periodo como contabilizado. |
+
+**Excepción**
+
+| Paso | Acción |
+| --- | --- |
+| 3 | Si el empleado no pertenece al periodo, el sistema muestra error. |
+| 4 | Si el periodo ya está contabilizado, el sistema no genera un segundo comprobante. |
+| 5 | Si las cuentas PUC de los conceptos no existen, el sistema impide contabilizar y reporta el concepto. |
+
+| Campo | Valor |
+| --- | --- |
+| **Postcondición** | La colilla queda disponible y el periodo queda reflejado en contabilidad. |
+| **Importancia** | Alta |
+| **Urgencia** | Inmediata |
+| **Comentarios** | La contabilización del periodo es un paso explícito del usuario. |
+
+#### RF-26 — Gestionar Parámetros Legales de Nómina
+
+| Campo | Valor |
+| --- | --- |
+| **Versión** | Versión 1.0 |
+| **Autores** | Jesús Daniel Pérez Berrocal |
+| **Objetivos asociados** | OB-04 Administración de la configuración; OB-06 Cumplimiento legal; OB-12 Cálculo de nómina |
+| **Requisitos asociados** | RF-16 Ajustar parámetros; RNF-18 Cumplimiento laboral |
+| **Descripción** | El sistema permitirá consultar y actualizar los parámetros legales usados en la nómina, como salario mínimo, auxilio de transporte, UVT, tasas de salud, pensión, ARL, parafiscales, recargos y topes. |
+| **Precondición** | El usuario debe tener rol Administrador o Recursos Humanos. |
+
+**Secuencia normal**
+
+| Paso | Acción |
+| --- | --- |
+| 1 | El usuario accede a "Parámetros". |
+| 2 | El sistema muestra las claves, descripciones, valores y unidades. |
+| 3 | El usuario modifica los valores necesarios. |
+| 4 | El usuario guarda los cambios. |
+| 5 | El sistema valida y actualiza los parámetros. |
+| 6 | Los siguientes cálculos usan los nuevos valores. |
+
+**Excepción**
+
+| Paso | Acción |
+| --- | --- |
+| 5 | Si un valor no es numérico o está fuera de rango, el sistema muestra error. |
+| 5 | Si la clave no existe, el sistema la rechaza. |
+| 5 | Si el usuario no tiene permisos, el sistema bloquea la edición. |
+
+| Campo | Valor |
+| --- | --- |
+| **Postcondición** | Los parámetros legales quedan actualizados para los próximos periodos. |
+| **Importancia** | Alta |
+| **Urgencia** | Inmediata |
+| **Comentarios** | Los cambios no deben alterar periodos ya liquidados o contabilizados. |
 
 ---
 
@@ -1082,6 +1319,29 @@ Los requisitos asociados fueron redefinidos como requisitos de información (RI)
 - Diagrama de Componentes 5
 - Diagrama de Entidad/Relación 5
 
+#### 8.2.5 Requisito Funcional – 24 (Liquidar Periodos de Nómina)
+- Diagrama de Actividades 24
+- Diagrama de Estados 24
+- Diagrama de Casos de Uso 24
+- Diagrama de Secuencia 24
+- Diagrama de Componentes 12
+- Diagrama de Entidad/Relación 12
+
+#### 8.2.6 Requisito Funcional – 25 (Generar Colilla y Comprobante de Nómina)
+- Diagrama de Actividades 25
+- Diagrama de Estados 25
+- Diagrama de Secuencia 25
+- Diagrama de Componentes 13
+- Diagrama de Entidad/Relación 13
+
+#### 8.2.7 Requisito Funcional – 26 (Gestionar Parámetros Legales de Nómina)
+- Diagrama de Actividades 26
+- Diagrama de Estados 26
+- Diagrama de Casos de Uso 26
+- Diagrama de Secuencia 26
+- Diagrama de Componentes 14
+- Diagrama de Entidad/Relación 14
+
 ### 8.3 Módulo de Contabilidad
 
 #### 8.3.1 Requisito Funcional – 10 (Generar Estado de Resultados)
@@ -1120,7 +1380,7 @@ Los requisitos asociados fueron redefinidos como requisitos de información (RI)
 - Diagrama de Entidad-Relación 9
 - Diagrama de Componentes 9
 
-#### 8.3.5 Requisito Funcional – 13 (Generar Reportes Contables)
+#### 8.3.5 Requisito Funcional – 14 (Generar Reportes Contables)
 - Diagrama de Actividades 14
 - Diagrama de Estados 14
 - Diagrama de Comunicación 14
@@ -1128,6 +1388,29 @@ Los requisitos asociados fueron redefinidos como requisitos de información (RI)
 - Diagrama de Secuencia 14
 - Diagrama de Entidad-Relación 10
 - Diagrama de Componentes 10
+
+#### 8.3.6 Requisito Funcional – 21 (Gestionar Plan Único de Cuentas)
+- Diagrama de Actividades 21
+- Diagrama de Estados 21
+- Diagrama de Casos de Uso 21
+- Diagrama de Secuencia 21
+- Diagrama de Componentes 15
+- Diagrama de Entidad/Relación 15
+
+#### 8.3.7 Requisito Funcional – 22 (Registrar Comprobantes Contables)
+- Diagrama de Actividades 22
+- Diagrama de Estados 22
+- Diagrama de Casos de Uso 22
+- Diagrama de Secuencia 22
+- Diagrama de Componentes 16
+- Diagrama de Entidad/Relación 16
+
+#### 8.3.8 Requisito Funcional – 23 (Consultar Libro Mayor y Balance de Prueba)
+- Diagrama de Actividades 23
+- Diagrama de Estados 23
+- Diagrama de Secuencia 23
+- Diagrama de Componentes 17
+- Diagrama de Entidad/Relación 17
 
 ### 8.4 Módulo de Configuración
 
@@ -1176,7 +1459,7 @@ Los requisitos asociados fueron redefinidos como requisitos de información (RI)
 - Diagrama de Componentes 10
 - Diagrama de Secuencia 14
 
-#### 8.5.2 Requisito Funcional – 19 (Recordar Usuario)
+#### 8.5.2 Requisito Funcional – 20 (Recordar Usuario)
 - Diagrama de Actividades 15
 - Diagrama de Casos de Uso 16
 - Diagrama de Estados 20

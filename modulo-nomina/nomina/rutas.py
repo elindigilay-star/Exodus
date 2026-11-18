@@ -2,11 +2,11 @@ from datetime import date, datetime
 from decimal import Decimal
 
 import pymysql
-from flask import Blueprint, jsonify, render_template, request
+from flask import (Blueprint, jsonify, render_template, request, session)
 
 from routes.auth import api_requerir_roles, requerir_roles
 
-from . import modelo
+from . import modelo, servicio
 
 nomina_bp = Blueprint('nomina', __name__, template_folder='templates', static_folder='static')
 
@@ -112,11 +112,61 @@ def api_crear_empleado():
     id_empleado = modelo.crear_empleado(
         nombres, apellidos, documento, cargo or None,
         salario_base, fecha_ingreso,
+        tipo_documento=(datos.get('tipo_documento') or 'CC').strip().upper(),
+        email=(datos.get('email') or '').strip() or None,
+        telefono=(datos.get('telefono') or '').strip() or None,
+        direccion=(datos.get('direccion') or '').strip() or None,
+        ciudad=(datos.get('ciudad') or '').strip() or None,
+        tipo_contrato=(datos.get('tipo_contrato') or 'INDEFINIDO').strip().upper(),
+        salario_integral=int(bool(datos.get('salario_integral'))),
+        auxilio_transporte=_a_float(datos.get('auxilio_transporte')),
+        riesgo_arl=int(datos.get('riesgo_arl') or 1),
+        exonerado_salud=int(bool(datos.get('exonerado_salud'))),
+        exonerado_parafiscales=int(bool(datos.get('exonerado_parafiscales'))),
+        centro_costo=(datos.get('centro_costo') or '').strip() or None,
+        banco=(datos.get('banco') or '').strip() or None,
+        cuenta_banco=(datos.get('cuenta_banco') or '').strip() or None,
+        dependientes=int(datos.get('dependientes') or 0),
     )
     return jsonify({
         'mensaje': 'Empleado registrado correctamente.',
         'id_empleado': id_empleado,
     }), 200
+
+
+@nomina_bp.route('/empleados/actualizar', methods=['POST'])
+@api_requerir_roles('Administrador', 'Recursos Humanos')
+def api_actualizar_empleado():
+    """Actualiza datos laborales del empleado (contrato, ARL, exoneraciones)."""
+    datos = _datos_json()
+    id_empleado = datos.get('id_empleado')
+    if not id_empleado:
+        return jsonify({'error': 'Falta el identificador del empleado.'}), 422
+    if not modelo.obtener_empleado(id_empleado):
+        return jsonify({'error': 'El empleado no existe.'}), 404
+
+    campos = {}
+    for clave in ('nombres', 'apellidos', 'cargo', 'email', 'telefono',
+                  'direccion', 'ciudad', 'centro_costo', 'banco',
+                  'cuenta_banco', 'tipo_contrato'):
+        if clave in datos:
+            campos[clave] = (datos.get(clave) or '').strip() or None
+    if 'salario_base' in datos:
+        salario = _a_float(datos.get('salario_base'))
+        if salario is None or salario <= 0:
+            return jsonify({'error': 'El salario base debe ser mayor a 0.'}), 422
+        campos['salario_base'] = salario
+    if 'auxilio_transporte' in datos:
+        campos['auxilio_transporte'] = _a_float(datos.get('auxilio_transporte'))
+    for clave in ('salario_integral', 'exonerado_salud', 'exonerado_parafiscales'):
+        if clave in datos:
+            campos[clave] = int(bool(datos.get(clave)))
+    for clave in ('riesgo_arl', 'dependientes'):
+        if clave in datos:
+            campos[clave] = int(datos.get(clave) or 0)
+
+    modelo.actualizar_empleado(id_empleado, **campos)
+    return jsonify({'mensaje': 'Empleado actualizado correctamente.'}), 200
 
 
 @nomina_bp.route('/empleados/eliminar', methods=['POST'])
@@ -257,6 +307,202 @@ def api_actualizar_novedad():
         return jsonify({'error': 'Solicitud no encontrada.'}), 404
 
     return jsonify({'mensaje': 'Estado actualizado correctamente.'}), 200
+
+
+# ---------------------------------------------------------------
+# Motor de liquidación: parámetros, periodos, novedades y colilla
+# ---------------------------------------------------------------
+
+def _error_nomina(error):
+    """Respuesta JSON uniforme para errores del motor de nómina."""
+    if isinstance(error, pymysql.MySQLError):
+        print(f"AVISO: error de base de datos en nómina: {error}")
+        return jsonify({
+            'error': 'No se pudo consultar la base de datos de nómina.',
+        }), 500
+    return jsonify({'error': str(error)}), 400
+
+
+@nomina_bp.route('/parametros', methods=['GET'])
+@api_requerir_roles('Administrador', 'Recursos Humanos')
+def api_listar_parametros():
+    """Lista los parámetros legales editables (SMMLV, UVT, tasas...)."""
+    try:
+        return jsonify({
+            'estado': 'exito',
+            'data': servicio.listar_parametros(),
+            'calculados': servicio.obtener_parametros(),
+        }), 200
+    except (ValueError, pymysql.MySQLError) as error:
+        return _error_nomina(error)
+
+
+@nomina_bp.route('/parametros', methods=['POST'])
+@api_requerir_roles('Administrador', 'Recursos Humanos')
+def api_actualizar_parametros():
+    """Actualiza uno o varios parámetros legales de nómina."""
+    datos = _datos_json()
+    cambios = datos.get('parametros', datos)
+    try:
+        actualizados = servicio.actualizar_parametros(cambios)
+        return jsonify({
+            'mensaje': f'{actualizados} parámetro(s) actualizado(s).',
+            'data': servicio.obtener_parametros(),
+        }), 200
+    except (ValueError, pymysql.MySQLError) as error:
+        return _error_nomina(error)
+
+
+@nomina_bp.route('/conceptos', methods=['GET'])
+@api_requerir_roles('Administrador', 'Recursos Humanos')
+def api_listar_conceptos():
+    """Catálogo de conceptos de nómina con su cuenta PUC."""
+    try:
+        return jsonify({
+            'estado': 'exito',
+            'data': servicio.listar_conceptos(),
+        }), 200
+    except (ValueError, pymysql.MySQLError) as error:
+        return _error_nomina(error)
+
+
+@nomina_bp.route('/periodos', methods=['GET'])
+@api_requerir_roles('Administrador', 'Recursos Humanos')
+def api_listar_periodos():
+    """Historial de periodos de nómina liquidados."""
+    try:
+        return jsonify({
+            'estado': 'exito',
+            'data': servicio.listar_periodos(request.args.get('limite', 50)),
+        }), 200
+    except (ValueError, pymysql.MySQLError) as error:
+        return _error_nomina(error)
+
+
+@nomina_bp.route('/periodos/liquidar', methods=['POST'])
+@api_requerir_roles('Administrador', 'Recursos Humanos')
+def api_liquidar_periodo():
+    """Calcula y guarda la nómina de un rango de fechas."""
+    datos = _datos_json()
+    try:
+        resultado = servicio.liquidar_periodo(
+            fecha_inicio=datos.get('fecha_inicio'),
+            fecha_fin=datos.get('fecha_fin'),
+            tipo=datos.get('tipo') or 'MENSUAL',
+            nombre=datos.get('nombre') or None,
+            id_usuario=session.get('usuario_id'),
+            id_empleado=datos.get('id_empleado') or None,
+        )
+        return jsonify({
+            'mensaje': 'Nómina liquidada correctamente.',
+            'data': resultado,
+        }), 200
+    except (ValueError, pymysql.MySQLError) as error:
+        return _error_nomina(error)
+
+
+@nomina_bp.route('/periodos/<int:id_periodo>', methods=['GET'])
+@api_requerir_roles('Administrador', 'Recursos Humanos')
+def api_obtener_periodo(id_periodo):
+    """Detalle de un periodo con el desglose por empleado y concepto."""
+    try:
+        periodo = servicio.obtener_periodo(id_periodo)
+        if not periodo:
+            return jsonify({'error': 'Periodo no encontrado.'}), 404
+        return jsonify({'estado': 'exito', 'data': periodo}), 200
+    except (ValueError, pymysql.MySQLError) as error:
+        return _error_nomina(error)
+
+
+@nomina_bp.route('/periodos/<int:id_periodo>/contabilizar', methods=['POST'])
+@api_requerir_roles('Administrador', 'Recursos Humanos')
+def api_contabilizar_periodo(id_periodo):
+    """Genera el comprobante contable de nómina del periodo."""
+    try:
+        resultado = servicio.contabilizar_periodo(
+            id_periodo, id_usuario=session.get('usuario_id')
+        )
+        return jsonify({
+            'mensaje': 'Nómina contabilizada correctamente.',
+            'data': resultado,
+        }), 200
+    except (ValueError, pymysql.MySQLError) as error:
+        return _error_nomina(error)
+
+
+@nomina_bp.route('/periodos/<int:id_periodo>/colilla/<int:id_empleado>', methods=['GET'])
+@requerir_roles('Administrador', 'Recursos Humanos')
+def ver_colilla(id_periodo, id_empleado):
+    """Colilla de pago imprimible de un empleado en un periodo."""
+    periodo = servicio.obtener_periodo(id_periodo)
+    if not periodo:
+        return 'Periodo no encontrado.', 404
+    detalle = next(
+        (d for d in periodo['detalles'] if int(d['id_empleado']) == int(id_empleado)),
+        None,
+    )
+    if not detalle:
+        return 'El empleado no hace parte de este periodo.', 404
+    return render_template('nomina/colilla.html', periodo=periodo, detalle=detalle)
+
+
+@nomina_bp.route('/novedades-nomina', methods=['GET'])
+@api_requerir_roles('Administrador', 'Recursos Humanos')
+def api_listar_novedades_nomina():
+    """Lista horas extras, bonificaciones y deducciones del motor."""
+    try:
+        return jsonify({
+            'estado': 'exito',
+            'data': servicio.listar_novedades_nomina(
+                id_empleado=request.args.get('id_empleado') or None,
+                estado=request.args.get('estado', 'ACTIVA') or None,
+                fecha_inicio=request.args.get('fecha_inicio'),
+                fecha_fin=request.args.get('fecha_fin'),
+            ),
+        }), 200
+    except (ValueError, pymysql.MySQLError) as error:
+        return _error_nomina(error)
+
+
+@nomina_bp.route('/novedades-nomina', methods=['POST'])
+@api_requerir_roles('Administrador', 'Recursos Humanos')
+def api_crear_novedad_nomina():
+    """Registra una hora extra, bonificación o deducción para el periodo."""
+    datos = _datos_json()
+    try:
+        id_novedad = servicio.crear_novedad_nomina(
+            id_empleado=datos.get('id_empleado'),
+            concepto_codigo=datos.get('concepto_codigo'),
+            fecha=datos.get('fecha'),
+            cantidad=datos.get('cantidad') or 0,
+            valor_unitario=datos.get('valor_unitario'),
+            valor_total=datos.get('valor_total'),
+            descripcion=datos.get('descripcion'),
+            aplica_ibc=datos.get('aplica_ibc'),
+            aplica_retencion=datos.get('aplica_retencion'),
+            id_usuario=session.get('usuario_id'),
+        )
+        return jsonify({
+            'mensaje': 'Novedad registrada correctamente.',
+            'id_novedad_nomina': id_novedad,
+        }), 200
+    except (ValueError, pymysql.MySQLError) as error:
+        return _error_nomina(error)
+
+
+@nomina_bp.route('/novedades-nomina/anular', methods=['POST'])
+@api_requerir_roles('Administrador', 'Recursos Humanos')
+def api_anular_novedad_nomina():
+    """Anula una novedad del motor de nómina."""
+    datos = _datos_json()
+    try:
+        servicio.anular_novedad_nomina(
+            datos.get('id_novedad_nomina') or datos.get('id_novedad'),
+            id_usuario=session.get('usuario_id'),
+        )
+        return jsonify({'mensaje': 'Novedad anulada.'}), 200
+    except (ValueError, pymysql.MySQLError) as error:
+        return _error_nomina(error)
 
 
 # ---------------- Enlace con la aplicación ----------------
