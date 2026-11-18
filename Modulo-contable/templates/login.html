@@ -3,16 +3,23 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="exodus-login-version" content="video-2">
   <title>Iniciar sesión · Exodus Contable</title>
   <link rel="icon" href="{{ url_for('static', filename='img/favicon.ico') }}" sizes="any">
   <link rel="icon" type="image/png" sizes="32x32" href="{{ url_for('static', filename='img/favicon-32x32.png') }}">
   <link rel="icon" type="image/png" sizes="16x16" href="{{ url_for('static', filename='img/favicon-16x16.png') }}">
   <link rel="apple-touch-icon" sizes="180x180" href="{{ url_for('static', filename='img/apple-touch-icon.png') }}">
-  <link rel="stylesheet" href="{{ url_for('static', filename='css/exodus.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/exodus.css') }}?v=2">
 </head>
 <body>
 <main class="login">
   <section class="login-brand">
+    <video id="loginBgVideo" class="login-bg-video" autoplay muted loop playsinline preload="auto"
+           poster="{{ url_for('static', filename='img/fondo-login.jpg') }}"
+           aria-hidden="true" tabindex="-1">
+      <source src="{{ url_for('static', filename='video/fondo-login.mp4') }}" type="video/mp4">
+      <source src="{{ url_for('static', filename='video/fondo-login.webm') }}" type="video/webm">
+    </video>
     <p class="wordmark">Exodus Contable</p>
     <h1 class="type-target" role="text" aria-label="Inventario, nómina y contabilidad en un solo lugar."></h1>
     <p class="lead type-target" role="text" aria-label="Hecho para las PYMES de Colombia. Funciona sin internet y tus datos se quedan en este equipo."></p>
@@ -94,6 +101,15 @@
   }
 
   typeNext(0);
+})();
+
+(function () {
+  var video = document.getElementById('loginBgVideo');
+  if (!video) return;
+  var intento = video.play();
+  if (intento && typeof intento.catch === 'function') {
+    intento.catch(function () { /* si el navegador bloquea el autoplay, queda el poster */ });
+  }
 })();
 </script>
 </body>
