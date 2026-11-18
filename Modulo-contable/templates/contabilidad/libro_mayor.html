@@ -1,0 +1,245 @@
+{% extends 'base.html' %}
+
+{% block title %}Libro Mayor{% endblock %}
+{% block header_title %}Libro Mayor - Saldos por Cuenta{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="actions" style="margin-bottom: 1rem; flex-wrap: wrap;">
+        <a href="/api/contabilidad/ver-balance-comprobacion" class="btn btn-secondary">
+            <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 9v6m0 0h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+            Balance de Comprobación
+        </a>
+    </div>
+
+    <div id="mensaje-contenedor"></div>
+
+    <!-- Filtro -->
+    <form class="filtro-periodo" method="GET" action="{{ url_for('contabilidad.ver_libro_mayor_html') }}">
+        <label for="fecha_inicio">Desde:</label>
+        <input type="date" id="fecha_inicio" name="fecha_inicio" value="{{ fecha_inicio or '' }}">
+        <label for="fecha_fin">Hasta:</label>
+        <input type="date" id="fecha_fin" name="fecha_fin" value="{{ fecha_fin or '' }}">
+        <label for="cuenta_filtro">Cuenta:</label>
+        <select id="cuenta_filtro" name="id_cuenta">
+            <option value="">Todas las cuentas</option>
+            <!-- opciones cargadas por JS -->
+        </select>
+        <button type="submit" class="btn btn-primary">Filtrar</button>
+        {% if fecha_inicio or fecha_fin %}
+            <a href="{{ url_for('contabilidad.ver_libro_mayor_html') }}" class="btn btn-secondary">Limpiar</a>
+        {% endif %}
+    </form>
+
+    <div style="overflow-x: auto;">
+        <table id="tabla-libro-mayor">
+            <thead>
+                <tr>
+                    <th>Código</th>
+                    <th>Cuenta</th>
+                    <th>Naturaleza</th>
+                    <th style="text-align: right;">Total Debe ($)</th>
+                    <th style="text-align: right;">Total Haber ($)</th>
+                    <th style="text-align: right;">Saldo ($)</th>
+                    <th style="text-align: center;">Ver Movimientos</th>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- filas cargadas por JS -->
+            </tbody>
+        </table>
+    </div>
+
+    <div class="actions" style="margin-top: 1rem;">
+        <a href="/api/contabilidad/exportar-reporte?tipo=libro_mayor&formato=pdf&fecha_inicio={{ request.args.get('fecha_inicio', '') }}&fecha_fin={{ request.args.get('fecha_fin', '') }}" class="btn btn-primary">Exportar PDF</a>
+        <a href="/api/contabilidad/exportar-reporte?tipo=libro_mayor&formato=excel&fecha_inicio={{ request.args.get('fecha_inicio', '') }}&fecha_fin={{ request.args.get('fecha_fin', '') }}" class="btn btn-success">Exportar Excel</a>
+    </div>
+</div>
+
+<!-- Modal movimientos de cuenta -->
+<div id="modal-movimientos" style="display:none;">
+    <div class="card" style="max-width: 1000px; margin: 1rem auto;">
+        <h3 id="titulo-movimientos">Movimientos de la Cuenta</h3>
+        <div style="overflow-x: auto;">
+            <table id="tabla-movimientos-cuenta">
+                <thead>
+                    <tr>
+                        <th>Fecha</th>
+                        <th>Asiento</th>
+                        <th>Descripción Asiento</th>
+                        <th style="text-align: right;">Debe ($)</th>
+                        <th style="text-align: right;">Haber ($)</th>
+                        <th style="text-align: right;">Saldo Acumulado ($)</th>
+                        <th>Estado</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- filas cargadas por JS -->
+                </tbody>
+            </table>
+        </div>
+        <div class="actions" style="margin-top: 1rem;">
+            <button type="button" class="btn btn-secondary" onclick="cerrarModalMovimientos()">Cerrar</button>
+        </div>
+    </div>
+</div>
+
+<script>
+const API_MAYOR = '/api/contabilidad/libro-mayor';
+const CUENTAS_API = '/api/contabilidad/plan-cuentas';
+
+function cargarLibroMayor() {
+    const params = new URLSearchParams(window.location.search);
+    const qs = new URLSearchParams();
+    if (params.get('fecha_inicio')) qs.set('fecha_inicio', params.get('fecha_inicio'));
+    if (params.get('fecha_fin')) qs.set('fecha_fin', params.get('fecha_fin'));
+    if (params.get('id_cuenta')) qs.set('id_cuenta', params.get('id_cuenta'));
+
+    // Cargar select de cuentas
+    fetch(`${CUENTAS_API}?solo_movimiento=1`)
+        .then(r => r.json())
+        .then(result => {
+            if (result.estado === 'exito') {
+                const select = document.getElementById('cuenta_filtro');
+                select.innerHTML = '<option value="">Todas las cuentas</option>' +
+                    result.data.map(c => `<option value="${c.id_cuenta}" ${params.get('id_cuenta') == c.id_cuenta ? 'selected' : ''}>${c.codigo} - ${c.nombre}</option>`).join('');
+            }
+        });
+
+    fetch(`${API_MAYOR}?${qs.toString()}`)
+        .then(r => r.json())
+        .then(result => {
+            if (result.estado !== 'exito') {
+                document.getElementById('mensaje-contenedor').innerHTML =
+                    `<div class="alert alert-danger">Error al cargar el libro mayor: ${result.mensaje}</div>`;
+                return;
+            }
+            renderTabla(result.data || []);
+        })
+        .catch(() => {
+            document.getElementById('mensaje-contenedor').innerHTML =
+                '<div class="alert alert-danger">Error de conexión al cargar el libro mayor.</div>';
+        });
+}
+
+function renderTabla(cuentas) {
+    const tbody = document.querySelector('#tabla-libro-mayor tbody');
+    tbody.innerHTML = '';
+
+    if (cuentas.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="7" style="text-align:center;">No hay cuentas con movimientos en el período seleccionado.</td></tr>`;
+        return;
+    }
+
+    let totalDebe = 0;
+    let totalHaber = 0;
+    let totalSaldo = 0;
+
+    cuentas.forEach(c => {
+        totalDebe += parseFloat(c.total_debe || 0);
+        totalHaber += parseFloat(c.total_haber || 0);
+        totalSaldo += parseFloat(c.saldo || 0);
+
+        const claseSaldo = c.saldo >= 0 ? 'monto-positivo' : 'monto-negativo';
+        tr = document.createElement('tr');
+        tr.innerHTML = `
+            <td><code>${c.codigo}</code></td>
+            <td>${c.nombre}</td>
+            <td>${c.naturaleza}</td>
+            <td class="monto" style="text-align: right;">${parseFloat(c.total_debe || 0).toLocaleString('es-CO', {minimumFractionDigits: 2})}</td>
+            <td class="monto" style="text-align: right;">${parseFloat(c.total_haber || 0).toLocaleString('es-CO', {minimumFractionDigits: 2})}</td>
+            <td class="monto ${claseSaldo}" style="text-align: right;">${parseFloat(c.saldo || 0).toLocaleString('es-CO', {minimumFractionDigits: 2})}</td>
+            <td style="text-align: center;">
+                <button class="btn btn-small btn-primary" onclick="verMovimientosCuenta(${c.id_cuenta}, '${c.codigo} - ${c.nombre}')">Ver</button>
+            </td>
+        `;
+        tbody.appendChild(tr);
+    });
+
+    // Fila de totales
+    const trTotal = document.createElement('tr');
+    trTotal.className = 'total-destacado';
+    trTotal.innerHTML = `
+        <td colspan="3" style="text-align: right; font-weight: 700;">TOTALES</td>
+        <td class="monto" style="text-align: right;">${totalDebe.toLocaleString('es-CO', {minimumFractionDigits: 2})}</td>
+        <td class="monto" style="text-align: right;">${totalHaber.toLocaleString('es-CO', {minimumFractionDigits: 2})}</td>
+        <td class="monto" style="text-align: right;">${totalSaldo.toLocaleString('es-CO', {minimumFractionDigits: 2})}</td>
+        <td></td>
+    `;
+    tbody.appendChild(trTotal);
+}
+
+function verMovimientosCuenta(idCuenta, nombreCuenta) {
+    const modal = document.getElementById('modal-movimientos');
+    const titulo = document.getElementById('titulo-movimientos');
+    const tbody = document.querySelector('#tabla-movimientos-cuenta tbody');
+    titulo.textContent = `Movimientos: ${nombreCuenta}`;
+    tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;">Cargando...</td></tr>';
+    modal.style.display = 'block';
+
+    const params = new URLSearchParams(window.location.search);
+    const qs = new URLSearchParams();
+    if (params.get('fecha_inicio')) qs.set('fecha_inicio', params.get('fecha_inicio'));
+    if (params.get('fecha_fin')) qs.set('fecha_fin', params.get('fecha_fin'));
+
+    fetch(`/api/contabilidad/libro-mayor/${idCuenta}/movimientos?${qs.toString()}`)
+        .then(r => r.json())
+        .then(result => {
+            if (result.estado !== 'exito') {
+                tbody.innerHTML = `<tr><td colspan="7" style="text-align:center;">Error: ${result.mensaje}</td></tr>`;
+                return;
+            }
+            renderMovimientos(result.data || []);
+        })
+        .catch(() => {
+            tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;">Error de conexión.</td></tr>';
+        });
+}
+
+function renderMovimientos(movimientos) {
+    const tbody = document.querySelector('#tabla-movimientos-cuenta tbody');
+    tbody.innerHTML = '';
+
+    if (movimientos.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="7" style="text-align:center;">Sin movimientos en el período.</td></tr>`;
+        return;
+    }
+
+    movimientos.forEach(m => {
+        const debe = parseFloat(m.debe || 0);
+        const haber = parseFloat(m.haber || 0);
+        tr = document.createElement('tr');
+        tr.innerHTML = `
+            <td>${m.fecha ? m.fecha.slice(0, 10) : '-'}</td>
+            <td><code>${m.numero_asiento}</code></td>
+            <td>${m.asiento_descripcion}</td>
+            <td class="monto" style="text-align: right;">${debe.toLocaleString('es-CO', {minimumFractionDigits: 2})}</td>
+            <td class="monto" style="text-align: right;">${haber.toLocaleString('es-CO', {minimumFractionDigits: 2})}</td>
+            <td class="monto" style="text-align: right;">${parseFloat(m.saldo_acumulado || 0).toLocaleString('es-CO', {minimumFractionDigits: 2})}</td>
+            <td><span class="badge">${m.estado}</span></td>
+        `;
+        tbody.appendChild(tr);
+    });
+}
+
+function cerrarModalMovimientos() {
+    document.getElementById('modal-movimientos').style.display = 'none';
+}
+
+document.addEventListener('DOMContentLoaded', cargarLibroMayor);
+    // Aplicar color rojo a montos negativos
+    document.querySelectorAll('.monto').forEach(celda => {
+        const texto = celda.textContent.replace('$', '').replace(/,/g, '');
+        const valor = parseFloat(texto);
+        if (valor < 0) {
+            celda.classList.add('monto-negativo');
+        }
+    });
+</script>
+
+<style>
+.monto-positivo { color: #065f46; font-weight: 600; }
+.monto-negativo { color: #991b1b; font-weight: 600; }
+.badge { display: inline-block; padding: 2px 8px; border-radius: 12px; font-size: 0.75rem; background: #e2e8f0; color: #334155; }
+</style>
+{% endblock %}

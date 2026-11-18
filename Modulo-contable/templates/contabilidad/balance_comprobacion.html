@@ -1,0 +1,142 @@
+{% extends 'base.html' %}
+
+{% block title %}Balance de Comprobación{% endblock %}
+{% block header_title %}Balance de Comprobación (Prueba de Saldos){% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="actions" style="margin-bottom: 1rem; flex-wrap: wrap;">
+        <a href="/api/contabilidad/ver-libro-mayor" class="btn btn-secondary">
+            <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path></svg>
+            Libro Mayor
+        </a>
+    </div>
+
+    <div id="mensaje-contenedor"></div>
+
+    <!-- Filtro -->
+    <form class="filtro-periodo" method="GET" action="{{ url_for('contabilidad.ver_balance_comprobacion_html') }}">
+        <label for="fecha_inicio">Desde:</label>
+        <input type="date" id="fecha_inicio" name="fecha_inicio" value="{{ fecha_inicio or '' }}">
+        <label for="fecha_fin">Hasta:</label>
+        <input type="date" id="fecha_fin" name="fecha_fin" value="{{ fecha_fin or '' }}">
+        <button type="submit" class="btn btn-primary">Filtrar</button>
+        {% if fecha_inicio or fecha_fin %}
+            <a href="{{ url_for('contabilidad.ver_balance_comprobacion_html') }}" class="btn btn-secondary">Limpiar</a>
+        {% endif %}
+    </form>
+
+    <div id="resultado-balance"></div>
+
+    <div class="actions" style="margin-top: 1rem;">
+        <a href="/api/contabilidad/exportar-reporte?tipo=balance_comprobacion&formato=pdf&fecha_inicio={{ request.args.get('fecha_inicio', '') }}&fecha_fin={{ request.args.get('fecha_fin', '') }}" class="btn btn-primary">Exportar PDF</a>
+        <a href="/api/contabilidad/exportar-reporte?tipo=balance_comprobacion&formato=excel&fecha_inicio={{ request.args.get('fecha_inicio', '') }}&fecha_fin={{ request.args.get('fecha_fin', '') }}" class="btn btn-success">Exportar Excel</a>
+    </div>
+</div>
+
+<script>
+const API_BALANCE = '/api/contabilidad/balance-comprobacion';
+
+function cargarBalance() {
+    const params = new URLSearchParams(window.location.search);
+    const qs = new URLSearchParams();
+    if (params.get('fecha_inicio')) qs.set('fecha_inicio', params.get('fecha_inicio'));
+    if (params.get('fecha_fin')) qs.set('fecha_fin', params.get('fecha_fin'));
+
+    fetch(`${API_BALANCE}?${qs.toString()}`)
+        .then(r => r.json())
+        .then(result => {
+            if (result.estado !== 'exito') {
+                document.getElementById('mensaje-contenedor').innerHTML =
+                    `<div class="alert alert-danger">Error al cargar el balance: ${result.mensaje}</div>`;
+                return;
+            }
+            renderBalance(result.data);
+        })
+        .catch(() => {
+            document.getElementById('mensaje-contenedor').innerHTML =
+                '<div class="alert alert-danger">Error de conexión al cargar el balance.</div>';
+        });
+}
+
+function renderBalance(data) {
+    const contenedor = document.getElementById('resultado-balance');
+    const cuentas = data.cuentas || [];
+    const totales = data.totales || {};
+    const cuadrado = data.cuadrado;
+
+    if (cuentas.length === 0) {
+        contenedor.innerHTML = `<div class="alert alert-info">No hay cuentas con saldo en el período seleccionado.</div>`;
+        return;
+    }
+
+    const claseCuadrado = cuadrado ? 'alert-ok' : 'alert-error';
+
+    let html = `
+        <div class="alert ${claseCuadrado}" style="margin-bottom: 1rem;">
+            <strong>Estado del balance:</strong>
+            ${cuadrado ? '✓ CUDRADO - Los saldos deudores igualan a los acreedores' : '✗ DESCUADRADO - Diferencia encontrada'}
+            <br>
+            <strong>Total Deudor:</strong> $${totales.total_deudor ? totales.total_deudor.toLocaleString('es-CO', {minimumFractionDigits: 2}) : '0.00'}
+            &nbsp;|&nbsp;
+            <strong>Total Acreedor:</strong> $${totales.total_acreedor ? totales.total_acreedor.toLocaleString('es-CO', {minimumFractionDigits: 2}) : '0.00'}
+            &nbsp;|&nbsp;
+            <strong>Diferencia:</strong> $${totales.diferencia ? Math.abs(totales.diferencia).toLocaleString('es-CO', {minimumFractionDigits: 2}) : '0.00'}
+        </div>
+        <div style="overflow-x: auto;">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Código</th>
+                        <th>Cuenta</th>
+                        <th>Naturaleza</th>
+                        <th style="text-align: right;">Saldo Deudor ($)</th>
+                        <th style="text-align: right;">Saldo Acreedor ($)</th>
+                    </tr>
+                </thead>
+                <tbody>
+    `;
+
+    cuentas.forEach(c => {
+        html += `
+            <tr>
+                <td><code>${c.codigo}</code></td>
+                <td>${c.nombre}</td>
+                <td>${c.naturaleza}</td>
+                <td class="monto" style="text-align: right;">${parseFloat(c.saldo_deudor || 0).toLocaleString('es-CO', {minimumFractionDigits: 2})}</td>
+                <td class="monto" style="text-align: right;">${parseFloat(c.saldo_acreedor || 0).toLocaleString('es-CO', {minimumFractionDigits: 2})}</td>
+            </tr>
+        `;
+    });
+
+    html += `
+                <tr class="total-destacado">
+                    <td colspan="3" style="text-align: right; font-weight: 700;">TOTALES</td>
+                    <td class="monto" style="text-align: right;">${parseFloat(totales.total_deudor || 0).toLocaleString('es-CO', {minimumFractionDigits: 2})}</td>
+                    <td class="monto" style="text-align: right;">${parseFloat(totales.total_acreedor || 0).toLocaleString('es-CO', {minimumFractionDigits: 2})}</td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    `;
+
+    contenedor.innerHTML = html;
+}
+
+document.addEventListener('DOMContentLoaded', cargarBalance);
+    // Aplicar color rojo a montos negativos
+    document.querySelectorAll('.monto').forEach(celda => {
+        const texto = celda.textContent.replace('$', '').replace(/,/g, '');
+        const valor = parseFloat(texto);
+        if (valor < 0) {
+            celda.classList.add('monto-negativo');
+        }
+    });
+</script>
+
+<style>
+.badge { display: inline-block; padding: 2px 8px; border-radius: 12px; font-size: 0.75rem; background: #e2e8f0; color: #334155; }
+.alert-ok { background: #d1fae5; color: #065f46; border-left: 4px solid #1E7B4F; }
+.alert-error { background: #fee2e2; color: #991b1b; border-left: 4px solid #B42318; }
+</style>
+{% endblock %}

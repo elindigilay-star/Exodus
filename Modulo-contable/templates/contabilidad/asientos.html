@@ -1,0 +1,550 @@
+{% extends 'base.html' %}
+
+{% block title %}Asientos Contables{% endblock %}
+{% block header_title %}Registro de Asientos Contables (Doble Entrada){% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="actions" style="margin-bottom: 1rem; flex-wrap: wrap;">
+        <button type="button" class="btn btn-primary" onclick="abrirModalAsiento()">
+            <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 4v16M8 12h8"></path></svg>
+            Nuevo Asiento
+        </button>
+        <a href="/api/contabilidad/ver-libro-diario" class="btn btn-secondary">Ver Libro Diario</a>
+    </div>
+
+    <div id="mensaje-contenedor"></div>
+
+    <!-- Filtro -->
+    <form class="filtro-periodo" method="GET" action="{{ url_for('contabilidad.ver_asientos_html') }}">
+        <label for="fecha_inicio">Desde:</label>
+        <input type="date" id="fecha_inicio" name="fecha_inicio" value="{{ fecha_inicio or '' }}">
+        <label for="fecha_fin">Hasta:</label>
+        <input type="date" id="fecha_fin" name="fecha_fin" value="{{ fecha_fin or '' }}">
+        <label for="estado_filtro">Estado:</label>
+        <select id="estado_filtro" name="estado">
+            <option value="">Todos</option>
+            <option value="BORRADOR" {% if estado_filtro == 'BORRADOR' %}selected{% endif %}>Borrador</option>
+            <option value="CONTABLE" {% if estado_filtro == 'CONTABLE' %}selected{% endif %}>Contabilizado</option>
+            <option value="ANULADO" {% if estado_filtro == 'ANULADO' %}selected{% endif %}>Anulado</option>
+        </select>
+        <button type="submit" class="btn btn-primary">Filtrar</button>
+        {% if fecha_inicio or fecha_fin or estado_filtro %}
+            <a href="{{ url_for('contabilidad.ver_asientos_html') }}" class="btn btn-secondary">Limpiar</a>
+        {% endif %}
+    </form>
+
+    <div style="overflow-x: auto;">
+        <table id="tabla-asientos">
+            <thead>
+                <tr>
+                    <th>Número</th>
+                    <th>Fecha</th>
+                    <th>Descripción</th>
+                    <th>Referencia</th>
+                    <th>Estado</th>
+                    <th style="text-align: right;">Total Debe ($)</th>
+                    <th style="text-align: right;">Total Haber ($)</th>
+                    <th style="text-align: center;">Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- filas cargadas por JS -->
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Modal crear/editar asiento -->
+<div id="modal-asiento" style="display:none;">
+    <div class="card" style="max-width: 900px; margin: 1rem auto;">
+        <h3 id="modal-titulo-asiento">Nuevo Asiento Contable</h3>
+        <div id="mensaje-asiento"></div>
+        <form id="form-asiento">
+            <input type="hidden" id="asiento_id">
+            <div class="form-row">
+                <div class="form-group" style="flex: 1;">
+                    <label for="asiento_numero">Número de asiento</label>
+                    <input type="text" id="asiento_numero" name="numero_asiento" placeholder="Ej: AS-001" required>
+                </div>
+                <div class="form-group" style="flex: 1;">
+                    <label for="asiento_fecha">Fecha</label>
+                    <input type="date" id="asiento_fecha" name="fecha" required>
+                </div>
+            </div>
+            <div class="form-group">
+                <label for="asiento_descripcion">Descripción / Concepto</label>
+                <input type="text" id="asiento_descripcion" name="descripcion" placeholder="Ej: Compra de mercancía al contado" required>
+            </div>
+            <div class="form-group">
+                <label for="asiento_referencia">Referencia (factura, recibo, etc.)</label>
+                <input type="text" id="asiento_referencia" name="referencia" placeholder="Ej: FAC-12345">
+            </div>
+
+            <!-- Movimientos -->
+            <h4 style="margin-top: 1.5rem; margin-bottom: 0.5rem;">Movimientos (Doble Entrada)</h4>
+            <p class="nota-usuario" style="font-size: 0.85rem;">
+                Cada asiento debe tener al menos 2 líneas. El total del Debe debe ser igual al total del Haber.
+            </p>
+            <div id="movimientos-container">
+                <!-- filas de movimientos generadas por JS -->
+            </div>
+            <button type="button" class="btn btn-success" style="margin: 0.5rem 0;" onclick="agregarMovimiento()">
+                <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 4v16M8 12h8"></path></svg>
+                Agregar Línea
+            </button>
+
+            <div class="acciones" style="margin-top: 1rem; display: flex; gap: 1rem; align-items: center;">
+                <span style="font-weight: 600;">Total Debe:</span>
+                <span id="total-debe" style="font-family: monospace; font-weight: 700;">$0.00</span>
+                <span style="font-weight: 600; margin-left: 2rem;">Total Haber:</span>
+                <span id="total-haber" style="font-family: monospace; font-weight: 700;">$0.00</span>
+                <span id="diferencia-asiento" style="font-weight: 600; margin-left: 2rem;"></span>
+            </div>
+
+            <div class="actions" style="margin-top: 1.5rem;">
+                <button type="button" class="btn btn-secondary" onclick="cerrarModalAsiento()">Cancelar</button>
+                <button type="submit" class="btn btn-primary" id="btn-guardar-asiento">Guardar Borrador</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Modal ver asiento (detalle) -->
+<div id="modal-ver-asiento" style="display:none;">
+    <div class="card" style="max-width: 900px; margin: 1rem auto;">
+        <h3>Detalle del Asiento</h3>
+        <div id="detalle-asiento"></div>
+        <div class="actions" style="margin-top: 1rem;">
+            <button type="button" class="btn btn-secondary" onclick="cerrarModalVerAsiento()">Cerrar</button>
+        </div>
+    </div>
+</div>
+
+<script>
+const API_BASE = '/api/contabilidad/asientos';
+const CUENTAS_API = '/api/contabilidad/plan-cuentas';
+let cuentasOptions = '';
+let movimientos = [];
+
+// Inicializar fecha de hoy por defecto
+document.addEventListener('DOMContentLoaded', function() {
+    const hoy = new Date().toISOString().split('T')[0];
+    document.getElementById('asiento_fecha').value = hoy;
+    cargarCuentasSelect();
+    cargarAsientos();
+});
+
+async function cargarCuentasSelect() {
+    try {
+        const response = await fetch(`${CUENTAS_API}?solo_movimiento=1`);
+        const result = await response.json();
+        if (result.estado === 'exito') {
+            cuentasOptions = result.data.map(c =>
+                `<option value="${c.id_cuenta}">${c.codigo} - ${c.nombre} (${c.naturaleza})</option>`
+            ).join('');
+        }
+    } catch (error) {
+        console.error('Error cargando cuentas:', error);
+    }
+}
+
+function cargarAsientos() {
+    const params = new URLSearchParams(window.location.search);
+    const qs = new URLSearchParams();
+    if (params.get('fecha_inicio')) qs.set('fecha_inicio', params.get('fecha_inicio'));
+    if (params.get('fecha_fin')) qs.set('fecha_fin', params.get('fecha_fin'));
+    if (params.get('estado')) qs.set('estado', params.get('estado'));
+
+    fetch(`${API_BASE}?${qs.toString()}`)
+        .then(r => r.json())
+        .then(result => {
+            if (result.estado !== 'exito') {
+                document.getElementById('mensaje-contenedor').innerHTML =
+                    `<div class="alert alert-danger">Error al cargar asientos: ${result.mensaje}</div>`;
+                return;
+            }
+            renderTablaAsientos(result.data || []);
+        })
+        .catch(() => {
+            document.getElementById('mensaje-contenedor').innerHTML =
+                '<div class="alert alert-danger">Error de conexión al cargar asientos.</div>';
+        });
+}
+
+function renderTablaAsientos(asientos) {
+    const tbody = document.querySelector('#tabla-asientos tbody');
+    tbody.innerHTML = '';
+
+    if (asientos.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="8" style="text-align:center;">No hay asientos registrados.</td></tr>`;
+        return;
+    }
+
+    const claseEstado = {
+        'BORRADOR': 'badge-borrador',
+        'CONTABLE': 'badge-contable',
+        'ANULADO': 'badge-anulado'
+    };
+
+    asientos.forEach(a => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+            <td><code>${a.numero_asiento}</code></td>
+            <td>${a.fecha ? a.fecha.slice(0, 10) : '-'}</td>
+            <td>${a.descripcion}</td>
+            <td>${a.referencia || '-'}</td>
+            <td><span class="badge ${claseEstado[a.estado] || ''}">${a.estado}</span></td>
+            <td class="monto" style="text-align: right;">${parseFloat(a.total_debe || 0).toLocaleString('es-CO', {minimumFractionDigits: 2})}</td>
+            <td class="monto" style="text-align: right;">${parseFloat(a.total_haber || 0).toLocaleString('es-CO', {minimumFractionDigits: 2})}</td>
+            <td style="text-align: center;">
+                <button class="btn btn-small btn-primary" onclick="verAsiento(${a.id_asiento})">Ver</button>
+                ${a.estado === 'BORRADOR' ?
+                    `<button class="btn btn-small btn-primary" onclick="editarAsiento(${a.id_asiento})">Editar</button>
+                     <button class="btn btn-small btn-success" onclick="contabilizarAsiento(${a.id_asiento})">Contabilizar</button>` :
+                    ''
+                }
+                ${a.estado !== 'ANULADO' ?
+                    `<button class="btn btn-small btn-danger" onclick="anularAsiento(${a.id_asiento})">Anular</button>` :
+                    ''
+                }
+            </td>
+        `;
+        tbody.appendChild(tr);
+    });
+}
+
+// ========== Modal Asiento ==========
+
+function abrirModalAsiento(id = null) {
+    const form = document.getElementById('form-asiento');
+    const titulo = document.getElementById('modal-titulo-asiento');
+    const msg = document.getElementById('mensaje-asiento');
+    form.reset();
+    msg.innerHTML = '';
+    document.getElementById('asiento_id').value = '';
+    movimientos = [];
+    renderMovimientos();
+    actualizarTotales();
+
+    if (id) {
+        titulo.textContent = 'Editar Asiento Contable';
+        fetch(`${API_BASE}/${id}`)
+            .then(r => r.json())
+            .then(result => {
+                if (result.estado === 'exito') {
+                    const a = result.data;
+                    document.getElementById('asiento_id').value = a.id_asiento;
+                    document.getElementById('asiento_numero').value = a.numero_asiento;
+                    document.getElementById('asiento_fecha').value = a.fecha ? a.fecha.slice(0, 10) : '';
+                    document.getElementById('asiento_descripcion').value = a.descripcion;
+                    document.getElementById('asiento_referencia').value = a.referencia || '';
+                    movimientos = (a.movimientos || []).map(m => ({
+                        id_cuenta: m.id_cuenta,
+                        debe: m.debe,
+                        haber: m.haber,
+                        detalle: m.detalle || '',
+                        base_gravable: m.base_gravable || 0,
+                        valor_iva: m.valor_iva || 0,
+                        tipo_iva: m.tipo_iva || 'excluido',
+                    }));
+                    renderMovimientos();
+                    actualizarTotales();
+                }
+            });
+    } else {
+        titulo.textContent = 'Nuevo Asiento Contable';
+    }
+
+    document.getElementById('modal-asiento').style.display = 'block';
+}
+
+function cerrarModalAsiento() {
+    document.getElementById('modal-asiento').style.display = 'none';
+}
+
+function cerrarModalVerAsiento() {
+    document.getElementById('modal-ver-asiento').style.display = 'none';
+}
+
+function agregarMovimiento() {
+    movimientos.push({
+        id_cuenta: '',
+        debe: 0,
+        haber: 0,
+        detalle: '',
+        base_gravable: 0,
+        valor_iva: 0,
+        tipo_iva: 'excluido',
+    });
+    renderMovimientos();
+    actualizarTotales();
+}
+
+function eliminarMovimiento(index) {
+    movimientos.splice(index, 1);
+    renderMovimientos();
+    actualizarTotales();
+}
+
+function renderMovimientos() {
+    const container = document.getElementById('movimientos-container');
+    container.innerHTML = '';
+
+    if (movimientos.length === 0) {
+        container.innerHTML = '<p style="color: #666; font-style: italic;">Agregue al menos una línea de movimiento.</p>';
+    }
+
+    movimientos.forEach((m, index) => {
+        const div = document.createElement('div');
+        div.style.border = '1px solid #d9e0e8';
+        div.style.borderRadius = '8px';
+        div.style.padding = '1rem';
+        div.style.marginBottom = '0.75rem';
+        div.style.background = '#fff';
+        div.innerHTML = `
+            <div style="display: flex; gap: 0.5rem; margin-bottom: 0.5rem; align-items: center;">
+                <button type="button" class="btn btn-danger btn-small" onclick="eliminarMovimiento(${index})" style="flex: 0 0 auto;">×</button>
+                <strong>Línea ${index + 1}</strong>
+            </div>
+            <div class="form-row">
+                <div class="form-group" style="flex: 1;">
+                    <label>Cuenta contable</label>
+                    <select class="form-input" onchange="cambiarCuenta(${index}, this.value)">
+                        <option value="">Seleccionar cuenta</option>
+                        ${cuentasOptions}
+                    </select>
+                </div>
+                <div class="form-group" style="flex: 0 0 140px;">
+                    <label>Debe ($)</label>
+                    <input type="number" step="0.01" min="0" class="form-input" onchange="cambiarMonto(${index}, 'debe', this.value)" value="${m.debe}">
+                </div>
+                <div class="form-group" style="flex: 0 0 140px;">
+                    <label>Haber ($)</label>
+                    <input type="number" step="0.01" min="0" class="form-input" onchange="cambiarMonto(${index}, 'haber', this.value)" value="${m.haber}">
+                </div>
+            </div>
+            <div class="form-group" style="margin-bottom: 0;">
+                <label>Detalle</label>
+                <input type="text" class="form-input" onchange="cambiarDetalle(${index}, this.value)" placeholder="Detalle opcional" value="${m.detalle || ''}">
+            </div>
+            <div class="form-row" style="margin-top: 0.5rem;">
+                <div class="form-group" style="flex: 1;">
+                    <label>Base gravable ($)</label>
+                    <input type="number" step="0.01" min="0" class="form-input" onchange="cambiarIVA(${index}, 'base_gravable', this.value)" value="${m.base_gravable || 0}">
+                </div>
+                <div class="form-group" style="flex: 1;">
+                    <label>Valor IVA ($)</label>
+                    <input type="number" step="0.01" min="0" class="form-input" onchange="cambiarIVA(${index}, 'valor_iva', this.value)" value="${m.valor_iva || 0}">
+                </div>
+                <div class="form-group" style="flex: 0 0 120px;">
+                    <label>Tipo IVA</label>
+                    <select class="form-input" onchange="cambiarIVA(${index}, 'tipo_iva', this.value)">
+                        <option value="excluido" ${m.tipo_iva === 'excluido' ? 'selected' : ''}>Excluido</option>
+                        <option value="19%" ${m.tipo_iva === '19%' ? 'selected' : ''}>19%</option>
+                        <option value="5%" ${m.tipo_iva === '5%' ? 'selected' : ''}>5%</option>
+                        <option value="0%" ${m.tipo_iva === '0%' ? 'selected' : ''}>0%</option>
+                    </select>
+                </div>
+            </div>
+        `;
+        container.appendChild(div);
+    });
+
+    // Establecer valores de select de cuenta
+    const selects = container.querySelectorAll('select');
+    movimientos.forEach((m, index) => {
+        if (m.id_cuenta && selects[index * 2]) {
+            selects[index * 2].value = m.id_cuenta;
+        }
+    });
+}
+
+function cambiarCuenta(index, id_cuenta) {
+    movimientos[index].id_cuenta = id_cuenta;
+}
+
+function cambiarMonto(index, campo, valor) {
+    movimientos[index][campo] = parseFloat(valor) || 0;
+    // Si se llena debe, limpiar haber y viceversa
+    if (campo === 'debe' && movimientos[index].debe > 0) {
+        movimientos[index].haber = 0;
+    } else if (campo === 'haber' && movimientos[index].haber > 0) {
+        movimientos[index].debe = 0;
+    }
+    renderMovimientos();
+    actualizarTotales();
+}
+
+function cambiarDetalle(index, valor) {
+    movimientos[index].detalle = valor;
+}
+
+function cambiarIVA(index, campo, valor) {
+    movimientos[index][campo] = campo === 'tipo_iva' ? valor : (parseFloat(valor) || 0);
+}
+
+function actualizarTotales() {
+    const totalDebe = movimientos.reduce((sum, m) => sum + (parseFloat(m.debe) || 0), 0);
+    const totalHaber = movimientos.reduce((sum, m) => sum + (parseFloat(m.haber) || 0), 0);
+    const diff = totalDebe - totalHaber;
+
+    document.getElementById('total-debe').textContent = totalDebe.toLocaleString('es-CO', { minimumFractionDigits: 2 });
+    document.getElementById('total-haber').textContent = totalHaber.toLocaleString('es-CO', { minimumFractionDigits: 2 });
+
+    const diffSpan = document.getElementById('diferencia-asiento');
+    if (Math.abs(diff) < 0.01) {
+        diffSpan.textContent = '✓ Cuadrado';
+        diffSpan.style.color = '#1E7B4F';
+    } else {
+        diffSpan.textContent = `✗ Diferencia: $${diff.toLocaleString('es-CO', { minimumFractionDigits: 2 })}`;
+        diffSpan.style.color = '#B42318';
+    }
+}
+
+document.getElementById('form-asiento').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    const id = document.getElementById('asiento_id').value;
+    const msgDiv = document.getElementById('mensaje-asiento');
+    const btn = document.getElementById('btn-guardar-asiento');
+
+    // Validar cuadrimiento antes de enviar
+    const totalDebe = movimientos.reduce((sum, m) => sum + (parseFloat(m.debe) || 0), 0);
+    const totalHaber = movimientos.reduce((sum, m) => sum + (parseFloat(m.haber) || 0), 0);
+    if (Math.abs(totalDebe - totalHaber) > 0.001) {
+        msgDiv.innerHTML = '<div class="alert alert-danger">El asiento no está cuadrado: el total del Debe debe ser igual al total del Haber.</div>';
+        return;
+    }
+
+    if (movimientos.length < 2) {
+        msgDiv.innerHTML = '<div class="alert alert-danger">Un asiento contable debe tener al menos 2 movimientos.</div>';
+        return;
+    }
+
+    const datos = {
+        numero_asiento: document.getElementById('asiento_numero').value.trim(),
+        fecha: document.getElementById('asiento_fecha').value,
+        descripcion: document.getElementById('asiento_descripcion').value.trim(),
+        referencia: document.getElementById('asiento_referencia').value.trim(),
+        movimientos: movimientos.filter(m => m.id_cuenta), // solo líneas con cuenta seleccionada
+    };
+
+    btn.disabled = true;
+    btn.textContent = 'Guardando...';
+
+    try {
+        const url = id ? `${API_BASE}/${id}` : API_BASE;
+        const method = id ? 'PUT' : 'POST';
+        const response = await fetch(url, {
+            method,
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(datos),
+        });
+        const result = await response.json();
+
+        if (response.ok) {
+            msgDiv.innerHTML = '<div class="alert alert-success">' +
+                (id ? 'Asiento actualizado correctamente.' : 'Asiento creado correctamente en estado BORRADOR.') +
+                '</div>';
+            setTimeout(() => { cerrarModalAsiento(); cargarAsientos(); }, 800);
+        } else {
+            msgDiv.innerHTML = `<div class="alert alert-danger">${result.mensaje || 'No se pudo guardar el asiento.'}</div>`;
+            btn.disabled = false;
+            btn.textContent = 'Guardar Borrador';
+        }
+    } catch (error) {
+        msgDiv.innerHTML = '<div class="alert alert-danger">Error de conexión al guardar el asiento.</div>';
+        btn.disabled = false;
+        btn.textContent = 'Guardar Borrador';
+    }
+});
+
+// ========== Acciones ==========
+
+async function verAsiento(id) {
+    const modal = document.getElementById('modal-ver-asiento');
+    const contenedor = document.getElementById('detalle-asiento');
+    contenedor.innerHTML = '<p>Cargando detalle...</p>';
+    modal.style.display = 'block';
+
+    try {
+        const response = await fetch(`${API_BASE}/${id}`);
+        const result = await response.json();
+        if (result.estado !== 'exito') {
+            contenedor.innerHTML = `<div class="alert alert-danger">${result.mensaje}</div>`;
+            return;
+        }
+        const a = result.data;
+        let html = `
+            <div class="form-group"><strong>Número:</strong> ${a.numero_asiento}</div>
+            <div class="form-group"><strong>Fecha:</strong> ${a.fecha ? a.fecha.slice(0, 10) : '-'}</div>
+            <div class="form-group"><strong>Descripción:</strong> ${a.descripcion}</div>
+            <div class="form-group"><strong>Referencia:</strong> ${a.referencia || '-'}</div>
+            <div class="form-group"><strong>Estado:</strong> <span class="badge">${a.estado}</span></div>
+            <div class="form-group"><strong>Usuario:</strong> ${a.usuario}</div>
+            <table style="width: 100%; margin-top: 1rem;">
+                <thead>
+                    <tr><th>Cuenta</th><th style="text-align:right;">Debe</th><th style="text-align:right;">Haber</th><th>Detalle</th></tr>
+                </thead>
+                <tbody>
+        `;
+        (a.movimientos || []).forEach(m => {
+            html += `
+                <tr>
+                    <td>${m.codigo_cuenta} - ${m.nombre_cuenta}</td>
+                    <td style="text-align:right;">${parseFloat(m.debe || 0).toLocaleString('es-CO', {minimumFractionDigits: 2})}</td>
+                    <td style="text-align:right;">${parseFloat(m.haber || 0).toLocaleString('es-CO', {minimumFractionDigits: 2})}</td>
+                    <td>${m.detalle || '-'}</td>
+                </tr>
+            `;
+        });
+        html += `</tbody></table>`;
+        contenedor.innerHTML = html;
+    } catch (error) {
+        contenedor.innerHTML = '<div class="alert alert-danger">Error al cargar el detalle.</div>';
+    }
+}
+
+async function editarAsiento(id) {
+    abrirModalAsiento(id);
+}
+
+async function contabilizarAsiento(id) {
+    if (!confirm('¿Está seguro de que desea contabilizar este asiento? Una vez contabilizado no se podrá editar.')) return;
+    try {
+        const response = await fetch(`${API_BASE}/${id}/contabilizar`, { method: 'POST' });
+        const result = await response.json();
+        if (response.ok) {
+            cargarAsientos();
+        } else {
+            alert(result.mensaje || 'No se pudo contabilizar el asiento.');
+        }
+    } catch (error) {
+        alert('Error de conexión.');
+    }
+}
+
+async function anularAsiento(id) {
+    if (!confirm('¿Está seguro de que desea anular este asiento?')) return;
+    try {
+        const response = await fetch(`${API_BASE}/${id}/anular`, { method: 'POST' });
+        const result = await response.json();
+        if (response.ok) {
+            cargarAsientos();
+        } else {
+            alert(result.mensaje || 'No se pudo anular el asiento.');
+        }
+    } catch (error) {
+        alert('Error de conexión.');
+    }
+}
+</script>
+
+<style>
+.badge-borrador { background: #fef3c7; color: #92400e; padding: 2px 8px; border-radius: 12px; font-size: 0.75rem; }
+.badge-contable { background: #d1fae5; color: #065f46; padding: 2px 8px; border-radius: 12px; font-size: 0.75rem; }
+.badge-anulado { background: #fee2e2; color: #991b1b; padding: 2px 8px; border-radius: 12px; font-size: 0.75rem; }
+.form-input { width: 100%; padding: 8px 10px; font-size: 0.9rem; border: 1px solid var(--border-color); border-radius: 6px; background: #fff; }
+.form-input:focus { outline: none; border-color: var(--secondary-color); }
+</style>
+{% endblock %}

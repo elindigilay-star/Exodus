@@ -74,4 +74,14 @@
         <a href="/api/contabilidad/exportar-reporte?tipo=balance&formato=excel&fecha_inicio={{ fecha_inicio or '' }}&fecha_fin={{ fecha_fin or '' }}" class="btn btn-success">Exportar Excel</a>
     </div>
 </div>
+
+<script>
+    document.querySelectorAll('.monto').forEach(celda => {
+        const texto = celda.textContent.replace('$', '').replace(/,/g, '');
+        const valor = parseFloat(texto);
+        if (valor < 0) {
+            celda.classList.add('monto-negativo');
+        }
+    });
+</script>
 {% endblock %}

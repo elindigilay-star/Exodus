@@ -1,0 +1,227 @@
+{% extends 'base.html' %}
+
+{% block title %}Libro Diario{% endblock %}
+{% block header_title %}Libro Diario Contable{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="actions" style="margin-bottom: 1rem; flex-wrap: wrap;">
+        <a href="/api/contabilidad/ver-asientos" class="btn btn-primary">
+            <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 4v16M8 12h8"></path></svg>
+            Registrar Asiento
+        </a>
+    </div>
+
+    <div id="mensaje-contenedor"></div>
+
+    <!-- Filtro -->
+    <form class="filtro-periodo" method="GET" action="{{ url_for('contabilidad.ver_libro_diario_html') }}">
+        <label for="fecha_inicio">Desde:</label>
+        <input type="date" id="fecha_inicio" name="fecha_inicio" value="{{ fecha_inicio or '' }}">
+        <label for="fecha_fin">Hasta:</label>
+        <input type="date" id="fecha_fin" name="fecha_fin" value="{{ fecha_fin or '' }}">
+        <label for="estado_filtro">Estado:</label>
+        <select id="estado_filtro" name="estado">
+            <option value="CONTABLE">Contabilizado</option>
+            <option value="BORRADOR">Borrador</option>
+            <option value="">Todos</option>
+        </select>
+        <button type="submit" class="btn btn-primary">Filtrar</button>
+        {% if fecha_inicio or fecha_fin %}
+            <a href="{{ url_for('contabilidad.ver_libro_diario_html') }}" class="btn btn-secondary">Limpiar</a>
+        {% endif %}
+    </form>
+
+    <div style="overflow-x: auto;">
+        <table id="tabla-libro-diario">
+            <thead>
+                <tr>
+                    <th>Fecha</th>
+                    <th>Número Asiento</th>
+                    <th>Descripción</th>
+                    <th>Referencia</th>
+                    <th>Estado</th>
+                    <th style="text-align: right;">Total Debe ($)</th>
+                    <th style="text-align: right;">Total Haber ($)</th>
+                    <th style="text-align: center;">Ver Detalle</th>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- filas cargadas por JS -->
+            </tbody>
+        </table>
+    </div>
+
+    <div class="actions" style="margin-top: 1rem;">
+        <a href="/api/contabilidad/exportar-reporte?tipo=libro_diario&formato=pdf&fecha_inicio={{ request.args.get('fecha_inicio', '') }}&fecha_fin={{ request.args.get('fecha_fin', '') }}&estado={{ request.args.get('estado', 'CONTABLE') }}" class="btn btn-primary">Exportar PDF</a>
+        <a href="/api/contabilidad/exportar-reporte?tipo=libro_diario&formato=excel&fecha_inicio={{ request.args.get('fecha_inicio', '') }}&fecha_fin={{ request.args.get('fecha_fin', '') }}&estado={{ request.args.get('estado', 'CONTABLE') }}" class="btn btn-success">Exportar Excel</a>
+    </div>
+</div>
+
+<!-- Modal detalle asiento -->
+<div id="modal-detalle" style="display:none;">
+    <div class="card" style="max-width: 900px; margin: 1rem auto;">
+        <h3>Detalle del Asiento</h3>
+        <div id="contenido-detalle"></div>
+        <div class="actions" style="margin-top: 1rem;">
+            <button type="button" class="btn btn-secondary" onclick="cerrarModal()">Cerrar</button>
+        </div>
+    </div>
+</div>
+
+<script>
+const API_DIARIO = '/api/contabilidad/libro-diario';
+
+function cargarLibroDiario() {
+    const params = new URLSearchParams(window.location.search);
+    const qs = new URLSearchParams();
+    if (params.get('fecha_inicio')) qs.set('fecha_inicio', params.get('fecha_inicio'));
+    if (params.get('fecha_fin')) qs.set('fecha_fin', params.get('fecha_fin'));
+    if (params.get('estado')) qs.set('estado', params.get('estado'));
+
+    fetch(`${API_DIARIO}?${qs.toString()}`)
+        .then(r => r.json())
+        .then(result => {
+            if (result.estado !== 'exito') {
+                document.getElementById('mensaje-contenedor').innerHTML =
+                    `<div class="alert alert-danger">Error al cargar el libro diaro: ${result.mensaje}</div>`;
+                return;
+            }
+            renderTabla(result.data || []);
+        })
+        .catch(() => {
+            document.getElementById('mensaje-contenedor').innerHTML =
+                '<div class="alert alert-danger">Error de conexión al cargar el libro diaro.</div>';
+        });
+}
+
+function renderTabla(asientos) {
+    const tbody = document.querySelector('#tabla-libro-diario tbody');
+    tbody.innerHTML = '';
+
+    if (asientos.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="8" style="text-align:center;">No hay asientos en el período seleccionado.</td></tr>`;
+        return;
+    }
+
+    let totalGeneralDebe = 0;
+    let totalGeneralHaber = 0;
+
+    const claseEstado = {
+        'BORRADOR': 'badge-borrador',
+        'CONTABLE': 'badge-contable',
+        'ANULADO': 'badge-anulado'
+    };
+
+    asientos.forEach(a => {
+        const debe = parseFloat(a.total_debe || 0);
+        const haber = parseFloat(a.total_haber || 0);
+        totalGeneralDebe += debe;
+        totalGeneralHaber += haber;
+
+        const tr = document.createElement('tr');
+        const movimientos = a.movimientos || [];
+        tr.innerHTML = `
+            <td>${a.fecha ? a.fecha.slice(0, 10) : '-'}</td>
+            <td><code>${a.numero_asiento}</code></td>
+            <td>${a.descripcion}</td>
+            <td>${a.referencia || '-'}</td>
+            <td><span class="badge ${claseEstado[a.estado] || ''}">${a.estado}</span></td>
+            <td class="monto" style="text-align: right;">${debe.toLocaleString('es-CO', {minimumFractionDigits: 2})}</td>
+            <td class="monto" style="text-align: right;">${haber.toLocaleString('es-CO', {minimumFractionDigits: 2})}</td>
+            <td style="text-align: center;">
+                <button class="btn btn-small btn-primary" onclick="verDetalle(${a.id_asiento})">Detalle</button>
+            </td>
+        `;
+        tbody.appendChild(tr);
+    });
+
+    // Fila de totales
+    const trTotal = document.createElement('tr');
+    trTotal.className = 'total-destacado';
+    trTotal.innerHTML = `
+        <td colspan="5" style="text-align: right; font-weight: 700;">TOTALES GENERALES</td>
+        <td class="monto" style="text-align: right;">${totalGeneralDebe.toLocaleString('es-CO', {minimumFractionDigits: 2})}</td>
+        <td class="monto" style="text-align: right;">${totalGeneralHaber.toLocaleString('es-CO', {minimumFractionDigits: 2})}</td>
+        <td></td>
+    `;
+    tbody.appendChild(trTotal);
+}
+
+function verDetalle(idAsiento) {
+    const modal = document.getElementById('modal-detalle');
+    const contenedor = document.getElementById('contenido-detalle');
+    contenedor.innerHTML = '<p>Cargando detalle...</p>';
+    modal.style.display = 'block';
+
+    fetch(`/api/contabilidad/asientos/${idAsiento}`)
+        .then(r => r.json())
+        .then(result => {
+            if (result.estado !== 'exito') {
+                contenedor.innerHTML = `<div class="alert alert-danger">${result.mensaje}</div>`;
+                return;
+            }
+            const a = result.data;
+            let html = `
+                <div style="margin-bottom: 1rem;">
+                    <div class="form-group"><strong>Número:</strong> ${a.numero_asiento}</div>
+                    <div class="form-group"><strong>Fecha:</strong> ${a.fecha ? a.fecha.slice(0, 16) : '-'}</div>
+                    <div class="form-group"><strong>Descripción:</strong> ${a.descripcion}</div>
+                    <div class="form-group"><strong>Referencia:</strong> ${a.referencia || '-'}</div>
+                    <div class="form-group"><strong>Estado:</strong> <span class="badge">${a.estado}</span></div>
+                    <div class="form-group"><strong>Usuario:</strong> ${a.usuario}</div>
+                </div>
+                <table style="width: 100%; border-collapse: collapse;">
+                    <thead>
+                        <tr style="background: #f1f5f9;">
+                            <th style="text-align: left; padding: 8px; border-bottom: 1px solid #d9e0e8;">Cuenta</th>
+                            <th style="text-align: right; padding: 8px; border-bottom: 1px solid #d9e0e8;">Debe ($)</th>
+                            <th style="text-align: right; padding: 8px; border-bottom: 1px solid #d9e0e8;">Haber ($)</th>
+                            <th style="text-align: left; padding: 8px; border-bottom: 1px solid #d9e0e8;">Detalle</th>
+                            <th style="text-align: right; padding: 8px; border-bottom: 1px solid #d9e0e8;">Base Gravable ($)</th>
+                            <th style="text-align: right; padding: 8px; border-bottom: 1px solid #d9e0e8;">IVA ($)</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+            `;
+            (a.movimientos || []).forEach(m => {
+                html += `
+                    <tr>
+                        <td style="padding: 8px; border-bottom: 1px solid #d9e0e8;">${m.codigo_cuenta} - ${m.nombre_cuenta}</td>
+                        <td style="text-align: right; padding: 8px; border-bottom: 1px solid #d9e0e8;">${parseFloat(m.debe || 0).toLocaleString('es-CO', {minimumFractionDigits: 2})}</td>
+                        <td style="text-align: right; padding: 8px; border-bottom: 1px solid #d9e0e8;">${parseFloat(m.haber || 0).toLocaleString('es-CO', {minimumFractionDigits: 2})}</td>
+                        <td style="padding: 8px; border-bottom: 1px solid #d9e0e8;">${m.detalle || '-'}</td>
+                        <td style="text-align: right; padding: 8px; border-bottom: 1px solid #d9e0e8;">${parseFloat(m.base_gravable || 0).toLocaleString('es-CO', {minimumFractionDigits: 2})}</td>
+                        <td style="text-align: right; padding: 8px; border-bottom: 1px solid #d9e0e8;">${parseFloat(m.valor_iva || 0).toLocaleString('es-CO', {minimumFractionDigits: 2})}</td>
+                    </tr>
+                `;
+            });
+            html += `</tbody></table>`;
+            contenedor.innerHTML = html;
+        })
+        .catch(() => {
+            contenedor.innerHTML = '<div class="alert alert-danger">Error al cargar el detalle.</div>';
+        });
+}
+
+function cerrarModal() {
+    document.getElementById('modal-detalle').style.display = 'none';
+}
+
+document.addEventListener('DOMContentLoaded', cargarLibroDiario);
+    // Aplicar color rojo a montos negativos
+    document.querySelectorAll('.monto').forEach(celda => {
+        const texto = celda.textContent.replace('$', '').replace(/,/g, '');
+        const valor = parseFloat(texto);
+        if (valor < 0) {
+            celda.classList.add('monto-negativo');
+        }
+    });
+</script>
+
+<style>
+.badge-borrador { background: #fef3c7; color: #92400e; padding: 2px 8px; border-radius: 12px; font-size: 0.75rem; }
+.badge-contable { background: #d1fae5; color: #065f46; padding: 2px 8px; border-radius: 12px; font-size: 0.75rem; }
+.badge-anulado { background: #fee2e2; color: #991b1b; padding: 2px 8px; border-radius: 12px; font-size: 0.75rem; }
+</style>
+{% endblock %}

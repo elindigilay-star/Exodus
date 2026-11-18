@@ -148,6 +148,84 @@ def _crear_usuarios_demo(cursor):
     )
 
 
+def _seed_plan_cuentas(cursor):
+    """Siembra el plan de cuentas base para PYMES colombianas si la tabla está vacía."""
+    cursor.execute("SELECT COUNT(*) AS total FROM plan_cuentas")
+    if cursor.fetchone()["total"] > 0:
+        return
+
+    cuentas = [
+        # (codigo, nombre, tipo, naturaleza, cuenta_padre_codigo, nivel, permite_movimiento)
+        ("1", "ACTIVO", "grupo", "ninguna", None, 1, 0),
+        ("11", "ACTIVO CIRCULANTE", "grupo", "ninguna", "1", 2, 0),
+        ("1105", "Caja", "cuenta", "deudora", "11", 3, 1),
+        ("1110", "Bancos", "cuenta", "deudora", "11", 3, 1),
+        ("1130", "Inventario de mercancías", "cuenta", "deudora", "11", 3, 1),
+        ("1305", "Cuentas por cobrar clientes", "cuenta", "deudora", "11", 3, 1),
+        ("12", "ACTIVO NO CIRCULANTE", "grupo", "ninguna", "1", 2, 0),
+        ("1205", "Mobiliario y equipo", "cuenta", "deudora", "12", 3, 1),
+        ("2", "PASIVO", "grupo", "ninguna", None, 1, 0),
+        ("21", "PASIVO CIRCULANTE", "grupo", "ninguna", "2", 2, 0),
+        ("2105", "Proveedores / Cuentas por pagar", "cuenta", "acreedora", "21", 3, 1),
+        ("2110", "IVA por pagar", "cuenta", "acreedora", "21", 3, 1),
+        ("2405", "Nómina por pagar", "cuenta", "acreedora", "21", 3, 1),
+        ("2410", "Retenciones y aportes por pagar", "cuenta", "acreedora", "21", 3, 1),
+        ("3", "PATRIMONIO", "grupo", "ninguna", None, 1, 0),
+        ("3105", "Capital social", "cuenta", "acreedora", "3", 3, 1),
+        ("3110", "Utilidades acumuladas", "cuenta", "acreedora", "3", 3, 1),
+        ("4", "INGRESOS", "grupo", "ninguna", None, 1, 0),
+        ("4105", "Ventas", "cuenta", "acreedora", "4", 3, 1),
+        ("5", "COSTOS Y GASTOS", "grupo", "ninguna", None, 1, 0),
+        ("5105", "Costo de ventas", "cuenta", "deudora", "5", 3, 1),
+        ("5205", "Gastos de nómina", "cuenta", "deudora", "5", 3, 1),
+        ("5210", "Gastos generales deducibles", "cuenta", "deudora", "5", 3, 1),
+        ("5220", "Servicios públicos", "cuenta", "deudora", "5", 3, 1),
+        ("5230", "Arriendos", "cuenta", "deudora", "5", 3, 1),
+    ]
+
+    # Insertar en orden de nivel para respetar claves foráneas autopreferenciadas
+    for nivel in (1, 2, 3):
+        for codigo, nombre, tipo, naturaleza, padre_codigo, lev, permite in cuentas:
+            if lev != nivel:
+                continue
+            padre_id = None
+            if padre_codigo:
+                cursor.execute("SELECT id_cuenta FROM plan_cuentas WHERE codigo = %s", (padre_codigo,))
+                fila = cursor.fetchone()
+                if fila:
+                    padre_id = fila["id_cuenta"]
+            cursor.execute(
+                """
+                INSERT IGNORE INTO plan_cuentas
+                    (codigo, nombre, tipo, naturaleza, cuenta_padre_id, nivel, permite_movimiento, activo)
+                VALUES (%s, %s, %s, %s, %s, %s, %s, 1)
+                """,
+                (codigo, nombre, tipo, naturaleza, padre_id, lev, permite),
+            )
+
+
+def _seed_parametros_tributarios(cursor):
+    """Siembra parámetros tributarios base (IVA colombiano) si la tabla está vacía."""
+    cursor.execute("SELECT COUNT(*) AS total FROM parametros_tributarios")
+    if cursor.fetchone()["total"] > 0:
+        return
+
+    from datetime import date
+    parametros = [
+        ("IVA general", 19.000, date(2020, 1, 1), None),
+        ("IVA reducido", 5.000, date(2020, 1, 1), None),
+        ("IVA excluido", 0.000, date(2020, 1, 1), None),
+    ]
+    cursor.executemany(
+        """
+        INSERT IGNORE INTO parametros_tributarios
+            (nombre, valor, vigencia_desde, vigencia_hasta, activo)
+        VALUES (%s, %s, %s, %s, 1)
+        """,
+        parametros,
+    )
+
+
 def crear_admin(usuario, clave, nombre="Administrador", email=None):
     """Crea (o actualiza la clave de) un usuario administrador."""
     from models.usuario import crear_usuario, existe_usuario  # import local: evita ciclos
@@ -174,6 +252,8 @@ def iniciar_db():
             for sentencia in _leer_sentencias():
                 cursor.execute(sentencia)
             _migrar_columnas(cursor)
+            _seed_plan_cuentas(cursor)
+            _seed_parametros_tributarios(cursor)
             _crear_usuarios_demo(cursor)
         conexion.commit()
     finally:

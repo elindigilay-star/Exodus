@@ -271,6 +271,14 @@ td {
     font-size: 1rem;
 }
 
+.monto-negativo {
+    text-align: right;
+    font-family: 'Inter', monospace;
+    font-weight: 600;
+    font-size: 1rem;
+    color: var(--danger-color);
+}
+
 .subtotal {
     font-weight: 600;
     background-color: #f8fafc;
@@ -318,12 +326,6 @@ td {
 }
 
 /* Botones */
-.actions {
-    margin-top: 28px;
-    display: flex;
-    gap: 12px;
-}
-
 .btn {
     font-family: 'Inter', sans-serif;
     font-size: 0.9rem;
@@ -337,6 +339,37 @@ td {
     align-items: center;
     justify-content: center;
     transition: background-color 0.2s;
+    min-width: 120px;
+    min-height: 40px;
+}
+
+.btn-small {
+    padding: 6px 14px;
+    font-size: 0.85rem;
+    border-radius: 6px;
+    min-width: 80px;
+    min-height: 32px;
+}
+
+/* Espaciado entre botones de acción dentro de celdas de tabla */
+td .btn,
+td button {
+    margin: 4px;
+    display: inline-block;
+}
+
+/* Contenedor de acciones: botones uniformes y bien organizados */
+.actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-top: 28px;
+    align-items: center;
+}
+
+.actions .btn {
+    flex: 0 0 auto;
+    margin-bottom: 8px; /* espacio entre filas cuando se envuelven */
 }
 
 .btn-primary { background-color: var(--secondary-color); color: #fff; }

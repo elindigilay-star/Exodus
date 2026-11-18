@@ -1,0 +1,296 @@
+{% extends 'base.html' %}
+
+{% block title %}Plan de Cuentas{% endblock %}
+{% block header_title %}Plan de Cuentas Contables{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="actions" style="margin-bottom: 1rem;">
+        <button type="button" class="btn btn-primary" onclick="abrirModalCuenta()">
+            <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 4v16M8 12h8"></path></svg>
+            Nueva Cuenta
+        </button>
+    </div>
+
+    <div id="mensaje-contenedor"></div>
+
+    <div style="overflow-x: auto;">
+        <table id="tabla-cuentas">
+            <thead>
+                <tr>
+                    <th>Código</th>
+                    <th>Nombre</th>
+                    <th>Tipo</th>
+                    <th>Naturaleza</th>
+                    <th>Nivel</th>
+                    <th>Cuenta Padre</th>
+                    <th>Permite Movimiento</th>
+                    <th>Estado</th>
+                    <th style="text-align: center;">Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- filas cargadas por JS -->
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Modal crear/editar cuenta -->
+<div id="modal-cuenta" style="display:none;">
+    <div class="card" style="max-width: 600px; margin: 2rem auto;">
+        <h3 id="modal-titulo">Nueva Cuenta Contable</h3>
+        <div id="mensaje-cuenta"></div>
+        <form id="form-cuenta">
+            <input type="hidden" id="cuenta_id">
+            <div class="form-group">
+                <label for="cuenta_codigo">Código contable</label>
+                <input type="text" id="cuenta_codigo" name="codigo" placeholder="Ej: 1105" required>
+            </div>
+            <div class="form-group">
+                <label for="cuenta_nombre">Nombre de la cuenta</label>
+                <input type="text" id="cuenta_nombre" name="nombre" placeholder="Ej: Caja" required>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="cuenta_tipo">Tipo</label>
+                    <select id="cuenta_tipo" name="tipo" required>
+                        <option value="grupo">Grupo (encabezado)</option>
+                        <option value="cuenta">Cuenta (movimiento)</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="cuenta_naturaleza">Naturaleza</label>
+                    <select id="cuenta_naturaleza" name="naturaleza" required>
+                        <option value="ninguna">Ninguna</option>
+                        <option value="deudora">Deudora</option>
+                        <option value="acreedora">Acreedora</option>
+                    </select>
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="cuenta_padre">Cuenta padre</label>
+                    <select id="cuenta_padre" name="cuenta_padre_id">
+                        <option value="">Ninguna (cuenta raíz)</option>
+                        <!-- opciones cargadas por JS -->
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="cuenta_nivel">Nivel</label>
+                    <select id="cuenta_nivel" name="nivel" required>
+                        <option value="1">1 - Grupo principal</option>
+                        <option value="2">2 - Subgrupo</option>
+                        <option value="3">3 - Cuenta de movimiento</option>
+                    </select>
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>
+                        <input type="checkbox" id="cuenta_permite_movimiento" name="permite_movimiento" checked>
+                        Permite movimientos contables directos
+                    </label>
+                </div>
+                <div class="form-group">
+                    <label>
+                        <input type="checkbox" id="cuenta_activo" name="activo" checked>
+                        Cuenta activa
+                    </label>
+                </div>
+            </div>
+            <div class="actions" style="margin-top: 1.5rem;">
+                <button type="button" class="btn btn-secondary" onclick="cerrarModalCuenta()">Cancelar</button>
+                <button type="submit" class="btn btn-primary">Guardar Cuenta</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+const API_BASE = '/api/contabilidad/plan-cuentas';
+let cuentasData = [];
+
+async function cargarCuentas() {
+    try {
+        const response = await fetch(`${API_BASE}?solo_movimiento=0`);
+        const result = await response.json();
+        if (result.estado !== 'exito') {
+            document.getElementById('mensaje-contenedor').innerHTML =
+                `<div class="alert alert-danger">Error al cargar cuentas: ${result.mensaje}</div>`;
+            return;
+        }
+        cuentasData = result.data || [];
+        renderTablaCuentas(cuentasData);
+        cargarSelectPadres();
+    } catch (error) {
+        document.getElementById('mensaje-contenedor').innerHTML =
+            '<div class="alert alert-danger">Error de conexión al cargar cuentas.</div>';
+    }
+}
+
+function renderTablaCuentas(cuentas) {
+    const tbody = document.querySelector('#tabla-cuentas tbody');
+    tbody.innerHTML = '';
+
+    if (cuentas.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="9" style="text-align:center;">No hay cuentas contables registradas.</td></tr>`;
+        return;
+    }
+
+    cuentas.forEach(c => {
+        const tr = document.createElement('tr');
+        const permite = c.permite_movimiento ? 'Sí' : 'No';
+        const estado = c.activo ? 'Activo' : 'Inactivo';
+        const claseEstado = c.activo ? 'badge-activo' : 'badge-inactivo';
+        tr.innerHTML = `
+            <td><code>${c.codigo}</code></td>
+            <td>${c.nombre}</td>
+            <td>${c.tipo === 'grupo' ? 'Grupo' : 'Cuenta'}</td>
+            <td>${c.naturaleza}</td>
+            <td>${c.nivel}</td>
+            <td>${c.nombre_padre || '-'}</td>
+            <td>${permite}</td>
+            <td><span class="badge ${claseEstado}">${estado}</span></td>
+            <td style="text-align: center;">
+                <button class="btn btn-small btn-primary" onclick="editarCuenta(${c.id_cuenta})">Editar</button>
+                ${c.activo ?
+                    `<button class="btn btn-small btn-danger" onclick="eliminarCuenta(${c.id_cuenta})">Desactivar</button>` :
+                    `<button class="btn btn-small btn-success" onclick="activarCuenta(${c.id_cuenta})">Activar</button>`
+                }
+            </td>
+        `;
+        tbody.appendChild(tr);
+    });
+}
+
+function cargarSelectPadres() {
+    const select = document.getElementById('cuenta_padre');
+    const html = cuentasData.filter(c => c.tipo === 'grupo' && c.activo)
+        .map(c => `<option value="${c.id_cuenta}">${c.codigo} - ${c.nombre}</option>`)
+        .join('');
+    select.innerHTML = '<option value="">Ninguna (cuenta raíz)</option>' + html;
+}
+
+function abrirModalCuenta(id = null) {
+    const form = document.getElementById('form-cuenta');
+    const titulo = document.getElementById('modal-titulo');
+    const msg = document.getElementById('mensaje-cuenta');
+    form.reset();
+    msg.innerHTML = '';
+    document.getElementById('cuenta_id').value = '';
+
+    if (id) {
+        titulo.textContent = 'Editar Cuenta Contable';
+        const cuenta = cuentasData.find(c => c.id_cuenta === id);
+        if (!cuenta) return;
+        document.getElementById('cuenta_id').value = cuenta.id_cuenta;
+        document.getElementById('cuenta_codigo').value = cuenta.codigo;
+        document.getElementById('cuenta_nombre').value = cuenta.nombre;
+        document.getElementById('cuenta_tipo').value = cuenta.tipo;
+        document.getElementById('cuenta_naturaleza').value = cuenta.naturaleza;
+        document.getElementById('cuenta_padre').value = cuenta.cuenta_padre_id || '';
+        document.getElementById('cuenta_nivel').value = cuenta.nivel;
+        document.getElementById('cuenta_permite_movimiento').checked = !!cuenta.permite_movimiento;
+        document.getElementById('cuenta_activo').checked = !!cuenta.activo;
+    } else {
+        titulo.textContent = 'Nueva Cuenta Contable';
+    }
+
+    document.getElementById('modal-cuenta').style.display = 'block';
+}
+
+function cerrarModalCuenta() {
+    document.getElementById('modal-cuenta').style.display = 'none';
+}
+
+document.getElementById('form-cuenta').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    const id = document.getElementById('cuenta_id').value;
+    const msgDiv = document.getElementById('mensaje-cuenta');
+    const datos = {
+        codigo: document.getElementById('cuenta_codigo').value.trim(),
+        nombre: document.getElementById('cuenta_nombre').value.trim(),
+        tipo: document.getElementById('cuenta_tipo').value,
+        naturaleza: document.getElementById('cuenta_naturaleza').value,
+        cuenta_padre_id: document.getElementById('cuenta_padre').value || null,
+        nivel: parseInt(document.getElementById('cuenta_nivel').value),
+        permite_movimiento: document.getElementById('cuenta_permite_movimiento').checked ? 1 : 0,
+        activo: document.getElementById('cuenta_activo').checked ? 1 : 0,
+    };
+
+    try {
+        const url = id ? `${API_BASE}/${id}` : API_BASE;
+        const method = id ? 'PUT' : 'POST';
+        const response = await fetch(url, {
+            method,
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(datos),
+        });
+        const result = await response.json();
+
+        if (response.ok) {
+            msgDiv.innerHTML = '<div class="alert alert-success">' +
+                (id ? 'Cuenta actualizada correctamente.' : 'Cuenta creada correctamente.') +
+                '</div>';
+            setTimeout(() => { cerrarModalCuenta(); cargarCuentas(); }, 800);
+        } else {
+            msgDiv.innerHTML = `<div class="alert alert-danger">${result.mensaje || 'No se pudo guardar.'}</div>`;
+        }
+    } catch (error) {
+        msgDiv.innerHTML = '<div class="alert alert-danger">Error de conexión.</div>';
+    }
+});
+
+async function editarCuenta(id) {
+    abrirModalCuenta(id);
+}
+
+async function eliminarCuenta(id) {
+    if (!confirm('¿Está seguro de que desea desactivar esta cuenta? No se podrá hacer si tiene movimientos contables.')) return;
+    try {
+        const response = await fetch(`${API_BASE}/${id}`, { method: 'DELETE' });
+        const result = await response.json();
+        if (response.ok) {
+            cargarCuentas();
+        } else {
+            alert(result.mensaje || 'No se pudo desactivar la cuenta.');
+        }
+    } catch (error) {
+        alert('Error de conexión.');
+    }
+}
+
+async function activarCuenta(id) {
+    // Reactivar: editar poniendo activo=1
+    const cuenta = cuentasData.find(c => c.id_cuenta === id);
+    if (!cuenta) return;
+    try {
+        const response = await fetch(`${API_BASE}/${id}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                ...cuenta, activo: 1
+            }),
+        });
+        const result = await response.json();
+        if (response.ok) {
+            cargarCuentas();
+        } else {
+            alert(result.mensaje || 'No se pudo activar la cuenta.');
+        }
+    } catch (error) {
+        alert('Error de conexión.');
+    }
+}
+
+document.addEventListener('DOMContentLoaded', cargarCuentas);
+</script>
+
+<style>
+.code { font-family: monospace; font-size: 0.9rem; background: #f8fafc; padding: 2px 6px; border-radius: 4px; }
+.badge-activo { background: #d1fae5; color: #065f46; padding: 2px 8px; border-radius: 12px; font-size: 0.75rem; }
+.badge-inactivo { background: #fee2e2; color: #991b1b; padding: 2px 8px; border-radius: 12px; font-size: 0.75rem; }
+.btn-small { padding: 0.25rem 0.6rem; font-size: 0.8rem; margin: 0 0.2rem; }
+</style>
+{% endblock %}

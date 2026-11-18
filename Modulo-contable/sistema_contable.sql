@@ -233,6 +233,78 @@ CREATE TABLE IF NOT EXISTS `pagos_nomina` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- ----------------------------------------------------------------------------
+-- Contabilidad: Plan de cuentas contables
+-- ----------------------------------------------------------------------------
+CREATE TABLE IF NOT EXISTS `plan_cuentas` (
+  `id_cuenta` int(11) NOT NULL AUTO_INCREMENT,
+  `codigo` varchar(20) NOT NULL,
+  `nombre` varchar(150) NOT NULL,
+  `tipo` enum('grupo','cuenta') NOT NULL DEFAULT 'cuenta',
+  `naturaleza` enum('deudora','acreedora','ninguna') NOT NULL DEFAULT 'ninguna',
+  `cuenta_padre_id` int(11) DEFAULT NULL,
+  `nivel` int(11) NOT NULL DEFAULT 1,
+  `permite_movimiento` tinyint(1) NOT NULL DEFAULT 1,
+  `activo` tinyint(1) NOT NULL DEFAULT 1,
+  PRIMARY KEY (`id_cuenta`),
+  UNIQUE KEY `codigo` (`codigo`),
+  KEY `fk_plan_cuentas_padre` (`cuenta_padre_id`),
+  CONSTRAINT `fk_plan_cuentas_padre` FOREIGN KEY (`cuenta_padre_id`) REFERENCES `plan_cuentas` (`id_cuenta`) ON DELETE SET NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- ----------------------------------------------------------------------------
+-- Contabilidad: Asientos contables (cabecera - doble entrada)
+-- ----------------------------------------------------------------------------
+CREATE TABLE IF NOT EXISTS `asientos_contables` (
+  `id_asiento` int(11) NOT NULL AUTO_INCREMENT,
+  `numero_asiento` varchar(30) NOT NULL,
+  `fecha` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `descripcion` varchar(255) NOT NULL,
+  `referencia` varchar(100) DEFAULT NULL,
+  `estado` enum('BORRADOR','CONTABLE','ANULADO') NOT NULL DEFAULT 'BORRADOR',
+  `id_usuario` int(11) NOT NULL,
+  `fecha_creacion` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `fecha_contabilizacion` datetime DEFAULT NULL,
+  PRIMARY KEY (`id_asiento`),
+  UNIQUE KEY `numero_asiento` (`numero_asiento`),
+  KEY `fk_asientos_usuarios` (`id_usuario`),
+  CONSTRAINT `fk_asientos_usuarios` FOREIGN KEY (`id_usuario`) REFERENCES `usuarios` (`id_usuario`) ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- ----------------------------------------------------------------------------
+-- Contabilidad: Movimientos contables (líneas debe/haber de cada asiento)
+-- ----------------------------------------------------------------------------
+CREATE TABLE IF NOT EXISTS `movimientos_contables` (
+  `id_movimiento` int(11) NOT NULL AUTO_INCREMENT,
+  `id_asiento` int(11) NOT NULL,
+  `id_cuenta` int(11) NOT NULL,
+  `debe` decimal(12,2) NOT NULL DEFAULT 0.00,
+  `haber` decimal(12,2) NOT NULL DEFAULT 0.00,
+  `detalle` varchar(255) DEFAULT NULL,
+  `base_gravable` decimal(12,2) NOT NULL DEFAULT 0.00,
+  `valor_iva` decimal(12,2) NOT NULL DEFAULT 0.00,
+  `tipo_iva` enum('19%','5%','0%','excluido') NOT NULL DEFAULT 'excluido',
+  PRIMARY KEY (`id_movimiento`),
+  KEY `fk_mov_asiento` (`id_asiento`),
+  KEY `fk_mov_cuenta` (`id_cuenta`),
+  CONSTRAINT `fk_mov_asiento` FOREIGN KEY (`id_asiento`) REFERENCES `asientos_contables` (`id_asiento`) ON DELETE CASCADE,
+  CONSTRAINT `fk_mov_cuenta` FOREIGN KEY (`id_cuenta`) REFERENCES `plan_cuentas` (`id_cuenta`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- ----------------------------------------------------------------------------
+-- Contabilidad: Parámetros tributarios (IVA, retenciones, etc.)
+-- ----------------------------------------------------------------------------
+CREATE TABLE IF NOT EXISTS `parametros_tributarios` (
+  `id_parametro` int(11) NOT NULL AUTO_INCREMENT,
+  `nombre` varchar(80) NOT NULL,
+  `valor` decimal(6,3) NOT NULL DEFAULT 0.000,
+  `vigencia_desde` date NOT NULL,
+  `vigencia_hasta` date DEFAULT NULL,
+  `activo` tinyint(1) NOT NULL DEFAULT 1,
+  PRIMARY KEY (`id_parametro`),
+  UNIQUE KEY `nombre` (`nombre`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- ----------------------------------------------------------------------------
 -- Datos base (catálogos). No incluye usuarios ni movimientos de ejemplo.
 -- ----------------------------------------------------------------------------
 INSERT IGNORE INTO `roles` (`nombre`, `descripcion`) VALUES
